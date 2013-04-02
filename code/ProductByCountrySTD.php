@@ -1,7 +1,7 @@
 <?php
 
 class ProductByCountrySTD extends SiteTreeDecorator {
-	
+
 	function extraStatics() {
 		return array(
 			'many_many' => array(
@@ -17,8 +17,16 @@ class ProductByCountrySTD extends SiteTreeDecorator {
 		$includedCountries = DataObject::get('EcommerceCountry', '`DoNotAllowSales` = 0');
 		$includedCountries = $includedCountries->map('ID', 'Name');
 		$tabs = new TabSet('Countries',
-			new Tab('Include', new CheckboxSetField('IncludedCountries', '', $excludedCountries)),
-			new Tab('Exclude', new CheckboxSetField('ExcludedCountries', '', $includedCountries))
+			new Tab(
+				'Include',
+				new LiteralField("ExplanationInclude", "<p>".$this->owner->Title." is not available in all countries listed below.  You can include new countries by ticking the box next to any of them.</p>"),
+				new CheckboxSetField('IncludedCountries', '', $excludedCountries)
+			),
+			new Tab(
+				'Exclude',
+				new LiteralField("ExplanationExclude", "<p>".$this->owner->Title." is available in all countries listed below.  You can exclude countries by ticking the box next to any of them.</p>"),
+				new CheckboxSetField('ExcludedCountries', '', $includedCountries)
+			)
 		);
 		$fields->addFieldToTab('Root.Content', $tabs);
 	}
