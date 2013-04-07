@@ -19,12 +19,12 @@ class ProductByCountrySTD extends SiteTreeDecorator {
 		$tabs = new TabSet('Countries',
 			new Tab(
 				'Include',
-				new LiteralField("ExplanationInclude", "<p>".$this->owner->Title." is not available in all countries listed below.  You can include new countries by ticking the box next to any of them.</p>"),
+				new LiteralField("ExplanationInclude", "<p>Products are not available in the countries listed below.  You can include sales of <i>".$this->owner->Title."</i> to new countries by ticking the box(es) next to any country.</p>"),
 				new CheckboxSetField('IncludedCountries', '', $excludedCountries)
 			),
 			new Tab(
 				'Exclude',
-				new LiteralField("ExplanationExclude", "<p>".$this->owner->Title." is available in all countries listed below.  You can exclude countries by ticking the box next to any of them.</p>"),
+				new LiteralField("ExplanationExclude", "<p>Products are available in all countries listed below.  You can exclude sales of <i>".$this->owner->Title."</i> from these countries by ticking the box next to any of them.</p>"),
 				new CheckboxSetField('ExcludedCountries', '', $includedCountries)
 			)
 		);
