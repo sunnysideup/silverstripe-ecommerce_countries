@@ -1,9 +1,20 @@
 <?php
 
+/**
+ * Determine products for sale on a country by country basis.
+ *
+ *
+ *
+ *
+ */
+
 class ProductByCountrySTD extends SiteTreeDecorator {
 
 	function extraStatics() {
 		return array(
+			'db' => array(
+				'AllCountries' => 'Boolean'
+			),
 			'many_many' => array(
 				'IncludedCountries' => 'EcommerceCountry',
 				'ExcludedCountries' => 'EcommerceCountry'
@@ -11,14 +22,15 @@ class ProductByCountrySTD extends SiteTreeDecorator {
 		);
 	}
 
-	function updateCMSFields(FieldSet &$fields) {
-		$excludedCountries = DataObject::get('EcommerceCountry', '`DoNotAllowSales` = 1');
+	function updateCMSFields(FieldSet $fields) {
+		$excludedCountries = DataObject::get('EcommerceCountry', "\"DoNotAllowSales\" = 1");
 		$excludedCountries = $excludedCountries->map('ID', 'Name');
-		$includedCountries = DataObject::get('EcommerceCountry', '`DoNotAllowSales` = 0');
+		$includedCountries = DataObject::get('EcommerceCountry', "\"DoNotAllowSales\" = 0");
 		$includedCountries = $includedCountries->map('ID', 'Name');
 		$tabs = new TabSet('Countries',
 			new Tab(
 				'Include',
+				new CheckboxField("AllCountries", "All Countries"),
 				new LiteralField("ExplanationInclude", "<p>Products are not available in the countries listed below.  You can include sales of <i>".$this->owner->Title."</i> to new countries by ticking the box(es) next to any country.</p>"),
 				new CheckboxSetField('IncludedCountries', '', $excludedCountries)
 			),
@@ -31,18 +43,28 @@ class ProductByCountrySTD extends SiteTreeDecorator {
 		$fields->addFieldToTab('Root.Content', $tabs);
 	}
 
-	function canPurchaseByCountry() {
-		$countryCode = @Geoip::visitor_country();
+
+	/**
+	 * This is called from /ecommerce/code/Product
+	 * returning NULL is like returning TRUE, i.e. ignore this.
+	 * @param Member $member
+	 * @return FALSE | NULL
+	 */
+	function canPurchaseByCountry($member = null) {
+		if($this->owner->AllCountries) {
+			return null;
+		}
+		$countryCode = EcommerceCountry::get_country();
 		if($countryCode) {
-			$included = $this->owner->getManyManyComponents('IncludedCountries', "`Code` = '$countryCode'")->Count();
+			$included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
 			if($included) {
-				return true;
+				return null;
 			}
-			$excluded = $this->owner->getManyManyComponents('ExcludedCountries', "`Code` = '$countryCode'")->Count();
+			$excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
 			if($excluded) {
 				return false;
 			}
 		}
-		return EcommerceCountry::allow_sales();
+		return null;
 	}
 }
