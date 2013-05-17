@@ -24,9 +24,13 @@ class ProductByCountrySTD extends SiteTreeDecorator {
 
 	function updateCMSFields(FieldSet $fields) {
 		$excludedCountries = DataObject::get('EcommerceCountry', "\"DoNotAllowSales\" = 1");
-		$excludedCountries = $excludedCountries->map('ID', 'Name');
+		if($excludedCountries) {
+			$excludedCountries = $excludedCountries->map('ID', 'Name');
+		}
 		$includedCountries = DataObject::get('EcommerceCountry', "\"DoNotAllowSales\" = 0");
-		$includedCountries = $includedCountries->map('ID', 'Name');
+		if($includedCountries)  {
+			$includedCountries = $includedCountries->map('ID', 'Name');
+		}
 		$tabs = new TabSet('Countries',
 			new Tab(
 				'Include',
