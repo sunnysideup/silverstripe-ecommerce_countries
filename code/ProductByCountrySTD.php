@@ -8,28 +8,24 @@
  *
  */
 
-class ProductByCountrySTD extends SiteTreeDecorator {
+class ProductByCountrySTD extends SiteTreeExtension {
 
-	function extraStatics() {
-		return array(
-			'db' => array(
-				'AllCountries' => 'Boolean'
-			),
-			'many_many' => array(
-				'IncludedCountries' => 'EcommerceCountry',
-				'ExcludedCountries' => 'EcommerceCountry'
-			)
-		);
-	}
+	protected static $db = array("AllCountries" => "Boolean");
 
-	function updateCMSFields(FieldSet $fields) {
-		$excludedCountries = DataObject::get('EcommerceCountry', "\"DoNotAllowSales\" = 1");
-		if($excludedCountries) {
-			$excludedCountries = $excludedCountries->map('ID', 'Name');
+	protected static $many_many = array(
+		"IncludedCountries" => "EcommerceCountry",
+		"ExcludedCountries" => "EcommerceCountry"
+	);
+	
+
+	function updateCMSFields(FieldList $fields) {
+		$excludedCountries = EcommerceCountry::get()->filter(array("DoNotAllowSales" => 1));
+		if($excludedCountries->count()) {
+			$excludedCountries = $excludedCountries->map('ID', 'Name')->toArray();
 		}
-		$includedCountries = DataObject::get('EcommerceCountry', "\"DoNotAllowSales\" = 0");
-		if($includedCountries)  {
-			$includedCountries = $includedCountries->map('ID', 'Name');
+		$includedCountries = EcommerceCountry::get()->filter(array("DoNotAllowSales" => 0));
+		if($includedCountries->count())  {
+			$includedCountries = $includedCountries->map('ID', 'Name')->toArray();
 		}
 		$tabs = new TabSet('Countries',
 			new Tab(
