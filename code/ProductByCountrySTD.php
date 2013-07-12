@@ -10,9 +10,9 @@
 
 class ProductByCountrySTD extends SiteTreeExtension {
 
-	protected static $db = array("AllCountries" => "Boolean");
+	private static $db = array("AllCountries" => "Boolean");
 
-	protected static $many_many = array(
+	private static $many_many = array(
 		"IncludedCountries" => "EcommerceCountry",
 		"ExcludedCountries" => "EcommerceCountry"
 	);

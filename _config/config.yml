@@ -1,0 +1,3 @@
+ProductPage:
+  extensions:
+    - ProductByCountrySTD
