@@ -16,7 +16,7 @@ class ProductByCountrySTD extends SiteTreeExtension {
 		"IncludedCountries" => "EcommerceCountry",
 		"ExcludedCountries" => "EcommerceCountry"
 	);
-	
+
 
 	function updateCMSFields(FieldList $fields) {
 		$excludedCountries = EcommerceCountry::get()->filter(array("DoNotAllowSales" => 1));
@@ -50,7 +50,7 @@ class ProductByCountrySTD extends SiteTreeExtension {
 	 * @param Member $member
 	 * @return FALSE | NULL
 	 */
-	function canPurchaseByCountry($member = null) {
+	function canPurchaseByCountry(Member $member = null, $checkPrice = true) {
 		if($this->owner->AllCountries) {
 			return null;
 		}
