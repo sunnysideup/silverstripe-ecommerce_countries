@@ -40,7 +40,7 @@ class ProductByCountrySTD extends SiteTreeExtension {
 				new CheckboxSetField('ExcludedCountries', '', $includedCountries)
 			)
 		);
-		$fields->addFieldToTab('Root.Content', $tabs);
+		$fields->addFieldToTab('Root.Countries', $tabs);
 	}
 
 
