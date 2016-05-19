@@ -11,3 +11,7 @@ Product:
 Member:
   extensions:
     - Distributor_MemberDOD
+
+EcommerceCountry:
+  extensions:
+    - EcommerceCountryDOD

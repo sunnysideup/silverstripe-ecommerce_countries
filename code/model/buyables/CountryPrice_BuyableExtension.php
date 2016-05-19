@@ -115,11 +115,15 @@ class CountryPrice_BuyableExtension extends DataExtension {
         $order = ShoppingCart::current_order();
         $currency = $order->CurrencyUsed();
         // We never uses the NZ value in the CountryPrice table
-        $prices = $this->owner->CountryPrices(
-            $countryCode = EcommerceCountryDOD::get_distributor_country()->Code,
-            $currencyCode = strtoupper($currency->Code)
-        );
-        if($prices->count() == 1){
+        $country = EcommerceCountryDOD::get_distributor_country();
+        $prices = null;
+        if($country && $currency) {
+            $prices = $this->owner->CountryPrices(
+                $countryCode = $country->Code,
+                $currencyCode = strtoupper($currency->Code)
+            );
+        }
+        if($prices && $prices->count() == 1){
             return $prices->First()->Price;
         }
         if(EcommercePayment::site_currency() == $currency->Code) {

@@ -243,11 +243,11 @@ class CountryPrice extends DataObject {
     public static function get_currency_per_country() {
         $countries = EcommerceCountry::get();
         $array = array();
-        $defaultCurrencyCode = Ecommerce::default_currency_code();
+        $defaultCurrencyCode = EcommerceCurrency::default_currency_code();
         foreach($countries as $country) {
             $currency = $country->EcommerceCurrency();
             $currencyCode = $defaultCurrencyCode;
-            if($currency && $currencyExists) {
+            if($currency && $currency->exists()) {
                 $currencyCode = $currency->Code;
             }
             $array[$country->Code] = $currencyCode;
