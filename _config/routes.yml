@@ -1,0 +1,3 @@
+Director:
+  routes:
+    "copy-prices//$Action/$ID/": "CountryPrice_CopyPrices_Controller"

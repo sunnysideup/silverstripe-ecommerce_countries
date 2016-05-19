@@ -1,3 +1,9 @@
+
+ProductGroup:
+  extensions:
+    - CountryPrice_CopyPrices
+
 Product:
   extensions:
-    - ProductByCountrySTD
+    - CountryPrice_BuyableExtension
+    - CountryPrice_CopyPrices

@@ -1,0 +1,5 @@
+//here are some examples of what else to use...
+
+#  Injector:
+#    EcommercePaymentSupportedMethodsProvider:
+#      class: MyCustom_EcommercePaymentSupportedMethodsProvider
