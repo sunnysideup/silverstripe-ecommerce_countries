@@ -1,3 +1,6 @@
+---
+Name: ecommerce_countries
+---
 
 ProductGroup:
   extensions:
@@ -7,3 +10,7 @@ Product:
   extensions:
     - CountryPrice_BuyableExtension
     - CountryPrice_CopyPrices
+
+Member:
+  extensions:
+    - Distributor_MemberDOD
