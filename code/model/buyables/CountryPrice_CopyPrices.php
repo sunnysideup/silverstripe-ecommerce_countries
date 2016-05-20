@@ -31,7 +31,7 @@ class CountryPrice_CopyPrices extends DataExtension {
                 $toCountries[$country->Code] = $country->Name . ($country->DoNotAllowSales ? ' (Sales not allowed)' : '');
             }
             $countryCurrencies = CountryPrice::get_currency_per_country();
-            $link = CountryPriceUpdate_ObjectDOD_Controller::get_link($this->owner);
+            $link = CountryPrice_CopyPrices_Controller::get_link($this->owner);
             $fields->addFieldToTab(
                 $tab,
                 $allowCopyingField = new CheckboxField("AllowCopying", "Allow copying")

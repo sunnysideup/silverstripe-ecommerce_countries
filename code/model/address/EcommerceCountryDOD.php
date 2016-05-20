@@ -98,7 +98,7 @@ class EcommerceCountryDOD extends DataExtension {
         if($countryObject && $countryObject->hasDistributor()) {
             //do nothing ...
         } elseif($countryObject) {
-            $countryObject = Distributor::get_one_for_country($countryObject->Code)
+            $countryObject = Distributor::get_one_for_country($countryObject->Code);
         }
         else {
             $countryObject = self::get_backup_country();
@@ -122,7 +122,7 @@ class EcommerceCountryDOD extends DataExtension {
     }
 
     public function hasDistributor(){
-        return $this->DistributorID && $this->Distributor()->exists();
+        return $this->owner->DistributorID && $this->Distributor()->exists();
     }
 
 }

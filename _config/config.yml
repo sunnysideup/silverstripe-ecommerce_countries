@@ -1,6 +1,3 @@
----
-Name: ecommerce_countries
----
 
 ProductGroup:
   extensions:
@@ -14,3 +11,7 @@ Product:
 Member:
   extensions:
     - Distributor_MemberDOD
+
+EcommerceCountry:
+  extensions:
+    - EcommerceCountryDOD
