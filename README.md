@@ -14,10 +14,6 @@ Requirements
 -----------------------------------------------
 see composer.json
 
-Project Home
------------------------------------------------
-See http://code.google.com/p/silverstripe-ecommerce
-
 Demo
 -----------------------------------------------
 See http://www.silverstripe-ecommerce.com
@@ -39,7 +35,7 @@ mysite folder and delete the rest of this module.
 things to change for country:
 
 a. availability:
-    see: 
+    see:
 b. price (amount + currency)
 c. payment gateway
 d. taxes
