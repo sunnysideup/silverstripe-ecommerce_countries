@@ -16,7 +16,7 @@ class CountryPrice_CopyPrices extends DataExtension {
     function updateCMSFields(FieldList $fields) {
         if($this->owner->ID) {
             $page = is_a($this->owner, 'SiteTree'); // We use singleton to skip the different is_a php versions issues
-            $tab = 'Root.Pricing';
+            $tab = 'Root.Countries.Pricing';
             $fromCountries = EcommerceCountry::get();
                 //->where('CountryPrice.ObjectClass = \''.$this->owner->ClassName.'\' AND CountryPrice.ObjectID = '.$this->owner->ID.'')
             if($fromCountries && $fromCountries->count()) {
