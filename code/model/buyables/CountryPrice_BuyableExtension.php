@@ -27,6 +27,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
         if($includedCountries->count())  {
             $includedCountries = $includedCountries->map('ID', 'Name')->toArray();
         }
+
         $tabs = new TabSet('Countries',
             new Tab(
                 'Include',
@@ -42,6 +43,9 @@ class CountryPrice_BuyableExtension extends DataExtension {
         );
 
         if($this->owner->ID) {
+            //start cms_object hack
+            CountryPrice::set_cms_object($this->owner);
+            //end cms_object hack
             $source = $this->owner->CountryPrices();
             $table = new GridField(
                 'CountryPrices',
@@ -49,12 +53,14 @@ class CountryPrice_BuyableExtension extends DataExtension {
                 $source,
                 GridFieldConfig_RecordEditor::create()
             );
-            $tab = 'Root.Pricing';
+            $tab = 'Root.Countries.Pricing';
             $fields->addFieldsToTab(
                 $tab,
-                NumericField::create('Price', 'Main Price', '', 12),
-                HeaderField::create('OtherCountryPricing', "Prices for other countries"),
-                $table
+                array(
+                    NumericField::create('Price', 'Main Price', '', 12),
+                    HeaderField::create('OtherCountryPricing', "Prices for other countries"),
+                    $table
+                )
             );
         }
 

@@ -117,7 +117,11 @@ class CountryPrice extends DataObject {
 
     function getCMSFields() {
         $fields = parent::getCMSFields();
-
+        // This works only because only NZ uses NZD
+        $countries = EcommerceCountry::get_country_dropdown(false);
+        unset($countries[EcommerceConfig::get('EcommerceCountry', 'default_country_code')]);
+        $field = new DropdownField('Country', 'Country', $countries);
+        $fields->replaceField('Country', $field);
 
         if($this->ID) {
             $fields->makeFieldReadonly('Country');
@@ -128,8 +132,19 @@ class CountryPrice extends DataObject {
         }
         $fields->removeByName('ObjectClass');
         $fields->removeByName('ObjectID');
+        if(self::$cms_object) {
+            $fields->addFieldToTab("Root.Main", new HiddenField('MyObjectClass', '', self::$cms_object->ClassName));
+            $fields->addFieldToTab("Root.Main", new HiddenField('MyObjectID', '', self::$cms_object->ID));
+        } else  {
+            //to do BuyableSelectField
+        }
         return $fields;
     }
+
+    private static $cms_object = null;
+
+    //MUST KEEP
+    public static function set_cms_object($o) {self::$cms_object = $o;}
 
     function canEdit($member = null) {
         $canEdit = parent::canEdit();
@@ -150,14 +165,16 @@ class CountryPrice extends DataObject {
      */
     protected function validate() {
         $result = parent::validate();
-        if(! $this->ObjectClass && isset( $_REQUEST["MyObjectClass"])) {
-            $this->ObjectClass = $_REQUEST["MyObjectClass"];
+        if( ! $this->ObjectClass && isset( $_REQUEST["MyObjectClass"])) {
+            if(class_exists($_REQUEST["MyObjectClass"])) {
+                $this->ObjectClass = Convert::raw2sql($_REQUEST["MyObjectClass"]);
+            }
         }
-        if(! $this->ObjectID && isset( $_REQUEST["MyObjectID"])) {
-            $this->ObjectID = $_REQUEST["MyObjectID"];
+        if( ! $this->ObjectID && isset( $_REQUEST["MyObjectID"])) {
+            $this->ObjectID = intval($_REQUEST["MyObjectID"]);
         }
         //check for duplicates in case it has not been created yet...
-        if(! $this->ObjectClass || ! $this->ObjectID) {
+        if( ! $this->ObjectClass || ! $this->ObjectID) {
             $result->error('Object could not be created. Please contact your developer.');
             return $result;
         }

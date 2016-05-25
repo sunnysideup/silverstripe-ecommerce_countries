@@ -1,5 +1,9 @@
 //here are some examples of what else to use...
 
-#  Injector:
-#    EcommercePaymentSupportedMethodsProvider:
-#      class: MyCustom_EcommercePaymentSupportedMethodsProvider
+Injector:
+  EcommercePaymentSupportedMethodsProvider:
+    class: MyCustom_EcommercePaymentSupportedMethodsProvider
+
+Product:
+  extensions:
+    - CountryPrice_CopyPrices
