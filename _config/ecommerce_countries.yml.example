@@ -7,3 +7,12 @@ Injector:
 Product:
   extensions:
     - CountryPrice_CopyPrices
+
+ProductGroup:
+  extensions:
+    - CountryPrice_CopyPrices
+
+EcommerceCountry:
+  allowed_country_codes: []
+  visitor_country_provider: "EcommerceCountry_VisitorCountryProvider"
+  default_country_code: "NZ"
