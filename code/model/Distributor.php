@@ -77,7 +77,6 @@ class Distributor extends DataObject {
         $fieldLabels = $this->FieldLabels();
         $fieldLabelsRight = $this->Config()->get("field_labels_right");
         $listOfCountriesCovered = EcommerceCountry::get()->exclude(array("DistributorID" => 0))->map("Code", "Title");
-        $fields->addFieldToTab("Root.SecondaryDistributor", new DropdownField("AlternativeForCountry", "Country", array("" => "--- NONE ---") + $listOfCountriesCovered->toArray()));
         //secondary for another country
         $fields->removeByName('Versions');
         if($this->IsDefault) {
@@ -131,7 +130,7 @@ class Distributor extends DataObject {
             }
         }
         $fields->addFieldsToTab(
-            "Root.Main",
+            "Root.ContactDetails",
             array(
                 new TextField("DisplayEmail"),
                 new TextField("Phone"),

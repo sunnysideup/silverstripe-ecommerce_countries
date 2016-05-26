@@ -1,7 +1,6 @@
-
-ProductGroup:
-  extensions:
-    - CountryPrice_CopyPrices
+---
+Name: ecommerce_countries
+---
 
 Product:
   extensions:
@@ -14,3 +13,15 @@ Member:
 EcommerceCountry:
   extensions:
     - EcommerceCountryDOD
+
+StoreAdmin:
+  managed_models:
+    - Distributor
+
+---
+Only:
+  moduleexists: 'ecommerce_product_variation'
+---
+ProductVariation:
+  extensions:
+    - CountryPrice_BuyableExtension
