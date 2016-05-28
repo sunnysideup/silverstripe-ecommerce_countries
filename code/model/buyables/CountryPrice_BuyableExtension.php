@@ -206,10 +206,15 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @return null / bool
      */
     function canEdit($member = null) {
-        $member = Member::currentUser();
-        $distributor = $member->Distributor();
-        if($distributor->exists()) {
-            return true;
+        if( ! $member) {
+            $member = Member::currentUser();
         }
+        if($member) {
+            $distributor = $member->Distributor();
+            if($distributor->exists()) {
+                return true;
+            }
+        }
+        return parent::canEdit($member);
     }
 }
