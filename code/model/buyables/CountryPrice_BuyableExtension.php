@@ -205,8 +205,9 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @param member (optiona) $member
      * @return null / bool
      */
-    function canEdit($member = null) {
-        if( ! $member) {
+    function canEdit($member = null)
+    {
+        if( ! $member ) {
             $member = Member::currentUser();
         }
         if($member) {
@@ -215,6 +216,6 @@ class CountryPrice_BuyableExtension extends DataExtension {
                 return true;
             }
         }
-        return parent::canEdit($member);
+        return false;
     }
 }
