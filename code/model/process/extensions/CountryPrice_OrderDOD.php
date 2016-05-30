@@ -63,6 +63,11 @@ class CountryPrice_OrderDOD extends DataExtension {
         }
     }
 
+    /**
+     *
+     *
+     * @param Distributor
+     */
     function Distributor($country = null){
         if(!$country) {
             $country = $this->owner->MyCurrencyCountry();

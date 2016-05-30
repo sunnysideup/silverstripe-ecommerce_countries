@@ -5,7 +5,7 @@
  * The default distributor shows prices of the default currency.
  * Precondition : There is always a default distributor.
  */
-class Distributor extends DataObject {
+class Distributor extends DataObject implements PermissionProvider {
 
     private static $db = array(
         'Name' => 'Varchar(255)',
@@ -249,4 +249,23 @@ class Distributor extends DataObject {
     }
 
 
+    /**
+     * @var string
+     */
+    private static $distributor_permission_code = "distributors";
+
+    /**
+     * {@inheritdoc}
+     */
+    public function providePermissions()
+    {
+        return array(
+            $perms[Config::inst()->get('Distributor', 'distributor_permission_code')] = array(
+                'name' => 'Distributors',
+                'category' => 'E-commerce',
+                'help' => 'Distribuor access to relevant products and sales data.',
+                'sort' => 98,
+            )
+        );
+    }
 }
