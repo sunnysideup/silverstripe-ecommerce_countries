@@ -7,6 +7,11 @@
  */
 class CountryPrice_OrderDOD extends DataExtension {
 
+    public static function localise_order()
+    {
+        return;
+    }
+
     private $resetLocale = false;
 
     private static $db = array(
