@@ -97,7 +97,7 @@ class EcommerceCountryDOD extends DataExtension {
         $countryObject = EcommerceCountry::get_country_object();
         if($countryObject && $countryObject->hasDistributor()) {
             //do nothing ...
-        } elseif($countryObject) {
+        } elseif ($countryObject) {
             $countryObject = Distributor::get_one_for_country($countryObject->Code);
         }
         else {

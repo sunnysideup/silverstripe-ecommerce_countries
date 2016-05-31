@@ -46,6 +46,12 @@ class CountryPriceTestController extends ContentController {
 
     function Link($action = null)
     {
+<<<<<<< HEAD
+=======
+        if($action) {
+            $action .= "/";
+        }
+>>>>>>> 50ef862d373960a7a2dbb66367e04e46e57fc364
         return "/countrypricetestcontrollerurl/".$action;
     }
 
@@ -188,7 +194,10 @@ class CountryPriceTestController extends ContentController {
         echo "<h1>Current Settings</h1>";
         echo "<p>Most of these settings can be adjusted in the country, distributor and generic e-commerce settings.</p>";
         foreach($array as $name => $type) {
+<<<<<<< HEAD
             $style = "created";
+=======
+>>>>>>> 50ef862d373960a7a2dbb66367e04e46e57fc364
             $notSet = false;
             if($type == "String") {
                 $string = $this->$name();
@@ -199,9 +208,13 @@ class CountryPriceTestController extends ContentController {
             else {
                 $obj = $this->$name();
                 if(!$obj) {
+<<<<<<< HEAD
                     $string = "Object Not Found";
                     $notSet = true;
                     $style = "deleted";
+=======
+                    $notSet = true;
+>>>>>>> 50ef862d373960a7a2dbb66367e04e46e57fc364
                 }
                 else {
                     switch($name) {
@@ -221,12 +234,20 @@ class CountryPriceTestController extends ContentController {
                     }
                 }
             }
+<<<<<<< HEAD
             if( ! $string) {
+=======
+            if($notSet || !$string) {
+>>>>>>> 50ef862d373960a7a2dbb66367e04e46e57fc364
                 $string = "NOT SET";
                 $style = "deleted";
             }
             else {
+<<<<<<< HEAD
 
+=======
+                $style = "created";
+>>>>>>> 50ef862d373960a7a2dbb66367e04e46e57fc364
             }
             DB::alteration_message("<i>$name</i>: <u><strong>".$string."</strong></u> ... <br /><sup>".$descriptionArray[$name]."</sup><hr />", $style);
         }
@@ -436,7 +457,11 @@ class CountryPriceTestController extends ContentController {
     public function MyDistributorCountry() {
         $countryCode = EcommerceCountryDOD::get_distributor_country();
         $countryObject = EcommerceCountry::get()
+<<<<<<< HEAD
             ->filter(array("Code" => $countryCode->Code))
+=======
+            ->filter(array("Code" => $countryCode))
+>>>>>>> 50ef862d373960a7a2dbb66367e04e46e57fc364
             ->First();
         return $countryObject;
     }
