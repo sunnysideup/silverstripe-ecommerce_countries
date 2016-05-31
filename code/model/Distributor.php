@@ -25,6 +25,10 @@ class Distributor extends DataObject implements PermissionProvider {
         'ProductNotAvailableNote' => 'HTMLText'
     );
 
+    private static $has_one = array(
+        'PrimaryCountry' => 'EcommerceCountry'
+    );
+
     private static $has_many = array(
         'Countries' => 'EcommerceCountry',
         'Members' => 'Member',
@@ -90,6 +94,8 @@ class Distributor extends DataObject implements PermissionProvider {
                 $id = $this->ID;
             }
             if($this->ID) {
+                $countryArray =  array(" -- please select --") + EcommerceCountry::get()->map("ID", "Name")->toArray();
+                $fields->addFieldToTab("Root.Countries", DropdownField::create("PrimaryCountry", "Primary Country", $countryArray));
                 $config = GridFieldConfig_RelationEditor::create();
                 $config->removeComponentsByType("GridFieldAddNewButton");
                 $gridField = new GridField('pages', 'All pages', SiteTree::get(), $config);
@@ -178,8 +184,30 @@ class Distributor extends DataObject implements PermissionProvider {
      */
     function onBeforeWrite() {
         parent::onBeforeWrite();
-        if(!Distributor::get()->filter(array("IsDefault" => 1))->First()) {
+        if(Distributor::get()->filter(array("IsDefault" => 1))->count() == 0) {
             $this->IsDefault = 1;
+        }
+    }
+
+    private static $_ran_after_write = false;
+    /**
+     * ensure there is one default Distributor.
+     *
+     */
+    function onAfterWrite() {
+        parent::onAfterWrite();
+        if( ! self::$_ran_after_write) {
+            self::$_ran_after_write = true;
+            if( ! $this->PrimaryCountryID) {
+                if($firstCountry = $this->Countries()->First()) {
+                    $this->PrimaryCountryID = $firstCountry->ID;
+                }
+            }
+            if($this->PrimaryCountryID) {
+                if( ! $this->Countries()->byID($this->PrimaryCountryID)) {
+                    $this->Countries()->add($this-PrimaryCountry());
+                }
+            }
         }
     }
 

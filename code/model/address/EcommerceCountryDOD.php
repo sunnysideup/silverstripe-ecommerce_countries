@@ -93,14 +93,35 @@ class EcommerceCountryDOD extends DataExtension {
      * @return EcommerceCountry
      *
      */
-    public static function get_distributor_country(){
+    public static function get_distributor_country()
+    {
         $countryObject = EcommerceCountry::get_country_object();
         if($countryObject && $countryObject->hasDistributor()) {
             //do nothing ...
-        } elseif ($countryObject) {
-            $countryObject = Distributor::get_one_for_country($countryObject->Code);
+        } else {
+            $countryObject = self::get_backup_country();
         }
-        else {
+        return $countryObject;
+    }
+    /**
+     * checks for the country
+     * and then looks at the distributor
+     * for a country without a destributor,
+     * it returns the "other" country ...
+     *
+     * This is key in making orders from Zimbabwe appear as orders from
+     * New Zealand.
+     *
+     * @return EcommerceCountry
+     *
+     */
+    public static function get_distributor_primary_country()
+    {
+        $countryObject = EcommerceCountry::get_country_object();
+        if($countryObject && $countryObject->hasDistributor()) {
+            $countryObject->Distributor()->PrimaryCountry();
+            //do nothing ...
+        } else {
             $countryObject = self::get_backup_country();
         }
         return $countryObject;

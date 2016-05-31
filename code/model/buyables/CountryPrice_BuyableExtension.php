@@ -121,28 +121,33 @@ class CountryPrice_BuyableExtension extends DataExtension {
         $order = ShoppingCart::current_order();
         $currency = $order->CurrencyUsed();
         //check exact country price
-        $countryCode = EcommerceCountry::get_country();
-        $prices = null;
-        if($countryCode && $currency) {
-            $prices = $this->owner->CountryPrices(
-                $countryCode,
-                $currencyCode = strtoupper($currency->Code)
-            );
-        }
-        if($prices && $prices->count() == 1){
-            return $prices->First()->Price;
-        }
-        // We never uses the NZ value in the CountryPrice table
-        $country = EcommerceCountryDOD::get_distributor_country();
-        $prices = null;
-        if($country && $currency) {
-            $prices = $this->owner->CountryPrices(
-                $countryCode = $country->Code,
-                $currencyCode = strtoupper($currency->Code)
-            );
-        }
-        if($prices && $prices->count() == 1){
-            return $prices->First()->Price;
+        if($currency) {
+            $countryCode = EcommerceCountry::get_country();
+            $prices = null;
+            if($countryCode && $currency) {
+                $prices = $this->owner->CountryPrices(
+                    $countryCode,
+                    $currencyCode = strtoupper($currency->Code)
+                );
+            }
+            if($prices && $prices->count() == 1){
+                return $prices->First()->Price;
+            }
+            //use main distributor country ....
+            $distributorCountry = EcommerceCountryDOD::get_distributor_primary_country();
+            $newCountryCode = $distributorCountry->Code;
+            if($countryCode != $newCountryCode) {
+                $prices = null;
+                if($newCountryCode && $currency) {
+                    $prices = $this->owner->CountryPrices(
+                        $countryCode = $newCountryCode,
+                        $currencyCode = strtoupper($currency->Code)
+                    );
+                }
+                if($prices && $prices->count() == 1){
+                    return $prices->First()->Price;
+                }
+            }
         }
         //default price
         if(EcommercePayment::site_currency() == $currency->Code) {
