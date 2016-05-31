@@ -18,6 +18,9 @@ StoreAdmin:
   managed_models:
     - Distributor
 
+EcommerceCurrency:
+  exchange_provider_class: ExchangeRateProvider_Dummy
+
 ---
 Only:
   moduleexists: 'ecommerce_product_variation'

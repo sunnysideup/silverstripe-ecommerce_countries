@@ -131,7 +131,8 @@ class CountryPrice_BuyableExtension extends DataExtension {
                 );
             }
             if($prices && $prices->count() == 1){
-                return $prices->First()->Price;
+                $price = $prices->First()->Price;
+                return 222;
             }
             //use main distributor country ....
             $distributorCountry = EcommerceCountryDOD::get_distributor_primary_country();
