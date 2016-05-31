@@ -83,6 +83,13 @@ class Distributor extends DataObject implements PermissionProvider {
         $listOfCountriesCovered = EcommerceCountry::get()->exclude(array("DistributorID" => 0))->map("Code", "Title");
         //secondary for another country
         $fields->removeByName('Versions');
+        if($listOfCountriesCovered && $listOfCountriesCovered->count()) {
+            $countryArray =  array(" -- please select --") + $listOfCountriesCovered->toArray();
+            $fields->addFieldToTab("Root.Countries", DropdownField::create("PrimaryCountryID", "Primary Country", $countryArray));
+        }
+        else {
+            $fields->removeByName('PrimaryCountryID');
+        }
         if($this->IsDefault) {
             $fields->removeByName('Countries');
         }
@@ -94,8 +101,6 @@ class Distributor extends DataObject implements PermissionProvider {
                 $id = $this->ID;
             }
             if($this->ID) {
-                $countryArray =  array(" -- please select --") + EcommerceCountry::get()->map("ID", "Name")->toArray();
-                $fields->addFieldToTab("Root.Countries", DropdownField::create("PrimaryCountry", "Primary Country", $countryArray));
                 $config = GridFieldConfig_RelationEditor::create();
                 $config->removeComponentsByType("GridFieldAddNewButton");
                 $gridField = new GridField('pages', 'All pages', SiteTree::get(), $config);
