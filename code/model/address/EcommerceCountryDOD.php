@@ -122,7 +122,7 @@ class EcommerceCountryDOD extends DataExtension {
     }
 
     public function hasDistributor(){
-        return $this->owner->DistributorID && $this->Distributor()->exists();
+        return $this->owner->DistributorID && $this->owner->Distributor()->exists();
     }
 
 }

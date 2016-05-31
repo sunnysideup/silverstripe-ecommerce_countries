@@ -7,9 +7,53 @@
  */
 class CountryPrice_OrderDOD extends DataExtension {
 
+    private static $number_of_times_we_have_run_localise_order = 0;
+
     public static function localise_order()
     {
-        return;
+        $order = ShoppingCart::current_order();
+        $currentCountry = EcommerceCountry::get_country();
+        $currencyObject = CountryPrice::get_currency();
+        EcommerceCountry::set_for_current_order_only_show_countries(array($currentCountry));
+        if($order->IsSubmitted()) {
+            return true;
+        }
+        //if a country code and currency has been set then all is good
+        //from there we keep it this way
+        if(
+            $order->OriginatingCountryCode ==  $currentCountry &&
+            $order->CurrencyUsedID == $currencyObject->ID
+        ) {
+            return true;
+        }
+        $order->resetLocale = true;
+        $order->write();
+        $order = Order::get()->byID($order->ID);
+        $orderHasBeenChanged = false;
+
+         //check currency ...
+        if($order->CurrencyUsedID != $currencyObject->ID) {
+            $order->SetCurrency($currencyObject);
+            $orderHasBeenChanged = true;
+        }
+        if($orderHasBeenChanged) {
+            $order->write();
+            $items = $order->OrderItems();
+            if($items) {
+                foreach($items as $item) {
+                    $buyable = $item->Buyable(true);
+                    if(! $buyable->canPurchase()) {
+                        $item->delete();
+                    }
+                }
+            }
+            // Called after because some modifiers use the country field to calculate the values
+            $order->calculateOrderAttributes(true);
+            if(self::$number_of_times_we_have_run_localise_order < 3) {
+                self::$number_of_times_we_have_run_localise_order++;
+                self::localise_order();
+            }
+        }
     }
 
     private $resetLocale = false;
