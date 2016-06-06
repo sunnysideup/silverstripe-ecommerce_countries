@@ -1,6 +1,9 @@
 ---
 Name: ecommerce_countries
+Before: 'mysite/*'
+After: 'framework/*','cms/*', 'ecommerce/*'
 ---
+
 
 Product:
   extensions:
@@ -12,14 +15,25 @@ Member:
 
 EcommerceCountry:
   extensions:
-    - EcommerceCountryDOD
+    - CountryPrice_EcommerceCountry
+
+EcommerceCurrency:
+  exchange_provider_class: ExchangeRateProvider_Dummy
+  extensions:
+    - CountryPrice_EcommerceCurrency
+
+OrderStep:
+  extensions:
+    - CountryPrice_OrderStepDOD
+
+Order:
+  extensions:
+    - CountryPrice_OrderDOD
 
 StoreAdmin:
   managed_models:
     - Distributor
 
-EcommerceCurrency:
-  exchange_provider_class: ExchangeRateProvider_Dummy
 
 ---
 Only:

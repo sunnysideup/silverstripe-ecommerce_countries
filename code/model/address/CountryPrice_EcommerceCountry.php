@@ -5,7 +5,7 @@
  *
  */
 
-class EcommerceCountryDOD extends DataExtension {
+class CountryPrice_EcommerceCountry extends DataExtension {
 
     private static $db = array(
         'IsBackupCountry' => 'Boolean',
@@ -58,6 +58,11 @@ class EcommerceCountryDOD extends DataExtension {
             "Root.Testing",
             new LiteralField("LogInAsThisCountry", "<h3><a href=\"/whoami/setmycountry/".$this->owner->Code."/?countryfortestingonly=".$this->owner->Code."\">place an order as a person from ".$this->owner->Title."</a></h3>")
         );
+
+        $fields->addFieldToTab(
+            "Root.Currency",
+            $fields->dataFieldByName("EcommerceCurrencyID")
+        );
     }
 
     /**
@@ -82,20 +87,15 @@ class EcommerceCountryDOD extends DataExtension {
     }
 
     /**
-     * checks for the country
-     * and then looks at the distributor
-     * for a country without a destributor,
-     * it returns the "other" country ...
-     *
-     * This is key in making orders from Zimbabwe appear as orders from
-     * New Zealand.
+     * checks if the country has a distributor
+     * and returns it.  If not, returns the defaulf country.
      *
      * @return EcommerceCountry
      *
      */
-    public static function get_distributor_country()
+    public static function get_distributor_country($countryCode = null)
     {
-        $countryObject = EcommerceCountry::get_country_object();
+        $countryObject = EcommerceCountry::get_country_object($countryCode);
         if($countryObject && $countryObject->hasDistributor()) {
             //do nothing ...
         } else {
@@ -103,21 +103,18 @@ class EcommerceCountryDOD extends DataExtension {
         }
         return $countryObject;
     }
+
     /**
-     * checks for the country
-     * and then looks at the distributor
-     * for a country without a destributor,
-     * it returns the "other" country ...
-     *
-     * This is key in making orders from Zimbabwe appear as orders from
-     * New Zealand.
+    * checks if the country has a distributor
+    * and returns the primary country for the distributor.
+    * If not, returns the defaulf country.
      *
      * @return EcommerceCountry
      *
      */
-    public static function get_distributor_primary_country()
+    public static function get_distributor_primary_country($countryCode = null)
     {
-        $countryObject = EcommerceCountry::get_country_object();
+        $countryObject = EcommerceCountry::get_country_object(false, $countryCode);
         if($countryObject && $countryObject->hasDistributor()) {
             $countryObject->Distributor()->PrimaryCountry();
             //do nothing ...
@@ -142,6 +139,11 @@ class EcommerceCountryDOD extends DataExtension {
         return $obj;
     }
 
+    /**
+     *
+     *
+     * @return boolean
+     */
     public function hasDistributor(){
         return $this->owner->DistributorID && $this->owner->Distributor()->exists();
     }

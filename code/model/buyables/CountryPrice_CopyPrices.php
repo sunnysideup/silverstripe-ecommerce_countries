@@ -30,7 +30,7 @@ class CountryPrice_CopyPrices extends DataExtension {
             foreach($allCountries as $country) {
                 $toCountries[$country->Code] = $country->Name . ($country->DoNotAllowSales ? ' (Sales not allowed)' : '');
             }
-            $countryCurrencies = CountryPrice::get_currency_per_country();
+            $countryCurrencies = CountryPrice_EcommerceCurrency::get_currency_per_country();
             $link = CountryPrice_CopyPrices_Controller::get_link($this->owner);
             $fields->addFieldToTab(
                 $tab,

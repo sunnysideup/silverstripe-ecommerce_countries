@@ -27,20 +27,29 @@ class CountryPrice_BuyableExtension extends DataExtension {
         if($includedCountries->count())  {
             $includedCountries = $includedCountries->map('ID', 'Name')->toArray();
         }
+        if($this->owner->AllCountries) {
+            $tabs = new TabSet('Countries',
+                new Tab(
+                    'Include',
+                    new CheckboxField("AllCountries", "All Countries")
+                )
+            );
+        } else {
+            $tabs = new TabSet('Countries',
+                new Tab(
+                    'Include',
+                    new CheckboxField("AllCountries", "All Countries"),
+                    new LiteralField("ExplanationInclude", "<p>Products are not available in the countries listed below.  You can include sales of <i>".$this->owner->Title."</i> to new countries by ticking the box(es) next to any country.</p>"),
+                    new CheckboxSetField('IncludedCountries', '', $excludedCountries)
+                ),
+                new Tab(
+                    'Exclude',
+                    new LiteralField("ExplanationExclude", "<p>Products are available in all countries listed below.  You can exclude sales of <i>".$this->owner->Title."</i> from these countries by ticking the box next to any of them.</p>"),
+                    new CheckboxSetField('ExcludedCountries', '', $includedCountries)
+                )
+            );
+        }
 
-        $tabs = new TabSet('Countries',
-            new Tab(
-                'Include',
-                new CheckboxField("AllCountries", "All Countries"),
-                new LiteralField("ExplanationInclude", "<p>Products are not available in the countries listed below.  You can include sales of <i>".$this->owner->Title."</i> to new countries by ticking the box(es) next to any country.</p>"),
-                new CheckboxSetField('IncludedCountries', '', $excludedCountries)
-            ),
-            new Tab(
-                'Exclude',
-                new LiteralField("ExplanationExclude", "<p>Products are available in all countries listed below.  You can exclude sales of <i>".$this->owner->Title."</i> from these countries by ticking the box next to any of them.</p>"),
-                new CheckboxSetField('ExcludedCountries', '', $includedCountries)
-            )
-        );
 
         if($this->owner->ID) {
             //start cms_object hack
@@ -71,25 +80,30 @@ class CountryPrice_BuyableExtension extends DataExtension {
     /**
      * This is called from /ecommerce/code/Product
      * returning NULL is like returning TRUE, i.e. ignore this.
-     * @param Member $member
+     * @param Member (optional)   $member
+     * @param bool (optional)     $checkPrice
      * @return false | null
      */
     function canPurchaseByCountry(Member $member = null, $checkPrice = true) {
         if($this->owner->AllCountries) {
-            return null;
+            //is there a valid price ???
+            return $this->updateCalculatedPrice() !== 0 ? null : false;
         }
         $countryCode = EcommerceCountry::get_country();
         if($countryCode) {
             $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
             if($included) {
-                return null;
+                //is there a valid price ???
+                return $this->updateCalculatedPrice() !== 0 ? null : false;
+
             }
             $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
             if($excluded) {
                 return false;
             }
         }
-        return null;
+        //is there a valid price ???
+        return $this->updateCalculatedPrice() !== 0 ? null : false;
     }
 
     /**
@@ -111,6 +125,8 @@ class CountryPrice_BuyableExtension extends DataExtension {
             ->filter($filterArray);
     }
 
+    private static $_buyable_price = array();
+
     /***
      *
      * updates the calculated price to the local price...
@@ -118,43 +134,66 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @return Float | null (ignore this value and use original value)
      */
     function updateCalculatedPrice() {
-        $order = ShoppingCart::current_order();
-        $currency = $order->CurrencyUsed();
-        //check exact country price
-        if($currency) {
-            $countryCode = EcommerceCountry::get_country();
-            $prices = null;
-            if($countryCode && $currency) {
-                $prices = $this->owner->CountryPrices(
-                    $countryCode,
-                    $currencyCode = strtoupper($currency->Code)
-                );
-            }
-            if($prices && $prices->count() == 1){
-                $price = $prices->First()->Price;
-                return 222;
-            }
-            //use main distributor country ....
-            $distributorCountry = EcommerceCountryDOD::get_distributor_primary_country();
-            $newCountryCode = $distributorCountry->Code;
-            if($countryCode != $newCountryCode) {
-                $prices = null;
-                if($newCountryCode && $currency) {
-                    $prices = $this->owner->CountryPrices(
-                        $countryCode = $newCountryCode,
-                        $currencyCode = strtoupper($currency->Code)
-                    );
+        $key = $this->owner->ClassName."___".$this->owner->ID;
+        if( ! isset(self::$_buyable_price[$key])) {
+            //basics
+            $currency = null;
+            $currencyCode = null;
+            //order stuff
+            $order = ShoppingCart::current_order();
+            $countryCode = $order->getCountry();
+            if($countryCode) {
+                $currency = $order->CurrencyUsed();
+                if($currency) {
+                    $currencyCode = strtoupper($currency->Code);
+
+                    //1. exact price for country
+                    if($currencyCode) {
+                        $prices = $this->owner->CountryPrices(
+                            $countryCode,
+                            $currencyCode
+                        );
+                        if($prices && $prices->count() == 1){
+                            self::$_buyable_price[$key] = $prices->First()->Price;
+                            return self::$_buyable_price[$key];
+                        }
+                    }
                 }
-                if($prices && $prices->count() == 1){
-                    return $prices->First()->Price;
+                //there is a specific country price ...
+                //check for distributor primary country price
+                // if it is the same currency, then use that one ...
+                $distributorCountry = CountryPrice_EcommerceCountry::get_distributor_primary_country($countryCode);
+                if($distributorCurrency = $distributorCountry->EcommerceCurrency()) {
+                    if($distributorCurrency->ID == $currency->ID) {
+                        $distributorCurrencyCode = strtoupper($distributorCurrency->Code);
+                        $distributorCountryCode = $distributorCountry->Code;
+                        if($distributorCurrencyCode && $distributorCountryCode) {
+                            $prices = $this->owner->CountryPrices(
+                                $distributorCountryCode,
+                                $distributorCurrencyCode
+                            );
+                            if($prices && $prices->count() == 1){
+                                self::$_buyable_price[$key] = $prices->First()->Price;
+                                return self::$_buyable_price[$key];
+                            }
+                        }
+                    }
                 }
             }
+            //order must have a country and a currency
+            if( ! $currencyCode ||  ! $countryCode) {
+                self::$_buyable_price[$key] = 0;
+                return self::$_buyable_price[$key];
+            }
+            //catch error 2: no country price BUT currency is not default currency ...
+            if($currency && EcommercePayment::site_currency() != $currency->Code) {
+                self::$_buyable_price[$key] = 0;
+                return self::$_buyable_price[$key];
+            }
+            self::$_buyable_price[$key] = null;
+            return self::$_buyable_price[$key];
         }
-        //default price
-        if(EcommercePayment::site_currency() == $currency->Code) {
-            return $this->owner->Price;
-        }
-        return null;
+        return self::$_buyable_price[$key];
     }
 
     /**

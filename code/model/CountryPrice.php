@@ -178,7 +178,7 @@ class CountryPrice extends DataObject {
             $result->error('Object could not be created. Please contact your developer.');
             return $result;
         }
-        $currencyPerCountry = self::get_currency_per_country();
+        $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
         if(!isset($currencyPerCountry[$this->Country])) {
             $result->error("Can not find currency for this country '".$this->Country."'");
         }
@@ -197,7 +197,7 @@ class CountryPrice extends DataObject {
      * @return Boolean
      */
     function isObsolete() {
-        $currencyPerCountry = self::get_currency_per_country();
+        $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
         if(isset($currencyPerCountry[$this->Country])) {
             return $currencyPerCountry[$this->Country] != $this->Currency;
         }
@@ -222,78 +222,5 @@ class CountryPrice extends DataObject {
      */
     public static function get_location_country() {return self::$location_country;}
 
-    /**
-     * Returns the most "appropriate" country to use the currency of.
-     * Condition : The country is always a key present in the $currency_per_country array.
-     * @return String
-     */
-    public static function get_country_for_currency() {
-        $country = EcommerceCountryDOD::get_distributor_country();
-        $currency = $country->EcommerceCurrency();
-        if($currency && $currency->Code) {
-            return $country;
-        }
-        return $country;
-    }
-
-    /**
-     * @return EcommerceCurrency
-     */
-    public static function get_currency() {
-        $currencyPerCountry = self::get_currency_per_country();
-        $country = self::get_country_for_currency();
-        if($country) {
-            $currencyCode = isset($currencyPerCountry[$country->Code]) ? $currencyPerCountry[$country->Code] : EcommerceCountry::default_currency();
-            $currencyDO = EcommerceCurrency::get_one_from_code($currencyCode);
-        }
-        if(! $currencyDO) {
-            $currencyDO = EcommerceCurrency::create_new($currencyCode);
-        }
-        if(!$currencyDO) {
-            $currencyDO = EcommerceCurrency::get_default();
-        }
-        return $currencyDO;
-    }
-
-    /**
-     *
-     * @return array - list of countries and their currencies ...
-     */
-    public static function get_currency_per_country() {
-        $countries = EcommerceCountry::get();
-        $array = array();
-        $defaultCurrencyCode = EcommerceCurrency::default_currency_code();
-        foreach($countries as $country) {
-            $currency = $country->EcommerceCurrency();
-            $currencyCode = $defaultCurrencyCode;
-            if($currency && $currency->exists()) {
-                $currencyCode = $currency->Code;
-            }
-            $array[$country->Code] = $currencyCode;
-        }
-        return $array;
-    }
-
-    /**
-     * list of currencies used on the site
-     * @return Array
-     */
-    public static function get_currency_per_country_used_ones() {
-        $resultArray = array();
-        $countryCodes = EcommerceCountry::get()
-            ->filter(array("DoNotAllowSales" => 0))
-            ->exclude(array("DistributorID" => 0));
-        $countryCurrencies = self::get_currency_per_country();
-        if($countryCodes->count()) {
-            $countryCodes = $countryCodes->map("Code", "Code")->toArray();
-            foreach($countryCodes as $countryCode => $countryName) {
-                if(isset($countryCurrencies[$countryCode])) {
-                    $resultArray[$countryCode] = self::$countryCurrencies[$countryCode];
-                }
-            }
-        }
-
-        return $resultArray;
-    }
 
 }

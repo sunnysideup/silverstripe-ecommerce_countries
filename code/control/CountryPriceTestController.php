@@ -36,6 +36,13 @@ class CountryPriceTestController extends ContentController {
             }
         }
         DB::alteration_message("<a href=\"/dev/ecommerce/\">All E-commerce Tools</a>");
+        echo "<hr />";
+        $countries = EcommerceCountry::get_country_dropdown();
+        $countryLinks = array();
+        foreach($countries as $code => $name) {
+            $countryLinks[] = "<a href=\"".$this->Link("setmycountry/$code/?countryfortestingonly=$code")."\">$name</a>";
+        }
+        DB::alteration_message("Test for country: ".implode(", ", $countryLinks));
     }
 
     public function testcm(){
@@ -102,8 +109,8 @@ class CountryPriceTestController extends ContentController {
     }
 
     function currencypercountry($request){
-        $currencies = CountryPrice::get_currency_per_country();
-        $usedCurrencies = CountryPrice::get_currency_per_country_used_ones();
+        $currencies = CountryPrice_EcommerceCurrency::get_currency_per_country();
+        $usedCurrencies = CountryPrice_EcommerceCurrency::get_currency_per_country_used_ones();
         $useArray = array();
         $nonUseArray = array();
         foreach($currencies as $country => $currency) {
@@ -232,18 +239,6 @@ class CountryPriceTestController extends ContentController {
         $links = array(
             "resetmycountry/" => "Go back to the standard country",
         );
-        $countries = array(
-            "NZ" => "New Zealand",
-            "AU" => "Australia",
-            "FR" => "France",
-            "BW" => "Botswana",
-            "US" => "US",
-            "IT" => "Italy",
-            "CN" => "China"
-        );
-        foreach($countries as $code => $name) {
-            $links["setmycountry/$code/?countryfortestingonly=$code"] = "Change to $name as country";
-        }
         $links["/dev/tasks/TEST_GEOIP_COUNTRY_CODE_BY_NAME"] = "test GEOIP function";
         foreach($links as $link => $desc) {
             DB::alteration_message("<a href=\"".$this->Link($link)."\">".$desc."</a>");
@@ -273,7 +268,7 @@ class CountryPriceTestController extends ContentController {
      * @return String
      */
     function MyBackupCountryCode(){
-        return EcommerceCountryDOD::get_backup_country()->Code;
+        return CountryPrice_EcommerceCountry::get_backup_country()->Code;
     }
 
     /**
@@ -302,7 +297,7 @@ class CountryPriceTestController extends ContentController {
                 $note = $distributor->DeliveryCostNote;
             }
             if(!$note) {
-                $note = EcommerceCountryDOD::get_backup_country()->DeliveryCostNote;
+                $note = CountryPrice_EcommerceCountry::get_backup_country()->DeliveryCostNote;
             }
         }
         return DBField::create_field("Varchar", $note);
@@ -320,7 +315,7 @@ class CountryPriceTestController extends ContentController {
                 $info = $distributor->ShippingEstimation;
             }
             if(!$info) {
-                $info = EcommerceCountryDOD::get_backup_country()->ShippingEstimation;
+                $info = CountryPrice_EcommerceCountry::get_backup_country()->ShippingEstimation;
             }
         }
         return DBField::create_field("Varchar", $info);
@@ -349,7 +344,7 @@ class CountryPriceTestController extends ContentController {
                 $info = $distributor->ReturnInformation;
             }
             if(!$info) {
-                $info = EcommerceCountryDOD::get_backup_country()->ReturnInformation;
+                $info = CountryPrice_EcommerceCountry::get_backup_country()->ReturnInformation;
             }
         }
         return DBField::create_field("Varchar", $info);
@@ -368,7 +363,7 @@ class CountryPriceTestController extends ContentController {
                 $note = $distributor->ProductNotAvailableNote;
             }
             if(!$note) {
-                $note = EcommerceCountryDOD::get_backup_country()->ProductNotAvailableNote;
+                $note = CountryPrice_EcommerceCountry::get_backup_country()->ProductNotAvailableNote;
             }
             if(!$note) {
                 $note = $this->EcomConfig()->NotForSaleMessage;
@@ -390,7 +385,7 @@ class CountryPriceTestController extends ContentController {
                 $countryCode = EcommerceCountry::get_country();
                 break;
             case 1:
-                $countryCode = EcommerceCountryDOD::get_distributor_country();
+                $countryCode = CountryPrice_EcommerceCountry::get_distributor_country();
                 break;
             case 2:
                  $countryCode = EcommerceConfig::get('EcommerceCountry', 'default_country_code');
@@ -432,7 +427,7 @@ class CountryPriceTestController extends ContentController {
      * @return EcommerceCountry
      */
     public function MyDistributorCountry() {
-        $countryCode = EcommerceCountryDOD::get_distributor_country();
+        $countryCode = CountryPrice_EcommerceCountry::get_distributor_country();
         $countryObject = EcommerceCountry::get()
             ->filter(array("Code" => $countryCode->Code))
             ->First();

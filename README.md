@@ -1,6 +1,4 @@
-###############################################
-Ecommerce Countries
-###############################################
+# Ecommerce Countries
 
 This is a module that can be used when you have complex dealings with several countries (e.g. only sell some products to some countries) for your e-commerce shop.
 
@@ -58,26 +56,48 @@ GATEWAY: distributor gateway, WW gateway
 TAXES: country tax tax, WW tax
 DELIVERY: country delivery, WW delivery
 
-
 BY COUNTRY:
-========================================
-- price
+----
+- price (and availability - no price = no availability)
 - currency
 - tax
 - delivery
 - distributor
 
 BY DISTRIBUTOR
-========================================
+----
 - gateway
-- availability
 
-WW BACKUP based on:
-========================================
-AVAILABILITY: based backup country
-PRICE: based backup country
-CURRENCY: based backup country
-GATEWAY: based backup distributor
-TAX: specific tax setting for not-listed country
-DELIVERY: specific delivery setting for not-listed country
-DISTRIBUTOR: back-up distributor
+backup values ()
+----
+In case country specific ones are not available, you can use:
+ * AVAILABILITY: based on backup country
+ * PRICE: based on backup country
+ * CURRENCY: based on backup country
+ * GATEWAY: based on backup distributor
+ * TAX: specific tax setting for not-listed country
+ * DELIVERY: specific delivery setting for not-listed country
+ * DISTRIBUTOR: back-up back-up country
+
+making countries part of the back-up country...
+---
+ 1. set currency for country to `null` or the `default currency`
+ 2. set distributor for country to `null` or the `default distributor`
+ 3. to increase the price, add delivery cost.
+
+useful yml settings for injecting custom solutions
+---
+
+setting exchange rates (by default this modul sets all exchange rates to 1 as we use actual prices per currency):
+
+```yml
+EcommerceCurrency:
+  exchange_provider_class: ExchangeRateProvider_Dummy
+```
+
+custom gateways:
+```yml
+Injector:
+  EcommercePaymentSupportedMethodsProvider:
+    class: MyCustom_EcommercePaymentSupportedMethodsProvider
+```

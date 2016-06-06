@@ -7,21 +7,32 @@
  */
 class CountryPrice_OrderDOD extends DataExtension {
 
+    private static $db = array(
+        'IP' => 'Varchar(16)',
+        'CurrencyCountry' => 'Varchar(3)',
+        'OriginatingCountryCode' => 'Varchar(2)'
+    );
+
     private static $number_of_times_we_have_run_localise_order = 0;
 
+    /**
+     * this method basically makes sure that the Order
+     * has all the localised stuff attached to it, specifically
+     * the right currency
+     */
     public static function localise_order()
     {
         $order = ShoppingCart::current_order();
-        $currentCountry = EcommerceCountry::get_country();
-        $currencyObject = CountryPrice::get_currency();
-        EcommerceCountry::set_for_current_order_only_show_countries(array($currentCountry));
+        $countryCode = $order->getCountry();
+        $currencyObject = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
+        EcommerceCountry::set_for_current_order_only_show_countries(array($countryCode));
         if($order->IsSubmitted()) {
             return true;
         }
         //if a country code and currency has been set then all is good
         //from there we keep it this way
         if(
-            $order->OriginatingCountryCode ==  $currentCountry &&
+            $order->OriginatingCountryCode ==  $countryCode &&
             $order->CurrencyUsedID == $currencyObject->ID
         ) {
             return true;
@@ -42,7 +53,7 @@ class CountryPrice_OrderDOD extends DataExtension {
             if($items) {
                 foreach($items as $item) {
                     $buyable = $item->Buyable(true);
-                    if(! $buyable->canPurchase()) {
+                    if( ! $buyable->canPurchase()) {
                         $item->delete();
                     }
                 }
@@ -56,13 +67,6 @@ class CountryPrice_OrderDOD extends DataExtension {
         }
     }
 
-    private $resetLocale = false;
-
-    private static $db = array(
-        'IP' => 'Varchar(16)',
-        'CurrencyCountry' => 'Varchar(3)',
-        'OriginatingCountryCode' => 'Varchar(2)'
-    );
 
     function onInit() {
         $this->setCountryDetailsForOrder();
@@ -73,67 +77,27 @@ class CountryPrice_OrderDOD extends DataExtension {
     }
 
     function updateCMSFields(FieldList $fields) {
-        $field = $fields->dataFieldByName("CurrencyCountry");
-        $field->setTitle("Country used");
-        $country = $this->owner->MyCurrencyCountry();
-        if($country) {
-            $field->setValue($country->Name);
-        }
-        $field->setTitle("Country used");
-        $field = $field->performReadonlyTransformation();
-        $fields->addFieldToTab("Root.Country", $field);
-        if($distributor = $this->owner->Distributor()) {
-            $fields->addFieldToTab("Root.Country", new ReadonlyField("DistributorName", "Distributor Name", $distributor->Name));
+        foreach(array("IP", "OriginatingCountryCode", "CurrencyCountry") as $fieldName) {
+            $field = $fields->dataFieldByName($fieldName);
+            $field = $field->performReadonlyTransformation();
+            $fields->addFieldToTab("Root.Country", $field);
+            if($distributor = $this->owner->Distributor()) {
+                $fields->addFieldToTab("Root.Country", new ReadonlyField("DistributorName", "Distributor Name", $distributor->Name));
+            }
         }
     }
 
-    function updateReplacementArrayForEmail(ArrayData $arrayData) {
-        $step = $this->owner->MyStep();
-        $country = $this->owner->MyCurrencyCountry();
-        $countryMessage = null;
-        if($step && $country) {
-            $countryMessage = EcommerceOrderStepCountryData::get()
-                ->filter(
-                    array(
-                        "OrderStepID" => $step->ID,
-                        "EcommerceCountryID" => $country->ID
-                    )
-                )
-                ->first();
-        }
-        if($countryMessage) {
-            $arrayData->setField("Subject", $countryMessage->CountrySpecificEmailSubject);
-            $arrayData->setField("OrderStepMessage", $countryMessage->CountrySpecificEmailMessage);
-        }
-        if($distributor = $this->Distributor($country)) {
-            #### START EXCEPTION FOR
-            $distributorEmail = $distributor->Email;
-            $arrayData->setField("CC", $distributorEmail);
-        }
-    }
 
     /**
      *
-     *
-     * @param Distributor
+     * @param string (optional) $countryCode
+     * @return Distributor | null
      */
-    function Distributor($country = null){
-        if(!$country) {
-            $country = $this->owner->MyCurrencyCountry();
+    function Distributor($countryCode = null){
+        if(!$countryCode) {
+            $countryCode = $this->owner->getCountry();
         }
-        if($country) {
-            return $country->Distributor();
-        }
-    }
-
-    /**
-     *
-     * @return EcommerceCountry
-     */
-    function MyCurrencyCountry(){
-        return EcommerceCountry::get()
-            ->filter(array("Code" => $this->owner->CurrencyCountry))
-            ->First();
+        return distributor::get_one_for_country($countryCode);
     }
 
     /**
@@ -149,19 +113,51 @@ class CountryPrice_OrderDOD extends DataExtension {
         $this->owner->IP = EcommerceCountry::get_ip();
 
         //set country
-        $country = EcommerceCountry::get_country();
-        $this->owner->CurrencyCountry = $country;
-        $this->owner->OriginatingCountryCode = $country;
-        EcommerceCountry::set_for_current_order_only_show_countries(array($country));
-        $this->owner->SetCountryFields($country, $billingAddress = true, $shippingAddress = true);
+        $countryCode = EcommerceCountry::get_country();
+        $this->owner->CurrencyCountry = $countryCode;
+        $this->owner->OriginatingCountryCode = $countryCode;
+        EcommerceCountry::set_for_current_order_only_show_countries(array($countryCode));
+        $this->owner->SetCountryFields($countryCode, $billingAddress = true, $shippingAddress = true);
 
         // set currency
-        $currencyObject = CountryPrice::get_currency();
-        $currency = CountryPrice::get_currency();
-        $this->owner->SetCurrency($currencyObject);
-        $this->owner->ExchangeRate = 1;
+        $currencyObject = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
+        if($currencyObject) {
+            $this->owner->CurrencyUsedID = $currencyObject->ID;
+        }
+        //the line below causes a loop!!!
+        //$this->owner->SetCurrency($currencyObject);
     }
 
 
+    /**
+     *
+     * adds email to order step emails ...
+     */
+    function updateReplacementArrayForEmail(ArrayData $arrayData) {
+        $step = $this->owner->MyStep();
+        $countryCode = $this->owner->getCountry();
+        $countryMessage = null;
+        if($step && $countryCode) {
+            $countryMessageObject = EcommerceOrderStepCountryData::get()
+                ->filter(
+                    array(
+                        "OrderStepID" => $step->ID,
+                        "EcommerceCountryID" => EcommerceCountry::get_country_id($countryCode)
+                    )
+                )
+                ->first();
+        }
+        if($countryMessageObject) {
+            $arrayData->setField("Subject", $countryMessageObject->CountrySpecificEmailSubject);
+            $arrayData->setField("OrderStepMessage", $countryMessageObject->CountrySpecificEmailMessage);
+        }
+        if($distributor = $this->owner->Distributor($countryCode)) {
+            #### START EXCEPTION FOR
+            $distributorEmail = $distributor->Email;
+            if($distributorEmail) {
+                $arrayData->setField("CC", $distributorEmail);
+            }
+        }
+    }
 
 }
