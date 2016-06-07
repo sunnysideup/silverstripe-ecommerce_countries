@@ -5,7 +5,6 @@ class CountryPriceTestController extends ContentController {
 
     private static $allowed_actions = array(
         "whoami" => true,
-        "testpaymentgateway" => true,
         "addproducts" => true,
         "setmycountry" => true,
         "resetmycountry" => true,
@@ -146,11 +145,6 @@ class CountryPriceTestController extends ContentController {
         return $this->index();
     }
 
-    function testpaymentgateway(){
-        MyCustom_EcommercePaymentSupportedMethodsProvider::assign_payment_gateway();
-        DB::alteration_message("Gateway is set to: ".Session::get("MyPaymentGateway"));
-        return $this->index();
-    }
 
     function whoami(){
         $descriptionArray = array(
