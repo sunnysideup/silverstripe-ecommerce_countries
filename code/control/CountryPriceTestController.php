@@ -7,7 +7,6 @@ class CountryPriceTestController extends ContentController {
         "whoami" => true,
         "testpaymentgateway" => true,
         "addproducts" => true,
-        "testcm" => true,
         "setmycountry" => true,
         "resetmycountry" => true,
         "currencypercountry" => true,
@@ -45,11 +44,6 @@ class CountryPriceTestController extends ContentController {
         DB::alteration_message("Test for country: ".implode(", ", $countryLinks));
     }
 
-    public function testcm(){
-        $obj = new CampaignMonitorAPIConnector();
-        $obj->init();
-        $obj->getCampaigns();
-    }
 
     function Link($action = null)
     {
@@ -153,7 +147,7 @@ class CountryPriceTestController extends ContentController {
     }
 
     function testpaymentgateway(){
-        CountryPrice_OrderDOD::set_payment_gateway();
+        MyCustom_EcommercePaymentSupportedMethodsProvider::assign_payment_gateway();
         DB::alteration_message("Gateway is set to: ".Session::get("MyPaymentGateway"));
         return $this->index();
     }

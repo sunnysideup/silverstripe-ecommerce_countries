@@ -2,3 +2,4 @@ Director:
   rules:
     "copy-prices//$Action/$ID/": "CountryPrice_CopyPrices_Controller"
     "countrypricetestcontrollerurl//$Action/$ID/$OtherID": "CountryPriceTestController"
+    "distributor//$Action/$ID/$OtherID": "CheckAllCountriesAndAllPrices"
