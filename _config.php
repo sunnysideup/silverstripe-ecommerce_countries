@@ -1,3 +1,5 @@
 <?php
-//===================---------------- START ecommerce_countries MODULE ----------------===================
-//===================---------------- END ecommerce_countries MODULE ----------------===================
+
+
+
+CMSMenu::add_menu_item('distributors', 'Distributors', 'distributors-admin', $controllerClass = null, $priority = 1, array('target' => '_blank'));

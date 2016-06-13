@@ -18,10 +18,12 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
                 'EcommerceCountries',
                 'Countries',
                 EcommerceCountry::get()
-                    ->filter(array("EcommerceCurrencyID" => array(0, $this->ID)))
+                    ->filter(array("EcommerceCurrencyID" => array(0, $this->owner->ID)))
+                    ->sort(array("EcommerceCurrencyID" => "DESC", "Name" => "ASC"))
                     ->map()
             )
         );
+        $fields->removeFieldFromTab("Root", "EcommerceCountries");
     }
 
 

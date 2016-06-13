@@ -152,6 +152,15 @@ class Distributor extends DataObject implements PermissionProvider {
                 new TextField("Address5")
             )
         );
+        $fields->addFieldsToTab(
+            "Root.EcomInfo",
+            array(
+                new TextField("DeliveryCostNote"),
+                new TextField("ShippingEstimation"),
+                new TextField("ReturnInformation"),
+                new HTMLEditorField("ProductNotAvailableNote")
+            )
+        );
         foreach($fieldLabelsRight as $key => $value) {
             $field = $fields->dataFieldByName($key);
             if($field) {
@@ -258,10 +267,10 @@ class Distributor extends DataObject implements PermissionProvider {
                         $distributorMember = new Member();
                         $distributorMember->Email = $distributor->Email;
                         //$distributorMember->SetPassword = substr(session_id, 0, 8);
-                        $distributorMember->FirstName = "Distributor";
-                        $distributorMember->Surname = $distributor->Name;
-                        $distributorMember->write();
                     }
+                    $distributorMember->FirstName = "Distributor";
+                    $distributorMember->Surname = $distributor->Name;
+                    $distributorMember->write();
                     $distributorMember->addToGroupByCode($distributorGroup->Code);
                     $distributorMember->write();
                     DB::alteration_message('distributor member '.$distributorMember->Surname.' is ready for use',"created");

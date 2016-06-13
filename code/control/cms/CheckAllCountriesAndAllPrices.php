@@ -10,8 +10,8 @@
 class CheckAllCountriesAndAllPrices extends Controller {
 
     private static $allowed_actions = array(
-        "setcountryprice",
-        "setobjectfield"
+        "setcountryprice" => "ADMIN",
+        "setobjectfield" => "ADMIN"
     );
 
     /**
@@ -163,7 +163,7 @@ class CheckAllCountriesAndAllPrices extends Controller {
         $result = 1; // Updated
 
         $objectClass = $_REQUEST['T'];
-        if(! class_exists($objectClass)) {
+        if( ! class_exists($objectClass)) {
             return 'ObjectClass value incorrect';
         }
 
@@ -171,17 +171,17 @@ class CheckAllCountriesAndAllPrices extends Controller {
         if($objectClass == 'CountryPrice' && is_array($objectID)) {
             $object = new $objectClass($objectID);
             $objectID = $object->write();
-            $result = 2; // Added
+            $result = $objectID; // Added
         }
-        else if(is_int($objectID)) {
+        else if(intval($objectID)) {
             $objectID = intval($objectID);
             $object = $objectClass::get()->byID($objectID);
             if(! $object) {
-                return 'ObjectID value incorrect';
+                return 'ObjectID (ID: $objectID, Class Name: $objectClass) value incorrect';
             }
         }
         else {
-            return 'ObjectID value incorrect';
+            return 'ObjectID value missing...';
         }
 
         //check if object can be edited!
@@ -370,17 +370,18 @@ class CheckAllCountriesAndAllPrices extends Controller {
                 $html .= $this->createEditNode("Country Specific Messages", $countrySpecificMessages);
                 $html .= $this->createEditNode("Delivery Options", $deliveryOptions);
                 $html .= $this->createEditNode("Taxes", $taxes);
-                $html .= $this->createEditNode("Payment Options", $country->Code == 'AU' ? 'Eway' : 'DPS (Credit Card), Direct Credit');
+                $paymentOptions = EcommercePayment::get_supported_methods();
+                $html .= $this->createEditNode("Payment Options", implode(',', array_keys($paymentOptions)));
 
                 $html .= $this->closeTreeNode();
             }
         }
-        $countries =  DataObject::get("EcommerceCountry", " DistributorID = 0 AND DoNotAllowSales = 0");
+        $countries =  EcommerceCountry::get()->filter(array("DistributorID" => 0, "DoNotAllowSales" => 0));
         if($countries && $countries->count()){
             $list = implode(", ", $countries->map("ID", "Code")->toArray());
             $html .= $this->createEditNode("Countries without distributor that allow sales", $list);
         }
-        $countries =  DataObject::get("EcommerceCountry", " DistributorID = 0 AND DoNotAllowSales = 1");
+        $countries =  EcommerceCountry::get()->filter(array("DistributorID" => 0, "DoNotAllowSales" => 1));
         if($countries && $countries->count()){
             $list = implode(", ", $countries->map("ID", "Code")->toArray());
             $html .= $this->createEditNode("Countries without distributor that do not allow sales", $list);
@@ -397,7 +398,7 @@ class CheckAllCountriesAndAllPrices extends Controller {
         $html = "";
         $where = "";
         $countryArray = array();
-        $products = ProductPage::get()
+        $products = Product::get()
             ->filter(array("AllowPurchase" => 1))
             ->sort("FullSiteTreeSort", "ASC");
         $defaultPriceText = ' (Default for new variations)';
@@ -453,8 +454,9 @@ class CheckAllCountriesAndAllPrices extends Controller {
                         $countryID = array_search($countryPricesObject->Country, $outstandingCountries);
                         if(Permission::check('ADMIN') || $countryID !== false) {
                             $data = array("T" => "CountryPrice", "I" => $countryPricesObject->ID, "F" => "Price");
+                            $countryName = EcommerceCountry::find_title($countryPricesObject->Country);
                             $html .= $this->createEditNode(
-                                $countryPricesObject->Country,
+                                $countryPricesObject->Country . ' - '. $countryName,
                                 $countryPricesObject->Currency,
                                 $countryPricesObject->Price,
                                 $data,
@@ -467,9 +469,9 @@ class CheckAllCountriesAndAllPrices extends Controller {
                 }
                 $addText = 'Add price to start selling';
                 foreach($outstandingCountries as $countryCode) {
-                    $countryObject = EcommerceCountry::get()->filter(array("Code" =>$countryCode));
+                    $countryObject = EcommerceCountry::get()->filter(array("Code" =>$countryCode))->first();
                     if(!$countryObject) {user_error("country not found");}
-                    $currencyObject = $countryObject->BestEcommerceCurrency();
+                    $currencyObject = $countryObject->EcommerceCurrency();
                     $data = array(
                         "T" => "CountryPrice",
                         "I" => array(
@@ -480,9 +482,10 @@ class CheckAllCountriesAndAllPrices extends Controller {
                         ),
                         'F' => 'Price'
                     );
+                    $countryName = EcommerceCountry::find_title($countryCode);
                     $html .= $this->createEditNode(
-                        $countryCode,
-                        $currency->Code,
+                        $countryCode . ' - '. $countryName,
+                        $currencyObject->Code,
                         $addText,
                         $data,
                         "input",
@@ -527,8 +530,9 @@ class CheckAllCountriesAndAllPrices extends Controller {
                                                 "I" => $countryPricesObject->ID,
                                                 "F" => "Price"
                                             );
+                                            $countryName = EcommerceCountry::find_title($countryPricesObject->Country);
                                             $html .=  $this->createEditNode(
-                                                $countryPricesObject->Country,
+                                                $countryPricesObject->Country . ' - '. $countryName,
                                                 $countryPricesObject->Currency,
                                                 $countryPricesObject->Price,
                                                 $data,
@@ -555,9 +559,9 @@ class CheckAllCountriesAndAllPrices extends Controller {
                                     }
                                 }
                                 foreach($outstandingCountries as $countryCode) {
-                                    $countryObject = DataObject::get_one("EcommerceCountry", "Code = '".$countryCode."'");
+                                    $countryObject = EcommerceCountry::get()->filter(array("Code" =>$countryCode))->first();
                                     if(!$countryObject) {user_error("country not found");}
-                                    $currency = $countryObject->BestEcommerceCurrency();
+                                    $currency = $countryObject->EcommerceCurrency();
                                     $data = array(
                                         "T" => "CountryPrice",
                                         "I" => array(
@@ -568,9 +572,10 @@ class CheckAllCountriesAndAllPrices extends Controller {
                                         ),
                                         'F' => 'Price'
                                     );
+                                    $countryName = EcommerceCountry::find_title($countryCode);
                                     $html .= $this->createEditNode(
-                                        $countryCode,
-                                        $currency,
+                                        $countryCode . ' - '. $countryName,
+                                        $currency->Code,
                                         $addText,
                                         $data,
                                         "input",

@@ -42,3 +42,12 @@ Only:
 ProductVariation:
   extensions:
     - CountryPrice_BuyableExtension
+
+---
+Only:
+  moduleexists: 'grouped-cms-menu'
+---
+LeftAndMain:
+  menu_groups:
+    Shop:
+      - distributors

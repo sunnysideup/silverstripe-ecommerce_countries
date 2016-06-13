@@ -57,7 +57,7 @@ class CountryPrice_CopyPrices extends DataExtension {
      */
     function updatePrices($fromCountryCode, array $toCountriesArray) {
         $fromCountryObject = EcommerceCountry::get()->filter(array("Code" => $fromCountryCode));
-        $currencyObject = $fromCountryObject->BestEcommerceCurrency();
+        $currencyObject = $fromCountryObject->EcommerceCurrency();
         if($currencyObject && $currencyObject->Code) {
             $values = $this->getUpdatePriceValues($fromCountryCodeA, $currencyObject->Code, array());
             foreach($toCountriesArray as $country) {
