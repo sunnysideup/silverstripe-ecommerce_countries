@@ -19,11 +19,13 @@ class CountryPrice_BuyableExtension extends DataExtension {
 
 
     function updateCMSFields(FieldList $fields) {
-        $excludedCountries = EcommerceCountry::get()->filter(array("DoNotAllowSales" => 1));
+        $excludedCountries = EcommerceCountry::get()
+            ->filter(array("DoNotAllowSales" => 1, "AlwaysTheSameAsID" => 0));
         if($excludedCountries->count()) {
             $excludedCountries = $excludedCountries->map('ID', 'Name')->toArray();
         }
-        $includedCountries = EcommerceCountry::get()->filter(array("DoNotAllowSales" => 0));
+        $includedCountries = EcommerceCountry::get()
+            ->filter(array("DoNotAllowSales" => 0, "AlwaysTheSameAsID" => 0));
         if($includedCountries->count())  {
             $includedCountries = $includedCountries->map('ID', 'Name')->toArray();
         }
@@ -36,18 +38,32 @@ class CountryPrice_BuyableExtension extends DataExtension {
             );
         } else {
             $tabs = new TabSet('Countries',
-                new Tab(
+                $includeTab = new Tab(
                     'Include',
-                    new CheckboxField("AllCountries", "All Countries"),
-                    new LiteralField("ExplanationInclude", "<p>Products are not available in the countries listed below.  You can include sales of <i>".$this->owner->Title."</i> to new countries by ticking the box(es) next to any country.</p>"),
-                    new CheckboxSetField('IncludedCountries', '', $excludedCountries)
+                    new CheckboxField("AllCountries", "All Countries")
                 ),
-                new Tab(
-                    'Exclude',
-                    new LiteralField("ExplanationExclude", "<p>Products are available in all countries listed below.  You can exclude sales of <i>".$this->owner->Title."</i> from these countries by ticking the box next to any of them.</p>"),
-                    new CheckboxSetField('ExcludedCountries', '', $includedCountries)
+                $excludeTab = new Tab(
+                    'Exclude'
                 )
             );
+            if(count($excludedCountries)) {
+                $includeTab->push(
+                    'Include',
+                    new LiteralField("ExplanationInclude", "<p>Products are not available in the countries listed below.  You can include sales of <i>".$this->owner->Title."</i> to new countries by ticking the box(es) next to any country.</p>")
+                );
+                $includeTab->push(
+                    'Include',
+                    new CheckboxSetField('IncludedCountries', '', $excludedCountries)
+                );
+            }
+            if(count($includedCountries)) {
+                $excludeTab->push(
+                    new LiteralField("ExplanationExclude", "<p>Products are available in all countries listed below.  You can exclude sales of <i>".$this->owner->Title."</i> from these countries by ticking the box next to any of them.</p>")
+                );
+                $excludeTab->push(
+                    new CheckboxSetField('ExcludedCountries', '', $includedCountries)
+                );
+            }
         }
 
 
@@ -90,11 +106,12 @@ class CountryPrice_BuyableExtension extends DataExtension {
             return $this->updateCalculatedPrice() !== 0 ? null : false;
         }
         $countryCode = EcommerceCountry::get_country();
+        $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if($countryCode) {
             $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
             if($included) {
                 //is there a valid price ???
-                return $this->updateCalculatedPrice() !== 0 ? null : false;
+                return floatval($this->updateCalculatedPrice()) > 0 ? null : false;
 
             }
             $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
@@ -103,7 +120,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
             }
         }
         //is there a valid price ???
-        return $this->updateCalculatedPrice() !== 0 ? null : false;
+        return floatval($this->updateCalculatedPrice()) > 0 ? null : false;
     }
 
     /**
@@ -115,6 +132,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
      */
     function CountryPrices($country = null, $currency = null) {
         $filterArray = array("ObjectClass" => ClassInfo::subclassesFor($this->ownerBaseClass), "ObjectID" => $this->owner->ID);
+        $country = CountryPrice_EcommerceCountry::get_real_country($country);
         if($country) {
             $filterArray["Country"] = $country;
         }
@@ -142,6 +160,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
             //order stuff
             $order = ShoppingCart::current_order();
             $countryCode = $order->getCountry();
+            $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
             if($countryCode) {
                 $currency = $order->CurrencyUsed();
                 if($currency) {

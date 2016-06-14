@@ -17,7 +17,7 @@ class CountryPrice_CopyPrices extends DataExtension {
         if($this->owner->ID) {
             $page = is_a($this->owner, 'SiteTree'); // We use singleton to skip the different is_a php versions issues
             $tab = 'Root.Countries.Pricing';
-            $fromCountries = EcommerceCountry::get();
+            $fromCountries = EcommerceCountry::get()->filter(array('AlwaysTheSameAsID' => 0));
                 //->where('CountryPrice.ObjectClass = \''.$this->owner->ClassName.'\' AND CountryPrice.ObjectID = '.$this->owner->ID.'')
             if($fromCountries && $fromCountries->count()) {
                 $fromCountriesArray = $fromCountries->map('Code', 'Name')->toArray();
@@ -28,6 +28,7 @@ class CountryPrice_CopyPrices extends DataExtension {
             $allCountries =  EcommerceCountry::get();
             $toCountries = array();
             foreach($allCountries as $country) {
+                $country = CountryPrice_EcommerceCountry::get_real_country($country);
                 $toCountries[$country->Code] = $country->Name . ($country->DoNotAllowSales ? ' (Sales not allowed)' : '');
             }
             $countryCurrencies = CountryPrice_EcommerceCurrency::get_currency_per_country();
@@ -57,10 +58,12 @@ class CountryPrice_CopyPrices extends DataExtension {
      */
     function updatePrices($fromCountryCode, array $toCountriesArray) {
         $fromCountryObject = EcommerceCountry::get()->filter(array("Code" => $fromCountryCode));
+        $fromCountryObject = CountryPrice_EcommerceCountry::get_real_country($fromCountryObject);
         $currencyObject = $fromCountryObject->EcommerceCurrency();
         if($currencyObject && $currencyObject->Code) {
             $values = $this->getUpdatePriceValues($fromCountryCodeA, $currencyObject->Code, array());
             foreach($toCountriesArray as $country) {
+                $country = CountryPrice_EcommerceCountry::get_real_country($country);
                 foreach($values as $value) {
                     $sqlValues[] = "(NOW(),NOW(),{$value[0]},'$country','".$currencyObject->Code."','{$value[1]}',{$value[2]})";
                 }
@@ -89,6 +92,7 @@ class CountryPrice_CopyPrices extends DataExtension {
      * @return array          [description]
      */
     public function getUpdatePriceValues($fromCountryCode, $currencyCode, array $values) {
+        $fromCountryCode = CountryPrice_EcommerceCountry::get_real_country($fromCountryCode);
         if($this->owner->hasExtension('CountryPrice_BuyableExtension')) {
             $countryPrice = $this->owner->CountryPrices($fromCountry, $currency);
             if($countryPrice) {

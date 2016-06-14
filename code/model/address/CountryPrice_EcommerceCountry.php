@@ -14,13 +14,18 @@ class CountryPrice_EcommerceCountry extends DataExtension {
         'DeliveryCostNote' => 'Varchar(255)',
         'ShippingEstimation' => 'Varchar(255)',
         'ReturnInformation' => 'Varchar(255)',
-        'ProductNotAvailableNote' => 'HTMLText'
+        'ProductNotAvailableNote' => 'HTMLText',
     );
 
     private static $has_one = array(
         'Distributor' => 'Distributor',
-        'EcommerceCurrency' => 'EcommerceCurrency'
+        'EcommerceCurrency' => 'EcommerceCurrency',
+        'AlwaysTheSameAs' => 'EcommerceCountry'
     );
+
+    private static $has_many = array(
+        'ParentFor' => 'EcommerceCountry'
+    )
 
     private static $searchable_fields = array(
         "IsBackupCountry"
@@ -95,7 +100,8 @@ class CountryPrice_EcommerceCountry extends DataExtension {
      */
     public static function get_distributor_country($countryCode = null)
     {
-        $countryObject = EcommerceCountry::get_country_object($countryCode);
+        $countryObject = EcommerceCountry::get_country_object(false, $countryCode);
+        $countryObject = self::get_real_country($countryObject);
         if($countryObject && $countryObject->hasDistributor()) {
             //do nothing ...
         } else {
@@ -115,6 +121,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     public static function get_distributor_primary_country($countryCode = null)
     {
         $countryObject = EcommerceCountry::get_country_object(false, $countryCode);
+        $countryObject = self::get_real_country($countryObject);
         if($countryObject && $countryObject->hasDistributor()) {
             $countryObject->Distributor()->PrimaryCountry();
             //do nothing ...
@@ -124,6 +131,44 @@ class CountryPrice_EcommerceCountry extends DataExtension {
         return $countryObject;
     }
 
+
+    /**
+     * returns the 'always the same as' (parent) country if necessary
+     * @param  EcommerceCountry | string | int   $countryCodeOrObject
+     * @return EcommerceCountry | string | int
+     */
+    public static function get_real_country($country)
+    {
+        if($country instanceof EcommerceCountry) {
+            $type = "object";
+            //do nothing
+        } elseif(is_numeric($country) && intval($country) == $country)  {
+            $type = "number";
+            $country = EcommerceCountry::get()->byID($country);
+        } elseif(is_string($countryCodeOrObject))  {
+            $type = "string";
+            $country = strtoupper($country);
+            $country = EcommerceCountry::get_country_object(false, $country);
+        } else {
+            return $country;
+        }
+        if( ! $country) {
+            return $country;
+        }
+        elseif($country->AlwaysTheSameAsID) {
+            $realCountry = $country->AlwaysTheSameAs()
+            if($realCountry && $realCountry->exists()) {
+                $country = $realCountry;
+            }
+        }
+        if($type == "object") {
+            return $country;
+        } elseif($type == "number") {
+            return $country->ID;
+        }else ($type == "string"){
+            return $country->Code;
+        }
+    }
     /**
      *
      * @return EcommerceCountry
@@ -139,13 +184,15 @@ class CountryPrice_EcommerceCountry extends DataExtension {
         return $obj;
     }
 
+
     /**
      *
      *
      * @return boolean
      */
     public function hasDistributor(){
-        return $this->owner->DistributorID && $this->owner->Distributor()->exists();
+        $country = self::get_real_country($this->owner);
+        return $country->DistributorID && $country->Distributor()->exists();
     }
 
 }

@@ -32,7 +32,9 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
      * @return EcommerceCurrency
      */
     public static function get_currency_for_country($countryCode) {
+        $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
+        $currencyDO = null;
         if($countryCode) {
             $currencyCode = isset($currencyPerCountry[$countryCode]) ? $currencyPerCountry[$countryCode] : EcommerceCountry::default_currency();
             $currencyDO = EcommerceCurrency::get_one_from_code($currencyCode);
@@ -60,8 +62,7 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
         $cachekey = "EcommerceCurrencyCountryMatrix";
         $cache = SS_Cache::factory($cachekey);
         if ( ! ($serializedArray = $cache->load($cachekey))) {
-
-            $countries = EcommerceCountry::get();
+            $countries = EcommerceCountry::get()->filter(array("AlwaysTheSameAsID" => 0));
             $unserializedArray = array();
             $defaultCurrencyCode = EcommerceCurrency::default_currency_code();
             foreach($countries as $country) {
@@ -70,9 +71,10 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
                 if($currency && $currency->exists()) {
                     $currencyCode = $currency->Code;
                 }
-                $unserializedArray[$country->Code] = $currencyCode;
-                $cache->save(serialize($unserializedArray), $cachekey);
+                $countryCode = CountryPrice_EcommerceCountry::get_real_country($country->Code);
+                $unserializedArray[$countryCode] = $currencyCode;
             }
+            $cache->save(serialize($unserializedArray), $cachekey);
             return $unserializedArray;
         }
         return unserialize($serializedArray);
@@ -85,7 +87,7 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
     public static function get_currency_per_country_used_ones() {
         $resultArray = array();
         $functioningCountryObjects = EcommerceCountry::get()
-            ->filter(array("DoNotAllowSales" => 0))
+            ->filter(array("DoNotAllowSales" => 0, 'AlwaysTheSameAsID' => 0))
             ->exclude(array("DistributorID" => 0));
         $countryCurrencies = CountryPrice_EcommerceCurrency::get_currency_per_country();
         if($functioningCountryObjects->count()) {

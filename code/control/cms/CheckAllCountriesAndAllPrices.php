@@ -42,6 +42,7 @@ class CheckAllCountriesAndAllPrices extends Controller {
         if($member) {
             if(Permission::check('ADMIN')) {
                 $countries = EcommerceCountry::get()
+                    ->filter(array("AlwaysTheSameAsID" => 0))
                     ->exclude(array("DistributorID" => 0));
                 $canViewAndEdit = true;
             }
@@ -107,8 +108,9 @@ class CheckAllCountriesAndAllPrices extends Controller {
         }
 
         $country = strtoupper($_REQUEST['Country']);
+        CountryPrice_EcommerceCountry::get_real_country(Convert::raw2sql($country));
         $valid = false;
-        $currencyPerCountry = EcommerceCountry::get()->map("Ecommerce");
+        $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
         if(isset($currencyPerCountry[$country])) {
             $valid = true;
             if($this->distributor) {
@@ -133,7 +135,9 @@ class CheckAllCountriesAndAllPrices extends Controller {
         }
 
         DB::query("
-            INSERT INTO \"CountryPrice\" (\"Created\",\"LastEdited\",\"Price\",\"Country\",\"Currency\",\"ObjectClass\",\"ObjectID\") VALUES (NOW(),NOW(),$price,'$country','$currency','$objectClass',$objectID)
+            INSERT INTO \"CountryPrice\"
+                (\"Created\",\"LastEdited\",\"Price\",\"Country\",\"Currency\",\"ObjectClass\",\"ObjectID\")
+            VALUES (NOW(),NOW(),$price,'$country','$currency','$objectClass',$objectID)
             ON DUPLICATE KEY UPDATE \"LastEdited\" = VALUES(\"LastEdited\"), \"Price\" = VALUES(\"Price\")");
 
         return true;
