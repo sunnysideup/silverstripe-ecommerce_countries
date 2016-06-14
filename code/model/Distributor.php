@@ -64,7 +64,7 @@ class Distributor extends DataObject implements PermissionProvider {
     public static function get_one_for_country($countryCode) {
         $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if($countryCode) {
-            $countryObject = EcommerceCountry::get()->filter(array("Code" => ))->First();
+            $countryObject = EcommerceCountry::get()->filter(array("Code" => $countryCode))->First();
             if($countryObject) {
                 $distributor = $countryObject->Distributor();
                 if($distributor->exists()) {

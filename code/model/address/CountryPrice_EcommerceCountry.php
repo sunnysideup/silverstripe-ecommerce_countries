@@ -25,10 +25,10 @@ class CountryPrice_EcommerceCountry extends DataExtension {
 
     private static $has_many = array(
         'ParentFor' => 'EcommerceCountry'
-    )
+    );
 
     private static $searchable_fields = array(
-        "IsBackupCountry"
+        "IsBackupCountry" => "ExactMatchFilter"
     );
 
     private static $indexes = array(
@@ -145,7 +145,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
         } elseif(is_numeric($country) && intval($country) == $country)  {
             $type = "number";
             $country = EcommerceCountry::get()->byID($country);
-        } elseif(is_string($countryCodeOrObject))  {
+        } elseif(is_string($country))  {
             $type = "string";
             $country = strtoupper($country);
             $country = EcommerceCountry::get_country_object(false, $country);
@@ -156,7 +156,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
             return $country;
         }
         elseif($country->AlwaysTheSameAsID) {
-            $realCountry = $country->AlwaysTheSameAs()
+            $realCountry = $country->AlwaysTheSameAs();
             if($realCountry && $realCountry->exists()) {
                 $country = $realCountry;
             }
@@ -165,7 +165,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
             return $country;
         } elseif($type == "number") {
             return $country->ID;
-        }else ($type == "string"){
+        } elseif ($type == "string"){
             return $country->Code;
         }
     }
