@@ -101,12 +101,15 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @return false | null
      */
     function canPurchaseByCountry(Member $member = null, $checkPrice = true) {
-        if($this->owner->AllCountries) {
-            //is there a valid price ???
-            return $this->updateCalculatedPrice() !== 0 ? null : false;
-        }
         $countryCode = EcommerceCountry::get_country();
         $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        if($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+            return null;
+        }
+        if($this->owner->AllCountries) {
+            //is there a valid price ???
+            return floatval($this->updateCalculatedPrice()) > 0 ? null : false;
+        }
         if($countryCode) {
             $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
             if($included) {
@@ -149,18 +152,24 @@ class CountryPrice_BuyableExtension extends DataExtension {
      *
      * updates the calculated price to the local price...
      * if there is no price then we return 0
+     * if the default price can be used then we use NULL
      * @return Float | null (ignore this value and use original value)
      */
     function updateCalculatedPrice() {
-        $key = $this->owner->ClassName."___".$this->owner->ID;
+
+        //order stuff
+        $order = ShoppingCart::current_order();
+        $countryCode = $order->getCountry();
+        $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        if($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+            return null;
+        }
+        $key = $this->owner->ClassName."___".$this->owner->ID.'____'.$countryCode;
         if( ! isset(self::$_buyable_price[$key])) {
             //basics
             $currency = null;
             $currencyCode = null;
-            //order stuff
-            $order = ShoppingCart::current_order();
-            $countryCode = $order->getCountry();
-            $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+
             if($countryCode) {
                 $currency = $order->CurrencyUsed();
                 if($currency) {
@@ -209,6 +218,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
                 self::$_buyable_price[$key] = 0;
                 return self::$_buyable_price[$key];
             }
+            //you can revert back to default country price ...
             self::$_buyable_price[$key] = null;
             return self::$_buyable_price[$key];
         }

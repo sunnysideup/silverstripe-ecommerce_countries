@@ -224,6 +224,7 @@ class Distributor extends DataObject implements PermissionProvider {
                 }
             }
         }
+        $this->setupUser();
     }
 
     /**
@@ -260,22 +261,7 @@ class Distributor extends DataObject implements PermissionProvider {
         $distributors = Distributor::get();
         if($distributors && $distributors->count()) {
             foreach($distributors as $distributor) {
-                if($distributor->Email) {
-                    $distributorMember = Member::get()
-                        ->filter(array("Email" => $distributor->Email))
-                        ->First();
-                    if(!$distributorMember) {
-                        $distributorMember = new Member();
-                        $distributorMember->Email = $distributor->Email;
-                        //$distributorMember->SetPassword = substr(session_id, 0, 8);
-                    }
-                    $distributorMember->FirstName = "Distributor";
-                    $distributorMember->Surname = $distributor->Name;
-                    $distributorMember->write();
-                    $distributorMember->addToGroupByCode($distributorGroup->Code);
-                    $distributorMember->write();
-                    DB::alteration_message('distributor member '.$distributorMember->Surname.' is ready for use',"created");
-                }
+
             }
         }
     }
@@ -310,5 +296,27 @@ class Distributor extends DataObject implements PermissionProvider {
                 'sort' => 98,
             )
         );
+    }
+
+    function setupUser()
+    {
+        if($this->Email) {
+            $member = Member::get()
+                ->filter(array("Email" => $this->Email))
+                ->First();
+            if(!$member) {
+                $member = new Member();
+                $member->Email = $this->Email;
+                //$thisMember->SetPassword = substr(session_id, 0, 8);
+            }
+            $member->FirstName = "this For";
+            $member->Surname = $this->Name;
+            $group = Group::get()->filter(array("Code" => $this->Config()->get('distributor_permission_code')))->first();
+            $member->write();
+            if($group) {
+                $member->addToGroupByCode($group->Code);
+            }
+            $member->write();
+        }
     }
 }
