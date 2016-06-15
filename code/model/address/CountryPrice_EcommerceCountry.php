@@ -36,38 +36,69 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     );
 
     function updateCMSFields(FieldList $fields) {
-        $fields->addFieldToTab('Root.Messages', TextField::create('TopBarMessage', 'Top Bar Message')->setRightTitle("also see the site config for default messages"));
-        if($this->owner->DistributorID) {
-            $FAQContentField = new HtmlEditorField('FAQContent', 'Content');
-            $FAQContentField->setRows(7);
-            $FAQContentField->setColumns(7);
-            $fields->addFieldToTab('Root.FAQPage', $FAQContentField);
+        $fields->addFieldToTab(
+            "Root.ParentCountry",
+            DropdownField::create(
+                'AlwaysTheSameAsID',
+                'Parent Country',
+                EcommerceCountry::get()->filter(array("AlwaysTheSameAsID" => 0))->exclude(array("ID" => $this->owner->ID))->map("ID", "Name")
+            )
+        );
+        if($this->owner->AlwaysTheSameAsID) {
+            $removeByNameArray = array(
+                'IsBackupCountry',
+                'DoNotAllowSales',
+                'FAQContent',
+                'TopBarMessage',
+                'DeliveryCostNote',
+                'ShippingEstimation',
+                'ReturnInformation',
+                'ProductNotAvailableNote',
+                'DistributorID',
+                'EcommerceCurrencyID',
+                'ParentFor',
+                'Regions'
+            );
+            foreach($removeByNameArray as $removeByNameField)
+                $fields->removeByName(
+                    $removeByNameField
+                );
         }
         else {
+
+            $fields->addFieldToTab('Root.Messages', TextField::create('TopBarMessage', 'Top Bar Message')->setRightTitle("also see the site config for default messages"));
+            if($this->owner->DistributorID) {
+                $FAQContentField = new HtmlEditorField('FAQContent', 'Content');
+                $FAQContentField->setRows(7);
+                $FAQContentField->setColumns(7);
+                $fields->addFieldToTab('Root.FAQPage', $FAQContentField);
+            }
+            else {
+                $fields->addFieldToTab(
+                    'Root.FAQPage',
+                    new LiteralField(
+                        "FAQPageExplanation",
+                        "<p class=\"message warning\">FAQ information can only be added to the main country for a Distributor</p>"
+                    )
+                );
+            }
+
+            $distributors = Distributor::get()
+                ->filter(array("IsDefault" => 0));
+            $distributors = $distributors->count() ? $distributors->map('ID', 'Name')->toArray() : array();
+            $fields->addFieldToTab('Root.Main', DropdownField::create('DistributorID', 'Distributor', array(0 => "-- Not Selected --") + $distributors), "DoNotAllowSales");
+
+
             $fields->addFieldToTab(
-                'Root.FAQPage',
-                new LiteralField(
-                    "FAQPageExplanation",
-                    "<p class=\"message warning\">FAQ information can only be added to the main country for a Distributor</p>"
-                )
+                "Root.Testing",
+                new LiteralField("LogInAsThisCountry", "<h3><a href=\"/whoami/setmycountry/".$this->owner->Code."/?countryfortestingonly=".$this->owner->Code."\">place an order as a person from ".$this->owner->Title."</a></h3>")
+            );
+
+            $fields->addFieldToTab(
+                "Root.Currency",
+                $fields->dataFieldByName("EcommerceCurrencyID")
             );
         }
-
-        $distributors = Distributor::get()
-            ->filter(array("IsDefault" => 0));
-        $distributors = $distributors->count() ? $distributors->map('ID', 'Name')->toArray() : array();
-        $fields->addFieldToTab('Root.Main', new DropdownField('DistributorID', 'Distributor', array(0 => "-- Not Selected --") + $distributors), "DoNotAllowSales");
-
-
-        $fields->addFieldToTab(
-            "Root.Testing",
-            new LiteralField("LogInAsThisCountry", "<h3><a href=\"/whoami/setmycountry/".$this->owner->Code."/?countryfortestingonly=".$this->owner->Code."\">place an order as a person from ".$this->owner->Title."</a></h3>")
-        );
-
-        $fields->addFieldToTab(
-            "Root.Currency",
-            $fields->dataFieldByName("EcommerceCurrencyID")
-        );
     }
 
     /**
