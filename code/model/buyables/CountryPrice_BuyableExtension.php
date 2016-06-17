@@ -48,11 +48,12 @@ class CountryPrice_BuyableExtension extends DataExtension {
             );
             if(count($excludedCountries)) {
                 $includeTab->push(
-                    'Include',
-                    new LiteralField("ExplanationInclude", "<p>Products are not available in the countries listed below.  You can include sales of <i>".$this->owner->Title."</i> to new countries by ticking the box(es) next to any country.</p>")
+                    new LiteralField(
+                        "ExplanationInclude",  
+                        "<p>Products are not available in the countries listed below.  You can include sales of <i>".$this->owner->Title."</i> to new countries by ticking the box(es) next to any country.</p>"
+                    )
                 );
                 $includeTab->push(
-                    'Include',
                     new CheckboxSetField('IncludedCountries', '', $excludedCountries)
                 );
             }
