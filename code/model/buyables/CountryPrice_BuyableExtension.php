@@ -49,7 +49,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
             if(count($excludedCountries)) {
                 $includeTab->push(
                     new LiteralField(
-                        "ExplanationInclude",  
+                        "ExplanationInclude",
                         "<p>Products are not available in the countries listed below.  You can include sales of <i>".$this->owner->Title."</i> to new countries by ticking the box(es) next to any country.</p>"
                     )
                 );
@@ -157,7 +157,6 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @return Float | null (ignore this value and use original value)
      */
     function updateCalculatedPrice() {
-
         //order stuff
         $order = ShoppingCart::current_order();
         $countryCode = $order->getCountry();

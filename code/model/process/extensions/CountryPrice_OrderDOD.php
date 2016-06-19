@@ -10,22 +10,36 @@ class CountryPrice_OrderDOD extends DataExtension {
     private static $db = array(
         'IP' => 'Varchar(16)',
         'CurrencyCountry' => 'Varchar(3)',
-        'OriginatingCountryCode' => 'Varchar(2)'
+        'OriginatingCountryCode' => 'Varchar(3)'
     );
 
-    private static $number_of_times_we_have_run_localise_order = 0;
+    private static $has_one = array(
+        'Distributor' => 'Distributor'
+    );
+
+    private static $searchable_fields = array(
+        'DistributorID' => 'ExactMatchFilter'
+    );
+
+    private static $_number_of_times_we_have_run_localise_order = 0;
+
+    private static $only_allow_within_country_sales = false;
 
     /**
      * this method basically makes sure that the Order
      * has all the localised stuff attached to it, specifically
      * the right currency
      */
-    public static function localise_order()
+    public static function localise_order($countryCode = null)
     {
         $order = ShoppingCart::current_order();
-        $countryCode = $order->getCountry();
+        if( ! $countryCode) {
+            $countryCode = $order->getCountry();
+        }
         $currencyObject = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
-        EcommerceCountry::set_for_current_order_only_show_countries(array($countryCode));
+        if(Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
+            EcommerceCountry::set_for_current_order_only_show_countries(array($countryCode));
+        }
         if($order->IsSubmitted()) {
             return true;
         }
@@ -60,8 +74,8 @@ class CountryPrice_OrderDOD extends DataExtension {
             }
             // Called after because some modifiers use the country field to calculate the values
             $order->calculateOrderAttributes(true);
-            if(self::$number_of_times_we_have_run_localise_order < 3) {
-                self::$number_of_times_we_have_run_localise_order++;
+            if(self::$_number_of_times_we_have_run_localise_order < 3) {
+                self::$_number_of_times_we_have_run_localise_order++;
                 self::localise_order();
             }
         }
@@ -74,6 +88,11 @@ class CountryPrice_OrderDOD extends DataExtension {
 
     function onCalculateOrder() {
         $this->setCountryDetailsForOrder();
+        $countryCode = $this->owner->getCountry();
+        $distributor = Distributor::get_one_for_country($countryCode);
+        if($distributor) {
+            $this->owner->DistributorID = $distributor->ID;
+        }
     }
 
     function updateCMSFields(FieldList $fields) {
@@ -81,23 +100,47 @@ class CountryPrice_OrderDOD extends DataExtension {
             $field = $fields->dataFieldByName($fieldName);
             $field = $field->performReadonlyTransformation();
             $fields->addFieldToTab("Root.Country", $field);
-            if($distributor = $this->owner->Distributor()) {
-                $fields->addFieldToTab("Root.Country", new ReadonlyField("DistributorName", "Distributor Name", $distributor->Name));
-            }
+            $fields->addFieldToTab(
+                'Root.Country',
+                DropdownField::create(
+                    'DistributorID',
+                    'Distributor',
+                    array(''=> '--- Please select ---') + Distributor::get()->map()->toArray()
+                )
+            );
         }
     }
 
+    function canView($member = null) {
+        return $this->canEdit($member);
+    }
+
+    function canEdit($member = null) {
+        if($member) {
+            if($distributor = $this->owner->Distributor()) {
+                foreach($distributor->Members() as $distributorMember) {
+                    if($member->ID == $distributorMember->ID) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
 
     /**
      *
      * @param string (optional) $countryCode
      * @return Distributor | null
      */
-    function Distributor($countryCode = null){
-        if(!$countryCode) {
-            $countryCode = $this->owner->getCountry();
+    function getDistributor($countryCode = null){
+        if($this->owner->DistributorID) {
+            return Distributor::get()->byID($this->DistributorID);
+        } else {
+            if(!$countryCode) {
+                $countryCode = $this->owner->getCountry();
+            }
+            return distributor::get_one_for_country($countryCode);
         }
-        return distributor::get_one_for_country($countryCode);
     }
 
     /**
@@ -114,10 +157,12 @@ class CountryPrice_OrderDOD extends DataExtension {
 
         //set country
         $countryCode = EcommerceCountry::get_country();
-        $this->owner->CurrencyCountry = $countryCode;
+        if(Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
+            $this->owner->CurrencyCountry = $countryCode;
+            EcommerceCountry::set_for_current_order_only_show_countries(array($countryCode));
+            $this->owner->SetCountryFields($countryCode, $billingAddress = true, $shippingAddress = true);
+        }
         $this->owner->OriginatingCountryCode = $countryCode;
-        EcommerceCountry::set_for_current_order_only_show_countries(array($countryCode));
-        $this->owner->SetCountryFields($countryCode, $billingAddress = true, $shippingAddress = true);
 
         // set currency
         $currencyObject = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);

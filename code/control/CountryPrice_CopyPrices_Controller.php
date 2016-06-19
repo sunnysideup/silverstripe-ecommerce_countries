@@ -2,8 +2,16 @@
 
 class CountryPrice_CopyPrices_Controller extends ContentController {
 
+
+    private static $url_segment = 'shoppingcart-copy-prices';
+
+    private static $allowed_actions = array(
+        "index" => 'ADMIN'
+    );
+
+
     public static function get_link(DataObject $object) {
-        return "copy-prices?class={$object->ClassName}&id={$object->ID}";
+        return Injector::inst()->get('CountryPrice_CopyPrices_Controller')->Link()."?class={$object->ClassName}&id={$object->ID}";
     }
 
     /**
@@ -26,6 +34,12 @@ class CountryPrice_CopyPrices_Controller extends ContentController {
         else {
             echo "please log in as admin first";
         }
+    }
+
+
+    function Link($action = null)
+    {
+        return Controller::join_links(Config::inst()->get('CountryPrice_CopyPrices_Controller', 'url_segment'), $action);
     }
 
 }

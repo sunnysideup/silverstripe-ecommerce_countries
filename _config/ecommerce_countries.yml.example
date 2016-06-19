@@ -19,3 +19,6 @@ EcommerceCountry:
 
 Distributor:
   distributor_permission_code: "distributors"
+
+CountryPrice_OrderDOD:
+  only_allow_within_country_sales: true

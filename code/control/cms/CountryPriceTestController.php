@@ -15,12 +15,8 @@ class CountryPriceTestController extends ContentController {
 
     function init(){
         parent::init();
-        if(strtotime("NOW") < (strtotime($this->LastEdited) +( 60 * 15) ) ) {
-            //all OK
-        }
-        elseif(! Permission::check('ADMIN')) {
-            Security::permissionFailure($this, 'This page is secured and you need administrator rights to access it. You can also save the page in the CMS to get 15 minutes access without being logged in.');
-            return;
+        if(! Permission::check('ADMIN')) {
+            return Security::permissionFailure($this, 'This page is secured and you need administrator rights to access it. You can also save the page in the CMS to get 15 minutes access without being logged in.');
         }
     }
 
@@ -28,25 +24,36 @@ class CountryPriceTestController extends ContentController {
         echo "<hr />";
         echo "<hr />";
         echo "<hr />";
+
         foreach(self::$allowed_actions as $action => $notNeeded ) {
-            if(!in_array($action, array("setmycountry", "resetmycountry"))) {
+            if(!in_array($action, array("setmycountry"))) {
                 DB::alteration_message("<a href=\"".$this->Link($action)."\">$action</a>");
             }
         }
         DB::alteration_message("<a href=\"/dev/ecommerce/\">All E-commerce Tools</a>");
         echo "<hr />";
-        $countries = EcommerceCountry::get_country_dropdown();
+        $countries = CountryPrice_EcommerceCountry::get_real_countries_list();
         $countryLinks = array();
-        foreach($countries as $code => $name) {
+        foreach($countries as $country) {
+            $code = $country->Code;
+            $name = $country->Name;
             $countryLinks[] = "<a href=\"".$this->Link("setmycountry/$code/?countryfortestingonly=$code")."\">$name</a>";
         }
-        DB::alteration_message("Test for country: ".implode(", ", $countryLinks));
+        DB::alteration_message("Available Countries: ".implode(", ", $countryLinks));
+        $countries = EcommerceCountry::get()->exclude(array('Code' => $countries->column('Code')));
+        $countryLinks = array();
+        foreach($countries as $country) {
+            $code = $country->Code;
+            $name = $country->Name;
+            $countryLinks[] = "<a href=\"".$this->Link("setmycountry/$code/?countryfortestingonly=$code")."\">$name</a>";
+        }
+        DB::alteration_message("Other Countries: ".implode(", ", $countryLinks));
     }
 
 
     function Link($action = null)
     {
-        return "/countrypricetestcontrollerurl/".$action;
+        return "/distributors-test/".$action;
     }
 
     function addproducts(){
@@ -60,28 +67,25 @@ class CountryPriceTestController extends ContentController {
             }
         }
         $count = 1;
-        $productVariations = ProductVariation::get()->filter("AllowPurchase", 1)->limit(20)->Sort("Rand()");
-        foreach($productVariations as $productVariation) {
-            if($productVariation->canPurchase() && $count < 3) {
-                $count++;
-                $sc->addBuyable($productVariation, rand(1,5));
+        if(class_exists('ProductVariation')) {
+            $productVariations = ProductVariation::get()->filter("AllowPurchase", 1)->limit(20)->Sort("Rand()");
+            foreach($productVariations as $productVariation) {
+                if($productVariation->canPurchase() && $count < 3) {
+                    $count++;
+                    $sc->addBuyable($productVariation, rand(1,5));
+                }
             }
         }
-        return $this->redirect($this->Link());
+        return $this->redirect($sc->Link());
     }
 
 
     function resetmycountry($request) {
-        Session::clear("countryfortestingonly");
-        Session::clear("MyCloudFlareCountry");
-        Session::clear("MyCloudFlareIPAddress");
-        Session::clear("ipfortestingonly");
-        Session::save();
-        Session::clear("countryfortestingonly");
-        Session::clear("MyCloudFlareCountry");
-        Session::clear("MyCloudFlareIPAddress");
-        Session::clear("ipfortestingonly");
-        Session::save();
+        $this->resetSessionVars();
+        $o = ShoppingCart::current_order();
+        if($o) {
+            $o->delete();
+        }
         DB::alteration_message("Cleared countries");
         return $this->redirect("/dev/ecommerce/ecommercetaskcartmanipulation_current");
     }
@@ -90,15 +94,29 @@ class CountryPriceTestController extends ContentController {
     function setmycountry($request) {
         $value = strtoupper(Convert::raw2sql($request->param("ID")));
         if($o = ShoppingCart::current_order()) {
+            $this->resetSessionVars();
             $o->SetCountryFields($value);
             $o->CurrencyCountry = $value;
+            $o->OriginatingCountryCode = $value;
             $o->write();
             $o->SetCountryFields($value);
             $o->CurrencyCountry = $value;
+            $o->OriginatingCountryCode = $value;
             $o->write();
+            CountryPrice_OrderDOD::localise_order();
+            CountryPrice_OrderDOD::localise_order();
             CountryPrice_OrderDOD::localise_order();
             return $this->redirectBack('/dev/ecommerce/ecommercetaskcartmanipulation_current/');
         }
+        user_error("There is no cart available.");
+    }
+
+    private function resetSessionVars() {
+        Session::clear("countryfortestingonly");
+        Session::clear("MyCloudFlareCountry");
+        Session::clear("MyCloudFlareIPAddress");
+        Session::clear("ipfortestingonly");
+        Session::save();
     }
 
     function currencypercountry($request){
@@ -130,8 +148,13 @@ class CountryPriceTestController extends ContentController {
 
     function countrieswithoutdistributor($request) {
         $list = EcommerceCountry::get()->filter(array("DistributorID" => 0));
-        foreach($list as $country) {
-            DB::alteration_message("<a href=\"".$country->CMSEditLink()."\">".$country->Code." ".$country->Name."</a>");
+        if(!$list->count()) {
+            DB::alteration_message('All countries have distributors', 'created');
+        }
+        else {
+            foreach($list as $country) {
+                DB::alteration_message("<a href=\"".$country->CMSEditLink()."\">".$country->Code." ".$country->Name."</a>");
+            }
         }
         return $this->index();
     }

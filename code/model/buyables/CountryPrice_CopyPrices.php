@@ -17,7 +17,7 @@ class CountryPrice_CopyPrices extends DataExtension {
         if($this->owner->ID) {
             $page = is_a($this->owner, 'SiteTree'); // We use singleton to skip the different is_a php versions issues
             $tab = 'Root.Countries.Pricing';
-            $fromCountries = EcommerceCountry::get()->filter(array('AlwaysTheSameAsID' => 0));
+            $fromCountries = CountryPrice_EcommerceCountry::get_real_countries_list();
                 //->where('CountryPrice.ObjectClass = \''.$this->owner->ClassName.'\' AND CountryPrice.ObjectID = '.$this->owner->ID.'')
             if($fromCountries && $fromCountries->count()) {
                 $fromCountriesArray = $fromCountries->map('Code', 'Name')->toArray();
