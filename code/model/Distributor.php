@@ -237,6 +237,30 @@ class Distributor extends DataObject implements PermissionProvider {
 
     function requireDefaultRecords() {
         parent::RequireDefaultRecords();
+
+        $filter = array("Title" => "Distributor");
+        $role = PermissionRole::get()->filter($filter)->first();
+        if(!$role) {
+            $role = PermissionRole::create($filter);
+            $role->write();
+            DB::alteration_message("Creating distributor role", 'created');
+        }
+        $codes = array(
+            'CMS_ACCESS_SalesAdmin'
+        );
+        foreach($codes as $code) {
+            $filter = array(
+                "RoleID" => $role->ID,
+                "Code" => $code
+            );
+            $code = PermissionRoleCode::get()->filter($filter)->first();
+            if(!$code) {
+                DB::alteration_message("Adding code to distributor role", 'created');
+                $code = PermissionRoleCode::create($filter);
+                $code->write();
+            }
+        }
+
         $distributorGroup = self::get_distributor_group();
         $distributorPermissionCode = "distributors";
         if(!$distributorGroup) {
@@ -244,27 +268,29 @@ class Distributor extends DataObject implements PermissionProvider {
             $distributorGroup->Code = "distributors";
             $distributorGroup->Title = "distributors";
             $distributorGroup->write();
-            Permission::grant( $distributorGroup->ID, $distributorPermissionCode);
             DB::alteration_message('Distributor Group created',"created");
+            Permission::grant( $distributorGroup->ID, $distributorPermissionCode);
         }
         elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$distributorGroup->ID."' AND \"Code\" LIKE '".$distributorPermissionCode."'")->numRecords() == 0 ) {
             Permission::grant($distributorGroup->ID, $distributorPermissionCode);
             DB::alteration_message('Distributor group permissions granted',"created");
         }
+        $distributorGroup->Roles()->add($role);
         $distributorGroup = self::get_distributor_group();
         if(!$distributorGroup) {
             user_error("could not create user group");
         }
         else {
-            DB::alteration_message('distributor group is ready for use',"created");
+            DB::alteration_message('distributor group is ready for use');
         }
         $distributors = Distributor::get();
         if($distributors && $distributors->count()) {
             foreach($distributors as $distributor) {
-
+                $distributor->write();
             }
         }
     }
+
 
     /**
      * @return DataObject (Group)
@@ -312,6 +338,7 @@ class Distributor extends DataObject implements PermissionProvider {
             $member->FirstName = "this For";
             $member->Surname = $this->Name;
             $group = Group::get()->filter(array("Code" => $this->Config()->get('distributor_permission_code')))->first();
+            $member->DistributorID = $this->ID;
             $member->write();
             if($group) {
                 $member->addToGroupByCode($group->Code);

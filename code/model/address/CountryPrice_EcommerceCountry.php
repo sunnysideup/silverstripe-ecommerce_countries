@@ -28,6 +28,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     );
 
     private static $searchable_fields = array(
+        "AlwaysTheSameAsID" => true,
         "IsBackupCountry" => "ExactMatchFilter"
     );
 
@@ -105,25 +106,10 @@ class CountryPrice_EcommerceCountry extends DataExtension {
         }
     }
 
-    /**
-     * make sure there is always a backup country ...
-     */
-    function requireDefaultRecords(){
-        $backupCountry = EcommerceCountry::get()->filter(array("IsBackupCountry" => 1))->first();
-        if(!$backupCountry) {
-            $backupCountry = self::get_backup_country();
-            if($backupCountry) {
-                $backupCountry->IsBackupCountry = true;
-                $backupCountry->write();
-            }
-        }
-        if($backupCountry) {
-            DB::query("UPDATE EcommerceCountry SET IsBackupCountry = 0 WHERE EcommerceCountry.ID <> ".$backupCountry->ID);
-            DB::alteration_message("Creating back-up country");
-        }
-        else {
-            DB::alteration_message("Back-up country has not been set", "deleted");
-        }
+    public static function get_real_countries_list()
+    {
+        return EcommerceCountry::get()
+            ->filter(array('DoNotAllowSales' => 0, 'AlwaysTheSameAsID' => 0));
     }
 
     /**
@@ -228,6 +214,28 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     public function hasDistributor(){
         $country = self::get_real_country($this->owner);
         return $country->DistributorID && $country->Distributor()->exists();
+    }
+
+
+    /**
+     * make sure there is always a backup country ...
+     */
+    function requireDefaultRecords(){
+        $backupCountry = EcommerceCountry::get()->filter(array("IsBackupCountry" => 1))->first();
+        if(!$backupCountry) {
+            $backupCountry = self::get_backup_country();
+            if($backupCountry) {
+                $backupCountry->IsBackupCountry = true;
+                $backupCountry->write();
+            }
+        }
+        if($backupCountry) {
+            DB::query("UPDATE EcommerceCountry SET IsBackupCountry = 0 WHERE EcommerceCountry.ID <> ".$backupCountry->ID);
+            DB::alteration_message("Creating back-up country");
+        }
+        else {
+            DB::alteration_message("Back-up country has not been set", "deleted");
+        }
     }
 
 }

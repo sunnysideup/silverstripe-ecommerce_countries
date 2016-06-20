@@ -62,7 +62,7 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
         $cachekey = "EcommerceCurrencyCountryMatrix";
         $cache = SS_Cache::factory($cachekey);
         if ( ! ($serializedArray = $cache->load($cachekey))) {
-            $countries = EcommerceCountry::get()->filter(array("AlwaysTheSameAsID" => 0));
+            $countries = CountryPrice_EcommerceCountry::get_real_countries_list();
             $unserializedArray = array();
             $defaultCurrencyCode = EcommerceCurrency::default_currency_code();
             foreach($countries as $country) {

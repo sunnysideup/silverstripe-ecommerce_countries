@@ -4,10 +4,17 @@ Before: 'mysite/*'
 After: 'framework/*','cms/*', 'ecommerce/*'
 ---
 
-
 Product:
   extensions:
     - CountryPrice_BuyableExtension
+
+ProductGroup:
+  extensions:
+    - CountryPrice_ProductGroup
+
+EcommerceDBConfig:
+  extensions:
+    - CountryPrice_EcomDBConfig
 
 Member:
   extensions:
@@ -30,9 +37,14 @@ Order:
   extensions:
     - CountryPrice_OrderDOD
 
+OrderStatusLog:
+  extensions:
+    - CountryPrice_OrderStatusLog
+
 StoreAdmin:
   managed_models:
     - Distributor
+
 
 
 ---

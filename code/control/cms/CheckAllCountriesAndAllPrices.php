@@ -41,8 +41,7 @@ class CheckAllCountriesAndAllPrices extends Controller {
         $countries = null;
         if($member) {
             if(Permission::check('ADMIN')) {
-                $countries = EcommerceCountry::get()
-                    ->filter(array("AlwaysTheSameAsID" => 0))
+                $countries = CountryPrice_EcommerceCountry::get_real_countries_list()
                     ->exclude(array("DistributorID" => 0));
                 $canViewAndEdit = true;
             }
@@ -227,6 +226,9 @@ class CheckAllCountriesAndAllPrices extends Controller {
         return Permission::check('ADMIN') ? 'Shop Administrator' : $this->distributor->Name;
     }
 
+    /**
+     * @return string
+     */
     function DistributorFilterList(){
         $html = "";
         if(!$this->distributor) {
@@ -473,28 +475,30 @@ class CheckAllCountriesAndAllPrices extends Controller {
                 }
                 $addText = 'Add price to start selling';
                 foreach($outstandingCountries as $countryCode) {
-                    $countryObject = EcommerceCountry::get()->filter(array("Code" =>$countryCode))->first();
-                    if(!$countryObject) {user_error("country not found");}
-                    $currencyObject = $countryObject->EcommerceCurrency();
-                    $data = array(
-                        "T" => "CountryPrice",
-                        "I" => array(
-                            'Country' => $countryCode,
-                            'Currency' => $currencyObject->Code,
-                            'ObjectClass' => $product->ClassName,
-                            'ObjectID' => $product->ID
-                        ),
-                        'F' => 'Price'
-                    );
-                    $countryName = EcommerceCountry::find_title($countryCode);
-                    $html .= $this->createEditNode(
-                        $countryCode . ' - '. $countryName,
-                        $currencyObject->Code,
-                        $addText,
-                        $data,
-                        "input",
-                        array($countryObject)
-                    );
+                    if($countryCode != EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+                        $countryObject = EcommerceCountry::get()->filter(array("Code" =>$countryCode))->first();
+                        if(!$countryObject) {user_error("country not found");}
+                        $currencyObject = $countryObject->EcommerceCurrency();
+                        $data = array(
+                            "T" => "CountryPrice",
+                            "I" => array(
+                                'Country' => $countryCode,
+                                'Currency' => $currencyObject->Code,
+                                'ObjectClass' => $product->ClassName,
+                                'ObjectID' => $product->ID
+                            ),
+                            'F' => 'Price'
+                        );
+                        $countryName = EcommerceCountry::find_title($countryCode);
+                        $html .= $this->createEditNode(
+                            $countryCode . ' - '. $countryName,
+                            $currencyObject->Code,
+                            $addText,
+                            $data,
+                            "input",
+                            array($countryObject)
+                        );
+                    }
                 }
                 $html .= $this->closeTreeNode();
                 if($product->hasVariations()) {
