@@ -26,6 +26,9 @@ class CountryPrices_ChangeCountryController extends ContentController
             ShoppingCart::singleton()->clear();
         }
         CountryPrice_OrderDOD::localise_order($newCountryCode);
+        if($page = ProductGroup::get()->first()) {
+            $this->redirect($page->Link());
+        }
         $this->redirectBack();
     }
 

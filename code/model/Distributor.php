@@ -286,7 +286,7 @@ class Distributor extends DataObject implements PermissionProvider {
         $distributors = Distributor::get();
         if($distributors && $distributors->count()) {
             foreach($distributors as $distributor) {
-                $distributor->write();
+                $distributor->setupUser();
             }
         }
     }
@@ -335,7 +335,7 @@ class Distributor extends DataObject implements PermissionProvider {
                 $member->Email = $this->Email;
                 //$thisMember->SetPassword = substr(session_id, 0, 8);
             }
-            $member->FirstName = "this For";
+            $member->FirstName = "Distributor For";
             $member->Surname = $this->Name;
             $group = Group::get()->filter(array("Code" => $this->Config()->get('distributor_permission_code')))->first();
             $member->DistributorID = $this->ID;

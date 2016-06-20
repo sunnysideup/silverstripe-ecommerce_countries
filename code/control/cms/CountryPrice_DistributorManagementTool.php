@@ -201,9 +201,13 @@ class CountryPrice_DistributorManagementTool extends Controller {
         if($fieldName == 'Price' && (! is_numeric($value) || $value < 0)) {
             return 'Price value incorrect';
         }
-
-        $object->$fieldName = $value;
-        $object->write();
+        if($value == '0') {
+            $object->delete();
+            $result = 'deleted';
+        } else  {
+            $object->$fieldName = $value;
+            $object->write();
+        }
 
 
         //create log
@@ -313,6 +317,14 @@ class CountryPrice_DistributorManagementTool extends Controller {
                 $html .= $this->createEditNode(
                     "Registered editors",
                     $memberList
+                );
+                $html .= $this->createEditNode(
+                    "Passwords?",
+                    '
+                        Distriburs can log in using the email(s) listed above.
+                        If they do not have a password they can request a
+                        <a href="/Security/lostpassword">password reset</a>.
+                    '
                 );
                 $html .= $this->closeTreeNode();
             }
@@ -463,7 +475,11 @@ class CountryPrice_DistributorManagementTool extends Controller {
                         }
                         $countryID = array_search($countryPricesObject->Country, $outstandingCountries);
                         if(Permission::check('ADMIN') || $countryID !== false) {
-                            $data = array("T" => "CountryPrice", "I" => $countryPricesObject->ID, "F" => "Price");
+                            $data = array(
+                                "T" => "CountryPrice",
+                                "I" => $countryPricesObject->ID,
+                                "F" => "Price"
+                            );
                             $countryName = EcommerceCountry::find_title($countryPricesObject->Country);
                             $html .= $this->createEditNode(
                                 $countryPricesObject->Country . ' - '. $countryName,
@@ -471,7 +487,8 @@ class CountryPrice_DistributorManagementTool extends Controller {
                                 $countryPricesObject->Price,
                                 $data,
                                 "input",
-                                array($countryObject)
+                                array($countryObject),
+                                '[x]'
                             );
                             unset($outstandingCountries[$countryID]);
                         }
@@ -549,7 +566,8 @@ class CountryPrice_DistributorManagementTool extends Controller {
                                                 $countryPricesObject->Price,
                                                 $data,
                                                 "input",
-                                                array($countryObject)
+                                                array($countryObject),
+                                                '[x]'
                                             );
                                             if($countryPricesObject->Price < $lowestPrice) {
                                                 $lowestPrice = $countryPricesObject->Price;
@@ -571,28 +589,29 @@ class CountryPrice_DistributorManagementTool extends Controller {
                                     }
                                 }
                                 foreach($outstandingCountries as $countryCode) {
-                                    $countryObject = EcommerceCountry::get()->filter(array("Code" =>$countryCode))->first();
-                                    if(!$countryObject) {user_error("country not found");}
-                                    $currency = $countryObject->EcommerceCurrency();
-                                    $data = array(
-                                        "T" => "CountryPrice",
-                                        "I" => array(
-                                            'Country' => $countryCode,
-                                            'Currency' => $currency->Code,
-                                            'ObjectClass' => $variation->ClassName,
-                                            'ObjectID' => $variation->ID
-                                        ),
-                                        'F' => 'Price'
-                                    );
-                                    $countryName = EcommerceCountry::find_title($countryCode);
-                                    $html .= $this->createEditNode(
-                                        $countryCode . ' - '. $countryName,
-                                        $currency->Code,
-                                        $addText,
-                                        $data,
-                                        "input",
-                                        array($countryObject)
-                                    );
+                                    if($countryCode != EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+                                        $countryObject = EcommerceCountry::get()->filter(array("Code" =>$countryCode))->first();
+                                        $currency = $countryObject->EcommerceCurrency();
+                                        $data = array(
+                                            "T" => "CountryPrice",
+                                            "I" => array(
+                                                'Country' => $countryCode,
+                                                'Currency' => $currency->Code,
+                                                'ObjectClass' => $variation->ClassName,
+                                                'ObjectID' => $variation->ID
+                                            ),
+                                            'F' => 'Price'
+                                        );
+                                        $countryName = EcommerceCountry::find_title($countryCode);
+                                        $html .= $this->createEditNode(
+                                            $countryCode . ' - '. $countryName,
+                                            $currency->Code,
+                                            $addText,
+                                            $data,
+                                            "input",
+                                            array($countryObject)
+                                        );
+                                    }
                                 }
                                 $html .= $this->closeTreeNode();
                                 $html .= $this->closeTreeNode();
@@ -679,8 +698,9 @@ class CountryPrice_DistributorManagementTool extends Controller {
      * @param String $label - e.g. My Price
      * @param String $nonEditText - e.g. USD
      * @param String $editText - e.g. 99.95
-     * @param Arra $data - should include the following: "T", "I", "F"
+     * @param Array $data - should include the following: "T", "I", "F"
      * @param String $fieldType -e.g. input, textarea, checkbox
+     * @param DataList $objectArray -e.g. input, textarea, checkbox
      * @return String (<li>edit me</li>)
      */
     private function createEditNode(
@@ -689,7 +709,9 @@ class CountryPrice_DistributorManagementTool extends Controller {
         $editText = "",
         $data = null,
         $fieldType = "input",
-        $objectArray = array()
+        $objectArray = null,
+        $deleteText = ''
+
     ) {
         if(!$data) {
             $ddClass = "readonly";
@@ -728,8 +750,14 @@ class CountryPrice_DistributorManagementTool extends Controller {
             $data = " data-name=\"".Convert::raw2att(Convert::raw2json($data))."\"";
         }
         $filterClass = '';
-        foreach($objectArray as $object) {
-            $filterClass .= ' '.$object->ClassName.$object->ID.' gp'.$object->ClassName;
+        if($objectArray) {
+            foreach($objectArray as $object) {
+                $filterClass .= ' '.$object->ClassName.$object->ID.' gp'.$object->ClassName;
+            }
+        }
+        $deleteLink = '';
+        if($deleteText) {
+            $deleteLink = '<a href="#" class="delete-record">'.$deleteText.'</a>';
         }
         return "
                     <li{$data}{$fieldTypeString} class=\"$filterClass\">
@@ -738,6 +766,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                             <dd class=\"$ddClass valueHolder\">
                                 $nonEditTextNode
                                 $editTextNode
+                                $deleteLink
                             </dd>
                         </dl>
                     </li>";
