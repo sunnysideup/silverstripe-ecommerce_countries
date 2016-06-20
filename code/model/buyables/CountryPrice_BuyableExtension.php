@@ -17,6 +17,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
         "ExcludedCountries" => "EcommerceCountry"
     );
 
+    private static $allow_usage_of_distributor_backup_country_pricing = false;
 
     function updateCMSFields(FieldList $fields) {
         $excludedCountries = EcommerceCountry::get()
@@ -187,22 +188,24 @@ class CountryPrice_BuyableExtension extends DataExtension {
                         }
                     }
                 }
-                //there is a specific country price ...
-                //check for distributor primary country price
-                // if it is the same currency, then use that one ...
-                $distributorCountry = CountryPrice_EcommerceCountry::get_distributor_primary_country($countryCode);
-                if($distributorCurrency = $distributorCountry->EcommerceCurrency()) {
-                    if($distributorCurrency->ID == $currency->ID) {
-                        $distributorCurrencyCode = strtoupper($distributorCurrency->Code);
-                        $distributorCountryCode = $distributorCountry->Code;
-                        if($distributorCurrencyCode && $distributorCountryCode) {
-                            $prices = $this->owner->CountryPrices(
-                                $distributorCountryCode,
-                                $distributorCurrencyCode
-                            );
-                            if($prices && $prices->count() == 1){
-                                self::$_buyable_price[$key] = $prices->First()->Price;
-                                return self::$_buyable_price[$key];
+                if(Config::inst()->get('CountryPrice_BuyableExtension', 'allow_usage_of_distributor_backup_country_pricing')) {
+                    //there is a specific country price ...
+                    //check for distributor primary country price
+                    // if it is the same currency, then use that one ...
+                    $distributorCountry = CountryPrice_EcommerceCountry::get_distributor_primary_country($countryCode);
+                    if($distributorCurrency = $distributorCountry->EcommerceCurrency()) {
+                        if($distributorCurrency->ID == $currency->ID) {
+                            $distributorCurrencyCode = strtoupper($distributorCurrency->Code);
+                            $distributorCountryCode = $distributorCountry->Code;
+                            if($distributorCurrencyCode && $distributorCountryCode) {
+                                $prices = $this->owner->CountryPrices(
+                                    $distributorCountryCode,
+                                    $distributorCurrencyCode
+                                );
+                                if($prices && $prices->count() == 1){
+                                    self::$_buyable_price[$key] = $prices->First()->Price;
+                                    return self::$_buyable_price[$key];
+                                }
                             }
                         }
                     }
@@ -214,7 +217,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
                 return self::$_buyable_price[$key];
             }
             //catch error 2: no country price BUT currency is not default currency ...
-            if($currency && EcommercePayment::site_currency() != $currency->Code) {
+            if(EcommercePayment::site_currency() != $currencyCode) {
                 self::$_buyable_price[$key] = 0;
                 return self::$_buyable_price[$key];
             }
