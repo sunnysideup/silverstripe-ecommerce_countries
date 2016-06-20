@@ -22,3 +22,6 @@ Distributor:
 
 CountryPrice_OrderDOD:
   only_allow_within_country_sales: true
+
+CountryPrice_BuyableExtension:
+  allow_usage_of_distributor_backup_country_pricing: true

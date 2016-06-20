@@ -19,6 +19,12 @@ class CountryPrice extends DataObject {
         'ObjectID' => 'Int'
     );
 
+    private static $field_labels = array(
+        'Currency' => 'Currency Code',
+        'Country' => 'Country Code',
+        'ObjectClass' => 'Buyable Name',
+        'ObjectID' => 'Buyable ID'
+    );
     private static $summary_fields = array(
         'BuyableName' => 'Buyable',
         'CountryName' => 'Country',
@@ -36,15 +42,14 @@ class CountryPrice extends DataObject {
         'Unique' => array(
             'type' => 'unique',
             'value' => 'Country,ObjectClass,ObjectID'
-        )
+        ),
+        'Currency' => true
     );
 
     private static $searchable_fields = array(
         'Price' => 'PartialMatchFilter',
         'Country' => 'PartialMatchFilter',
-        'Currency' => 'PartialMatchFilter',
-        'ObjectClass' => 'ExactMatchFilter',
-        'ObjectID' => 'ExactMatchFilter'
+        'Currency' => 'PartialMatchFilter'
     );
 
 
@@ -125,7 +130,20 @@ class CountryPrice extends DataObject {
 
         if($this->ID) {
             $fields->makeFieldReadonly('Country');
-            $fields->makeFieldReadonly('Currency');
+            $list = EcommerceCurrency::ecommerce_currency_list()->exclude(array("Code" => $this->Currency));
+            if($list->count()) {
+                $listArray = array($this->Currency => $this->Currency) + $list->map("Code", "Name")->toArray();
+            } else {
+                $listArray = array($this->Currency => $this->Currency);
+            }
+            $fields->replaceField(
+                'Currency',
+                DropdownField::create(
+                    'Currency',
+                    'Currency',
+                    $listArray
+                )
+            );
         }
         else {
             $fields->removeByName('Currency');
@@ -138,6 +156,22 @@ class CountryPrice extends DataObject {
         } else  {
             //to do BuyableSelectField
         }
+        $fields->addFieldToTab(
+            'Root.Main',
+            $buyableLink = ReadonlyField::create(
+                'ProductOrService',
+                'Product or Service',
+                '<a href="'.$this->Buyable()->CMSEditLink().'">'.$this->getBuyableName().'</a>'
+            )
+        );
+        $buyableLink->dontEscape = true;
+        $fields->addFieldsToTab(
+            'Root.Debug',
+            array(
+                ReadonlyField::create('ObjectClass','ObjectClass'),
+                ReadonlyField::create('ObjectID','ObjectID')
+            )
+        );
         return $fields;
     }
 

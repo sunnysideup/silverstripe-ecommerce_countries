@@ -42,7 +42,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
             DropdownField::create(
                 'AlwaysTheSameAsID',
                 'Parent Country',
-                EcommerceCountry::get()->filter(array("AlwaysTheSameAsID" => 0))->exclude(array("ID" => $this->owner->ID))->map("ID", "Name")
+                array('' => '--- PLEASE SELECT ---') + EcommerceCountry::get()->filter(array("AlwaysTheSameAsID" => 0))->exclude(array("ID" => $this->owner->ID))->map("ID", "Name")->toArray()
             )
         );
         if($this->owner->AlwaysTheSameAsID) {
@@ -87,8 +87,12 @@ class CountryPrice_EcommerceCountry extends DataExtension {
             $distributors = Distributor::get()
                 ->filter(array("IsDefault" => 0));
             $distributors = $distributors->count() ? $distributors->map('ID', 'Name')->toArray() : array();
-            $fields->addFieldToTab('Root.Main', DropdownField::create('DistributorID', 'Distributor', array(0 => "-- Not Selected --") + $distributors), "DoNotAllowSales");
-
+            $distributors = array('' => '--- PLEASE SELECT ---') + $distributors;
+            $fields->addFieldToTab(
+                'Root.Main',
+                DropdownField::create('DistributorID', 'Distributor', array(0 => "-- Not Selected --") + $distributors),
+                "DoNotAllowSales"
+            );
 
             $fields->addFieldToTab(
                 "Root.Testing",

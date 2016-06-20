@@ -74,10 +74,10 @@ class CountryPrice_OrderDOD extends DataExtension {
             }
             // Called after because some modifiers use the country field to calculate the values
             $order->calculateOrderAttributes(true);
-            if(self::$_number_of_times_we_have_run_localise_order < 3) {
-                self::$_number_of_times_we_have_run_localise_order++;
-                self::localise_order();
-            }
+        }
+        if(self::$_number_of_times_we_have_run_localise_order < 3) {
+            self::$_number_of_times_we_have_run_localise_order++;
+            self::localise_order($countryCode);
         }
     }
 

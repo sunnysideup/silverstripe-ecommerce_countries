@@ -1,7 +1,7 @@
 <?php
 
 
-class CountryPriceTestController extends ContentController {
+class CountryPrice_TestController extends ContentController {
 
     private static $allowed_actions = array(
         "whoami" => true,

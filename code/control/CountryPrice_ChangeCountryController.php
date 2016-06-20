@@ -19,6 +19,12 @@ class CountryPrices_ChangeCountryController extends ContentController
     {
         $newCountryCode = substr(strtoupper($request->param('ID')), 0, 2);
         Session::set('MyCloudFlareCountry', $newCountryCode);
+        $o = Shoppingcart::current_order();
+        if($o && ($o->getCountry() == $newCountryCode)) {
+
+        } else {
+            ShoppingCart::singleton()->clear();
+        }
         CountryPrice_OrderDOD::localise_order($newCountryCode);
         $this->redirectBack();
     }

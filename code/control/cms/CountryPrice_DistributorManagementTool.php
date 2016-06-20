@@ -7,7 +7,7 @@
  *
  */
 
-class CheckAllCountriesAndAllPrices extends Controller {
+class CountryPrice_DistributorManagementTool extends Controller {
 
     private static $allowed_actions = array(
         "setcountryprice" => "ADMIN",
@@ -60,6 +60,10 @@ class CheckAllCountriesAndAllPrices extends Controller {
         if(!$canViewAndEdit) {
             Security::permissionFailure($this, 'Please log in first or log in as a distributor');
         }
+    }
+
+    function index($request) {
+        return $this->renderWith('CountryPrice_DistributorManagementTool');
     }
 
 
@@ -203,7 +207,7 @@ class CheckAllCountriesAndAllPrices extends Controller {
 
 
         //create log
-        $log = new CheckAllCountriesAndAllPrices_Log();
+        $log = new CountryPrice_DistributorManagementTool_Log();
         $member = Member::currentUser();
         $log->UserEmail = $member->Email;
         $log->ObjectClass = $objectClass;
