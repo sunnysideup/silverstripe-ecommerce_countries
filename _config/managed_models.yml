@@ -1,0 +1,3 @@
+ProductsAndGroupsModelAdmin:
+  managed_models:
+     - CountryPrice

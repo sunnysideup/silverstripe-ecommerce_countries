@@ -32,7 +32,7 @@ class Distributor extends DataObject implements PermissionProvider {
     private static $has_many = array(
         'Countries' => 'EcommerceCountry',
         'Members' => 'Member',
-        'Updates' => 'CheckAllCountriesAndAllPrices_Log'
+        'Updates' => 'CountryPrice_DistributorManagementTool_Log'
     );
 
     private static $field_labels = array(

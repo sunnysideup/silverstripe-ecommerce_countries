@@ -1,5 +1,5 @@
 <?php
-class CheckAllCountriesAndAllPrices_Log extends DataObject {
+class CountryPrice_DistributorManagementTool_Log extends DataObject {
 
     private static $db = array(
         "UserEmail" => "Varchar",

@@ -1,6 +1,6 @@
 Director:
   rules:
     "copy-prices//$Action/$ID/": "CountryPrice_CopyPrices_Controller"
-    "distributors-test//$Action/$ID/$OtherID": "CountryPriceTestController"
-    "distributors-admin//$Action/$ID/$OtherID": "CheckAllCountriesAndAllPrices"
+    "distributors-test//$Action/$ID/$OtherID": "CountryPrice_TestController"
+    "distributors-admin//$Action/$ID/$OtherID": "CountryPrice_DistributorManagementTool"
     "shoppingcart-countries//$Action/$ID/$OtherID": "CountryPrices_ChangeCountryController"
