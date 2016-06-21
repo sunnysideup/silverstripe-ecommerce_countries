@@ -125,7 +125,11 @@ class CountryPrice_BuyableExtension extends DataExtension {
             }
         }
         //is there a valid price ???
-        return floatval($this->updateCalculatedPrice()) > 0 ? null : false;
+        $countryPrice = $this->updateCalculatedPrice($countryCode);
+        if($this->owner instanceof Product && $this->owner->hasMethod('hasVariations') && $this->owner->hasVariations()) {
+            return $this->owner->Variations()->First()->canPurchaseByCountry($member, $checkPrice);
+        }
+        return floatval($countryPrice) > 0 ? null : false;
     }
 
     /**
@@ -157,10 +161,12 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * if the default price can be used then we use NULL
      * @return Float | null (ignore this value and use original value)
      */
-    function updateCalculatedPrice() {
+    function updateCalculatedPrice($countryCode = null) {
         //order stuff
         $order = ShoppingCart::current_order();
-        $countryCode = $order->getCountry();
+        if( ! $countryCode) {
+            $countryCode = $order->getCountry();
+        }
         $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
             return null;

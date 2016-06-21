@@ -112,7 +112,6 @@ class Distributor extends DataObject implements PermissionProvider {
                     $config
                 );
                 $fields->addFieldToTab("Root.Countries", $countryField);
-                $fields->removeByName('Members');
                 if($this->Version > 1) {
                     $columns = array(
                         'Version' => 'Version',
@@ -213,14 +212,14 @@ class Distributor extends DataObject implements PermissionProvider {
         parent::onAfterWrite();
         if( ! self::$_ran_after_write) {
             self::$_ran_after_write = true;
-            if( ! $this->PrimaryCountryID) {
+            $primaryCountry = $this->PrimaryCountry();
+            if($primaryCountry && $primaryCountry->exists()) {
+                if( ! $this->Countries()->byID($this->PrimaryCountryID)) {
+                    $this->Countries()->add($primaryCountry);
+                }
+            } else {
                 if($firstCountry = $this->Countries()->First()) {
                     $this->PrimaryCountryID = $firstCountry->ID;
-                }
-            }
-            if($this->PrimaryCountryID) {
-                if( ! $this->Countries()->byID($this->PrimaryCountryID)) {
-                    $this->Countries()->add($this-PrimaryCountry());
                 }
             }
         }
@@ -326,6 +325,7 @@ class Distributor extends DataObject implements PermissionProvider {
 
     function setupUser()
     {
+        $group = Group::get()->filter(array("Code" => $this->Config()->get('distributor_permission_code')))->first();
         if($this->Email) {
             $member = Member::get()
                 ->filter(array("Email" => $this->Email))
@@ -337,13 +337,17 @@ class Distributor extends DataObject implements PermissionProvider {
             }
             $member->FirstName = "Distributor For";
             $member->Surname = $this->Name;
-            $group = Group::get()->filter(array("Code" => $this->Config()->get('distributor_permission_code')))->first();
             $member->DistributorID = $this->ID;
             $member->write();
             if($group) {
                 $member->addToGroupByCode($group->Code);
             }
             $member->write();
+        }
+        if($group) {
+            foreach($this->Members() as $member) {
+                $member->addToGroupByCode($group->Code);
+            }
         }
     }
 }

@@ -156,15 +156,18 @@ class CountryPrice extends DataObject {
         } else  {
             //to do BuyableSelectField
         }
-        $fields->addFieldToTab(
-            'Root.Main',
-            $buyableLink = ReadonlyField::create(
-                'ProductOrService',
-                'Product or Service',
-                '<a href="'.$this->Buyable()->CMSEditLink().'">'.$this->getBuyableName().'</a>'
-            )
-        );
-        $buyableLink->dontEscape = true;
+        $buyable = $this->Buyable();
+        if($buyable && $buyable->exists()) {
+            $fields->addFieldToTab(
+                'Root.Main',
+                $buyableLink = ReadonlyField::create(
+                    'ProductOrService',
+                    'Product or Service',
+                    '<a href="'.$buyable->CMSEditLink().'">'.$this->getBuyableName().'</a>'
+                )
+            );
+            $buyableLink->dontEscape = true;
+        }
         $fields->addFieldsToTab(
             'Root.Debug',
             array(

@@ -15,4 +15,17 @@ class Distributor_MemberDOD extends DataExtension {
         $distributors = Distributor::get()->map('ID', 'Name')->toArray();
         $fields->addFieldToTab('Root.Distributor', new DropdownField('DistributorID', 'Distributor', $distributors, '', null, '-- Select --'));
     }
+
+    function onAfterWrite()
+    {
+        if($this->owner->DistributorID) {
+            $distributor = $this->owner->Distributor();
+            if($distributor && $distributor->exists()) {
+                $group = Group::get()->filter(array("Code" => Config::inst()->get('Distributor', 'distributor_permission_code')))->first();
+                if($group) {
+                    $this->owner->addToGroupByCode($group->Code);
+                }
+            }
+        }
+    }
 }
