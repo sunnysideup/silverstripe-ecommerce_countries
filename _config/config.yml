@@ -4,6 +4,14 @@ Before: 'mysite/*'
 After: 'framework/*','cms/*', 'ecommerce/*'
 ---
 
+SiteTree:
+  extensions:
+    - CountryPrice_SiteTreeExtions
+
+Page_Controller:
+  extensions:
+    - CountryPrice_Page_Controller_Extension
+
 Product:
   extensions:
     - CountryPrice_BuyableExtension
@@ -44,6 +52,7 @@ OrderStatusLog:
 StoreAdmin:
   managed_models:
     - Distributor
+
 
 ---
 Only:
