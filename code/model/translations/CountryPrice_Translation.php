@@ -20,12 +20,6 @@ class CountryPrice_Translation extends DataObject
         'Parent' => 'SiteTree'
     );
 
-    private static $indexes = array(
-        'EcommerceCountryPageUnique' => array(
-            'type' => 'unique',
-            'value' => 'EcommerceCountryID,ParentID'
-        )
-    );
     private static $summary_fields = array(
         'EcommerceCountry.Name' => 'Country',
         'Title' => 'Title'
@@ -60,15 +54,17 @@ class CountryPrice_Translation extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
+        $countries = CountryPrice_EcommerceCountry::get_real_countries_list()->map()->toArray();
         $fields->addFieldToTab(
             'Root.Main',
             DropdownField::create(
                 'EcommerceCountryID',
                 'Country',
-                CountryPrice_EcommerceCountry::get_real_countries_list()->map()->toArray()
+                $countries
             ),
             'Title'
         );
+        $fields->removeFieldFromTab("Root.Main", 'ParentID');
         return $fields;
     }
 
@@ -77,6 +73,32 @@ class CountryPrice_Translation extends DataObject
             return parent::canCreate($member);
         }
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function validate()
+    {
+        $validation = parent::validate();
+        if($validation->valid()) {
+            if($this->exists()) {
+                $existing = CountryPrice_Translation::get()
+                    ->exclude(array("ID" => $this->ID))
+                    ->filter(
+                        array(
+                            "EcommerceCountryID" => $this->EcommerceCountryID,
+                            "ParentID" => $this->ParentID
+                        )
+                    );
+                if($existing->count() > 0) {
+                    $validation->error(
+                        'There is already an entry for this country and page'
+                    );
+                }
+            }
+        }
+        return $validation;
     }
 
 }

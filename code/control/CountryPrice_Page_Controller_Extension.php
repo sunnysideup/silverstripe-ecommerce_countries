@@ -4,16 +4,30 @@
 class CountryPrice_Page_Controller_Extension extends Extension
 {
 
-    private static $local_get_parameter = 'locale';
+    private static $locale_get_parameter = 'ecomlocale';
+
     /**
      * replaces `Title` and `Content` with translated content
-     * where available
+     * where available.
+     *
+     * If the country code in the get parameter is not correct then
      * @return [type] [description]
      */
     function onAfterInit()
     {
         $countryID = 0;
+        $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'local_get_parameter');
+        $countryCode = '';
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
+        if(isset($_GET[$param])) {
+            $countryCode = Convert::raw2sql($_GET[$param]);
+            if($countryObject->Code != $countryCode) {
+                return $this->owner->redirect(
+                    CountryPrices_ChangeCountryController::new_country_link($countryCode)
+                );
+            }
+        }
+
         if($countryObject) {
             $countryID = $countryObject->ID;
         }
@@ -27,12 +41,11 @@ class CountryPrice_Page_Controller_Extension extends Extension
             )
             ->first();
         if($translation) {
-            die("aas");
             $this->owner->Content = $translation->Content;
             $this->owner->Title = $translation->Title;
-            $newURL = $this->addCountryCodeToUrlIfRequired($countryCode);
+            $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
             if($newURL) {
-                return $this->redirect($newURL);
+                return $this->owner->redirect($newURL);
             }
         }
     }
@@ -61,9 +74,9 @@ class CountryPrice_Page_Controller_Extension extends Extension
      */
     private function addCountryCodeToUrlIfRequired($countryCode = '')
     {
-        $url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $oldURL = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
-        $urlParts = parse_url($url);
+        $urlParts = parse_url($oldURL);
         parse_str($urlParts['query'], $params);
 
         $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'local_get_parameter');
@@ -76,7 +89,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
         if(function_exists('http_build_url')) {
             $newURL = http_build_url($urlParts);
         } else {
-            $newURL =  $url_parts['scheme'] . '://' . $url_parts['host'] . $url_parts['path'] . '?' . $url_parts['query'];
+            $newURL =  $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . '?' . $urlParts['query'];
         }
 
         if($oldURL !== $newURL && self::$_redirection_count < 3) {
@@ -103,6 +116,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
             $currency = null;
             if($isCurrentOne) {
                 $currency = CountryPrice_EcommerceCurrency::get_currency_for_country($country->Code);
+                $currencyCode = CountryPrice_EcommerceCurrency::get_currency_for_country($country->Code);
             }
             $al->push(
                 ArrayData::create(
@@ -110,7 +124,8 @@ class CountryPrice_Page_Controller_Extension extends Extension
                         'Link' => CountryPrices_ChangeCountryController::new_country_link($country->Code),
                         'Title' => $country->Name,
                         'LinkingMode' => ($isCurrentOne? 'current' : 'link'),
-                        'Currency' => $currency
+                        'Currency' => $currency,
+                        'CurrencyCode' => $currency
                     )
                 )
             );
