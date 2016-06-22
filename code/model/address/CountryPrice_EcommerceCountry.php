@@ -160,9 +160,10 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     public static function get_real_country($country = null)
     {
         if($country && ( ! is_object($country))) {
-            $originalCode = $country;
-            if(isset(self::$_get_real_country_cache)) {
-                return self::$_get_real_country_cache;
+            if(isset(self::$_get_real_country_cache[$country])) {
+                return self::$_get_real_country_cache[$country];
+            } else {
+                $originalCode = $country;
             }
         }
         $order = ShoppingCart::current_order();
@@ -191,8 +192,11 @@ class CountryPrice_EcommerceCountry extends DataExtension {
                 }
             }
         }
+        if(! $country instanceof EcommerceCountry) {
+            user_error('No country could be found');
+        }
         if(!empty($originalCode)) {
-            self::$_get_real_country_cache[$originalCode] == $country;
+            self::$_get_real_country_cache[$originalCode] = $country;
         }
         return $country;
     }

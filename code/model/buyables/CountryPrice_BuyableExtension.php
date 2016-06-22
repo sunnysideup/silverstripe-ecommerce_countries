@@ -112,13 +112,13 @@ class CountryPrice_BuyableExtension extends DataExtension {
         }
         if($this->owner->AllCountries) {
             //is there a valid price ???
-            return floatval($this->updateCalculatedPrice($countryObject)) > 0 ? null : false;
+            return floatval($this->updateCalculatedPrice()) > 0 ? null : false;
         }
         if($countryCode) {
             $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
             if($included) {
                 //is there a valid price ???
-                return floatval($this->updateCalculatedPrice($countryObject)) > 0 ? null : false;
+                return floatval($this->updateCalculatedPrice()) > 0 ? null : false;
 
             }
             $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
@@ -163,10 +163,12 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * if the default price can be used then we use NULL
      * @return Float | null (ignore this value and use original value)
      */
-    function updateCalculatedPrice($countryCode = null) {
-        //order stuff
+    function updateCalculatedPrice($price) {
+        $countryCode = '';
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
-        $countryCode = ($countryObject ? $countryObject->Code : '');
+        if($countryObject) {
+            $countryCode = $countryObject->Code;
+        }
         if($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
             return null;
         }
