@@ -155,7 +155,7 @@ class CountryPrice_OrderDOD extends DataExtension {
         //set IP
         $this->owner->IP = EcommerceCountry::get_ip();
 
-        //set country
+        //here we need to get the REAL ORIGINAL COUNTRY
         $countryCode = EcommerceCountry::get_country();
         if(Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
             $this->owner->CurrencyCountry = $countryCode;
@@ -187,7 +187,7 @@ class CountryPrice_OrderDOD extends DataExtension {
                 ->filter(
                     array(
                         "OrderStepID" => $step->ID,
-                        "EcommerceCountryID" => EcommerceCountry::get_country_id($countryCode)
+                        "EcommerceCountryID" => CountryPrice_EcommerceCountry::get_real_country($countryCode)
                     )
                 )
                 ->first();

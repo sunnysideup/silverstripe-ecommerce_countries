@@ -101,8 +101,11 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @return false | null
      */
     function canPurchaseByCountry(Member $member = null, $checkPrice = true) {
-        $countryCode = EcommerceCountry::get_country();
-        $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        $countryCode = '';
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        if($countryObject) {
+            $countryCode = $countryObject->Code;
+        }
         if($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
             return null;
         }

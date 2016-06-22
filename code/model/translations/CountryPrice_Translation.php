@@ -2,7 +2,7 @@
 
 
 
-class CountryPrice_Translations extends DataObject
+class CountryPrice_Translation extends DataObject
 {
     private static $db = array(
         'Title' => 'Varchar(200)',
@@ -22,8 +22,8 @@ class CountryPrice_Translations extends DataObject
 
     private static $indexes = array(
         'EcommerceCountryPageUnique' => array(
-            'type' => 'Unique',
-            'Value' => 'EcommerceCountryID,ParentID'
+            'type' => 'unique',
+            'value' => 'EcommerceCountryID,ParentID'
         )
     );
     private static $summary_fields = array(
@@ -67,7 +67,7 @@ class CountryPrice_Translations extends DataObject
                 'Country',
                 CountryPrice_EcommerceCountry::get_real_countries_list()->map()->toArray()
             ),
-            'Content'
+            'Title'
         );
         return $fields;
     }

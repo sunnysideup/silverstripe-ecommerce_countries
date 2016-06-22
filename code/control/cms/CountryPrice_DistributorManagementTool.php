@@ -111,14 +111,18 @@ class CountryPrice_DistributorManagementTool extends Controller {
         }
 
         $country = strtoupper($_REQUEST['Country']);
-        CountryPrice_EcommerceCountry::get_real_country(Convert::raw2sql($country));
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country(Convert::raw2sql($country));
+        $countryCode = '';
+        if($countryObject) {
+            $countryCode = $countryObject->Code;
+        }
         $valid = false;
         $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
-        if(isset($currencyPerCountry[$country])) {
+        if(isset($currencyPerCountry[$countryCode])) {
             $valid = true;
             if($this->distributor) {
                 $countries = $this->distributor->Countries()->map('Code', 'Code')->toArray();
-                if(! in_array($country, $countries)) {
+                if(! in_array($countryCode, $countries)) {
                     $valid = false;
                 }
             }
@@ -140,7 +144,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
         DB::query("
             INSERT INTO \"CountryPrice\"
                 (\"Created\",\"LastEdited\",\"Price\",\"Country\",\"Currency\",\"ObjectClass\",\"ObjectID\")
-            VALUES (NOW(),NOW(),$price,'$country','$currency','$objectClass',$objectID)
+            VALUES (NOW(),NOW(),$price,'$countryCode','$currency','$objectClass',$objectID)
             ON DUPLICATE KEY UPDATE \"LastEdited\" = VALUES(\"LastEdited\"), \"Price\" = VALUES(\"Price\")");
 
         return true;

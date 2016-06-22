@@ -4,7 +4,7 @@
 class CountryPrice_SiteTreeExtions extends SiteTreeExtension
 {
     private static $has_many = array(
-        'CountryPriceTranslations' => 'CountryPrice_Translations'
+        'CountryPriceTranslations' => 'CountryPrice_Translation'
     );
 
     private static $field_labels = array(

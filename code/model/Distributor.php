@@ -21,8 +21,7 @@ class Distributor extends DataObject implements PermissionProvider {
         'WebAddress' => "Varchar(255)",
         'DeliveryCostNote' => 'Varchar(255)',
         'ShippingEstimation' => 'Varchar(255)',
-        'ReturnInformation' => 'Varchar(255)',
-        'ProductNotAvailableNote' => 'HTMLText'
+        'ReturnInformation' => 'Varchar(255)'
     );
 
     private static $has_one = array(
@@ -62,14 +61,11 @@ class Distributor extends DataObject implements PermissionProvider {
      * @return Distributor
      */
     public static function get_one_for_country($countryCode) {
-        $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
-        if($countryCode) {
-            $countryObject = EcommerceCountry::get()->filter(array("Code" => $countryCode))->First();
-            if($countryObject) {
-                $distributor = $countryObject->Distributor();
-                if($distributor->exists()) {
-                    return $distributor;
-                }
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode)->Code;
+        if($countryObject) {
+            $distributor = $countryObject->Distributor();
+            if($distributor && $distributor->exists()) {
+                return $distributor;
             }
         }
         return Distributor::get()

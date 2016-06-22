@@ -5,6 +5,7 @@ class CountryPrice_ProductGroup extends DataExtension
     private static $db = array(
         'NoProductsInYourCountry' => 'HTMLText'
     );
+    
     private static $casting = array(
         'NoProductsInYourCountryMessage' => 'HTMLText'
     );

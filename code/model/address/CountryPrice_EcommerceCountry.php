@@ -121,8 +121,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
      */
     public static function get_distributor_country($countryCode = null)
     {
-        $countryObject = EcommerceCountry::get_country_object(false, $countryCode);
-        $countryObject = self::get_real_country($countryObject);
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if($countryObject && $countryObject->hasDistributor()) {
             //do nothing ...
         } else {
@@ -141,10 +140,9 @@ class CountryPrice_EcommerceCountry extends DataExtension {
      */
     public static function get_distributor_primary_country($countryCode = null)
     {
-        $countryObject = EcommerceCountry::get_country_object(false, $countryCode);
-        $countryObject = self::get_real_country($countryObject);
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if($countryObject && $countryObject->hasDistributor()) {
-            $countryObject->Distributor()->PrimaryCountry();
+            return $countryObject->Distributor()->PrimaryCountry();
             //do nothing ...
         } else {
             $countryObject = self::get_backup_country();
@@ -152,14 +150,28 @@ class CountryPrice_EcommerceCountry extends DataExtension {
         return $countryObject;
     }
 
+    private static $_get_real_country_cache = array();
 
     /**
      * returns the 'always the same as' (parent) country if necessary
-     * @param  EcommerceCountry | string | int   $countryCodeOrObject
+     * @param  EcommerceCountry | string | int   (optional)  $countryCodeOrObject
      * @return EcommerceCountry | string | int
      */
-    public static function get_real_country($country)
+    public static function get_real_country($country = null)
     {
+        if($country && ( ! is_object($country))) {
+            $originalCode = $country;
+            if(isset(self::$_get_real_country_cache)) {
+                return self::$_get_real_country_cache;
+            }
+        }
+        $order = ShoppingCart::current_order();
+        if( ! $country) {
+            $country = $order->getCountry();
+        }
+        if( ! $country ) {
+            $country = EcommerceCountry::get_country();
+        }
         if($country instanceof EcommerceCountry) {
             $type = "object";
             //do nothing
@@ -170,25 +182,19 @@ class CountryPrice_EcommerceCountry extends DataExtension {
             $type = "string";
             $country = strtoupper($country);
             $country = EcommerceCountry::get_country_object(false, $country);
-        } else {
-            return $country;
         }
-        if( ! $country) {
-            return $country;
-        }
-        elseif($country->AlwaysTheSameAsID) {
-            $realCountry = $country->AlwaysTheSameAs();
-            if($realCountry && $realCountry->exists()) {
-                $country = $realCountry;
+        if($country && $country instanceof EcommerceCountry) {
+            if($country->AlwaysTheSameAsID) {
+                $realCountry = $country->AlwaysTheSameAs();
+                if($realCountry && $realCountry->exists()) {
+                    $country = $realCountry;
+                }
             }
         }
-        if($type == "object") {
-            return $country;
-        } elseif($type == "number") {
-            return $country->ID;
-        } elseif ($type == "string"){
-            return $country->Code;
+        if(!empty($originalCode)) {
+            self::$_get_real_country_cache[$originalCode] == $country;
         }
+        return $country;
     }
     /**
      *
@@ -212,8 +218,12 @@ class CountryPrice_EcommerceCountry extends DataExtension {
      * @return boolean
      */
     public function hasDistributor(){
-        $country = self::get_real_country($this->owner);
-        return $country->DistributorID && $country->Distributor()->exists();
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country($this->owner);
+
+        return
+            $countryObject->DistributorID &&
+            $countryObject->Distributor() &&
+            $countryObject->Distributor()->exists();
     }
 
 
