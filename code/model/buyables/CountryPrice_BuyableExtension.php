@@ -127,7 +127,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
             }
         }
         //is there a valid price ???
-        $countryPrice = $this->updateCalculatedPrice($countryObject);
+        $countryPrice = $this->updateCalculatedPrice();
         if($this->owner instanceof Product && $this->owner->hasMethod('hasVariations') && $this->owner->hasVariations()) {
             return $this->owner->Variations()->First()->canPurchaseByCountry($member, $checkPrice);
         }
