@@ -163,7 +163,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * if the default price can be used then we use NULL
      * @return Float | null (ignore this value and use original value)
      */
-    function updateCalculatedPrice($price) {
+    function updateCalculatedPrice($price = null) {
         $countryCode = '';
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if($countryObject) {
