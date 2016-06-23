@@ -1,6 +1,17 @@
 <?php
 
 
+/**
+ * www.mysite.com/mypage/?ecomlocale=AU
+ * if there is a tranlsation page redirects to
+ * URL with ?ecomlocale=AU
+ *
+ * if you go to a URL with ?ecomlocale=AU and the shop country does not match
+ * the get param then you get redirected to that shop country.
+ *
+ *
+ */
+
 class CountryPrice_Page_Controller_Extension extends Extension
 {
 
@@ -17,7 +28,6 @@ class CountryPrice_Page_Controller_Extension extends Extension
     {
         $countryID = 0;
         $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'local_get_parameter');
-        $countryCode = '';
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
         if(isset($_GET[$param])) {
             $countryCode = Convert::raw2sql($_GET[$param]);
@@ -56,8 +66,23 @@ class CountryPrice_Page_Controller_Extension extends Extension
      */
     function CountryDistributorBestContentValue($fieldName)
     {
-        $countryCode = EcommerceCountry::get_real();
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country();
 
+        //check country
+        if(!empty($countryObject->$fieldName)) {
+            return $countryObject->$fieldName;
+        }
+
+        //check distributor
+        $distributor = Distributor::get_one_for_country($countryObject->Code);
+        if(!empty($distributor->$fieldName)) {
+            return $distributor->$fieldName;
+        }
+        //check EcomConfig
+        $distributor = Distributor::get_one_for_country($countryObject->Code);
+        if(!empty($distributor->$fieldName)) {
+            return $distributor->$fieldName;
+        }
     }
 
     /**

@@ -57,10 +57,11 @@ class Distributor extends DataObject implements PermissionProvider {
 
     /**
      * returns the Distributor for the country OR the default Distributor.
-     * @param String $country = the country code.
+     * @param String $countryCode = the country code.
+     * 
      * @return Distributor
      */
-    public static function get_one_for_country($countryCode) {
+    public static function get_one_for_country($countryCode = '') {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if($countryObject) {
             $distributor = $countryObject->Distributor();
