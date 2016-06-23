@@ -32,7 +32,10 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
      * @return EcommerceCurrency
      */
     public static function get_currency_for_country($countryCode) {
-        $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        if($countryObject) {
+            $countryCode = $countryObject->Code;
+        }
         $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
         $currencyDO = null;
         if($countryCode) {
@@ -65,14 +68,14 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
             $countries = CountryPrice_EcommerceCountry::get_real_countries_list();
             $unserializedArray = array();
             $defaultCurrencyCode = EcommerceCurrency::default_currency_code();
-            foreach($countries as $country) {
-                $currency = $country->EcommerceCurrency();
+            foreach($countries as $countryObject) {
                 $currencyCode = $defaultCurrencyCode;
+                $currency = $countryObject->EcommerceCurrency();
                 if($currency && $currency->exists()) {
                     $currencyCode = $currency->Code;
                 }
-                $countryCode = CountryPrice_EcommerceCountry::get_real_country($country->Code);
-                $unserializedArray[$countryCode] = $currencyCode;
+                $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryObject);
+                $unserializedArray[$countryObject->Code] = $currencyCode;
             }
             $cache->save(serialize($unserializedArray), $cachekey);
             return $unserializedArray;

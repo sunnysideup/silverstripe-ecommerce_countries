@@ -61,7 +61,7 @@ class DistributorFAQPage_Controller extends Page_Controller {
      *
      */
     function getContent() {
-        $country = $this->MyDistributorCountry();
+        $country = CountryPrice_EcommerceCountry::get_distributor_country();
         if($country && strlen($country->FAQContent) > 17) {
             return $country->FAQContent;
         }
@@ -69,4 +69,9 @@ class DistributorFAQPage_Controller extends Page_Controller {
             return $this->dataRecord->Content;
         }
     }
+
+    function Distributor() {
+
+    }
+
 }

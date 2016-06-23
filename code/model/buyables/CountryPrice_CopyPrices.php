@@ -58,14 +58,19 @@ class CountryPrice_CopyPrices extends DataExtension {
      */
     function updatePrices($fromCountryCode, array $toCountriesArray) {
         $fromCountryObject = EcommerceCountry::get()->filter(array("Code" => $fromCountryCode));
-        $fromCountryObject = CountryPrice_EcommerceCountry::get_real_country($fromCountryObject);
+        if($fromCountryObject) {
+            $fromCountryObject = CountryPrice_EcommerceCountry::get_real_country($fromCountryObject);
+        }
+        else {
+            user_error('From Country is not valid');
+        }
         $currencyObject = $fromCountryObject->EcommerceCurrency();
         if($currencyObject && $currencyObject->Code) {
             $values = $this->getUpdatePriceValues($fromCountryCodeA, $currencyObject->Code, array());
-            foreach($toCountriesArray as $country) {
-                $country = CountryPrice_EcommerceCountry::get_real_country($country);
+            foreach($toCountriesArray as $toCountryCode) {
+                $toCountryCode = CountryPrice_EcommerceCountry::get_real_country($toCountryCode)->Code;
                 foreach($values as $value) {
-                    $sqlValues[] = "(NOW(),NOW(),{$value[0]},'$country','".$currencyObject->Code."','{$value[1]}',{$value[2]})";
+                    $sqlValues[] = "(NOW(),NOW(),{$value[0]},'$toCountryCode','".$currencyObject->Code."','{$value[1]}',{$value[2]})";
                 }
             }
             if(isset($sqlValues)) {
@@ -92,7 +97,7 @@ class CountryPrice_CopyPrices extends DataExtension {
      * @return array          [description]
      */
     public function getUpdatePriceValues($fromCountryCode, $currencyCode, array $values) {
-        $fromCountryCode = CountryPrice_EcommerceCountry::get_real_country($fromCountryCode);
+        $fromCountryCode = CountryPrice_EcommerceCountry::get_real_country($fromCountryCode)->Code;
         if($this->owner->hasExtension('CountryPrice_BuyableExtension')) {
             $countryPrice = $this->owner->CountryPrices($fromCountry, $currency);
             if($countryPrice) {

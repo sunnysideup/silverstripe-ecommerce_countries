@@ -21,8 +21,7 @@ class Distributor extends DataObject implements PermissionProvider {
         'WebAddress' => "Varchar(255)",
         'DeliveryCostNote' => 'Varchar(255)',
         'ShippingEstimation' => 'Varchar(255)',
-        'ReturnInformation' => 'Varchar(255)',
-        'ProductNotAvailableNote' => 'HTMLText'
+        'ReturnInformation' => 'Varchar(255)'
     );
 
     private static $has_one = array(
@@ -58,18 +57,16 @@ class Distributor extends DataObject implements PermissionProvider {
 
     /**
      * returns the Distributor for the country OR the default Distributor.
-     * @param String $country = the country code.
+     * @param String $countryCode = the country code.
+     * 
      * @return Distributor
      */
-    public static function get_one_for_country($countryCode) {
-        $countryCode = CountryPrice_EcommerceCountry::get_real_country($countryCode);
-        if($countryCode) {
-            $countryObject = EcommerceCountry::get()->filter(array("Code" => $countryCode))->First();
-            if($countryObject) {
-                $distributor = $countryObject->Distributor();
-                if($distributor->exists()) {
-                    return $distributor;
-                }
+    public static function get_one_for_country($countryCode = '') {
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        if($countryObject) {
+            $distributor = $countryObject->Distributor();
+            if($distributor && $distributor->exists()) {
+                return $distributor;
             }
         }
         return Distributor::get()
@@ -112,7 +109,6 @@ class Distributor extends DataObject implements PermissionProvider {
                     $config
                 );
                 $fields->addFieldToTab("Root.Countries", $countryField);
-                $fields->removeByName('Members');
                 if($this->Version > 1) {
                     $columns = array(
                         'Version' => 'Version',
@@ -213,14 +209,14 @@ class Distributor extends DataObject implements PermissionProvider {
         parent::onAfterWrite();
         if( ! self::$_ran_after_write) {
             self::$_ran_after_write = true;
-            if( ! $this->PrimaryCountryID) {
+            $primaryCountry = $this->PrimaryCountry();
+            if($primaryCountry && $primaryCountry->exists()) {
+                if( ! $this->Countries()->byID($this->PrimaryCountryID)) {
+                    $this->Countries()->add($primaryCountry);
+                }
+            } else {
                 if($firstCountry = $this->Countries()->First()) {
                     $this->PrimaryCountryID = $firstCountry->ID;
-                }
-            }
-            if($this->PrimaryCountryID) {
-                if( ! $this->Countries()->byID($this->PrimaryCountryID)) {
-                    $this->Countries()->add($this-PrimaryCountry());
                 }
             }
         }
@@ -326,6 +322,7 @@ class Distributor extends DataObject implements PermissionProvider {
 
     function setupUser()
     {
+        $group = Group::get()->filter(array("Code" => $this->Config()->get('distributor_permission_code')))->first();
         if($this->Email) {
             $member = Member::get()
                 ->filter(array("Email" => $this->Email))
@@ -337,13 +334,17 @@ class Distributor extends DataObject implements PermissionProvider {
             }
             $member->FirstName = "Distributor For";
             $member->Surname = $this->Name;
-            $group = Group::get()->filter(array("Code" => $this->Config()->get('distributor_permission_code')))->first();
             $member->DistributorID = $this->ID;
             $member->write();
             if($group) {
                 $member->addToGroupByCode($group->Code);
             }
             $member->write();
+        }
+        if($group) {
+            foreach($this->Members() as $member) {
+                $member->addToGroupByCode($group->Code);
+            }
         }
     }
 }

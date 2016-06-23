@@ -438,10 +438,7 @@ class CountryPrice_TestController extends ContentController {
      * @return EcommerceCountry
      */
     public function MyDistributorCountry() {
-        $countryCode = CountryPrice_EcommerceCountry::get_distributor_country();
-        $countryObject = EcommerceCountry::get()
-            ->filter(array("Code" => $countryCode->Code))
-            ->First();
+        return CountryPrice_EcommerceCountry::get_distributor_country();
         return $countryObject;
     }
 

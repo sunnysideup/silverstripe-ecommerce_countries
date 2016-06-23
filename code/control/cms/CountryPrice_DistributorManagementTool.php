@@ -10,8 +10,8 @@
 class CountryPrice_DistributorManagementTool extends Controller {
 
     private static $allowed_actions = array(
-        "setcountryprice" => "ADMIN",
-        "setobjectfield" => "ADMIN"
+        "setcountryprice" => 'distributors',
+        "setobjectfield" => 'distributors'
     );
 
     /**
@@ -29,7 +29,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
      *
      * @Var Array
      */
-    private $countryArray = array(0 => "--");
+    private $countryArray = array();
 
     /**
      * determine level of access
@@ -111,14 +111,18 @@ class CountryPrice_DistributorManagementTool extends Controller {
         }
 
         $country = strtoupper($_REQUEST['Country']);
-        CountryPrice_EcommerceCountry::get_real_country(Convert::raw2sql($country));
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country(Convert::raw2sql($country));
+        $countryCode = '';
+        if($countryObject) {
+            $countryCode = $countryObject->Code;
+        }
         $valid = false;
         $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
-        if(isset($currencyPerCountry[$country])) {
+        if(isset($currencyPerCountry[$countryCode])) {
             $valid = true;
             if($this->distributor) {
                 $countries = $this->distributor->Countries()->map('Code', 'Code')->toArray();
-                if(! in_array($country, $countries)) {
+                if(! in_array($countryCode, $countries)) {
                     $valid = false;
                 }
             }
@@ -140,7 +144,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
         DB::query("
             INSERT INTO \"CountryPrice\"
                 (\"Created\",\"LastEdited\",\"Price\",\"Country\",\"Currency\",\"ObjectClass\",\"ObjectID\")
-            VALUES (NOW(),NOW(),$price,'$country','$currency','$objectClass',$objectID)
+            VALUES (NOW(),NOW(),$price,'$countryCode','$currency','$objectClass',$objectID)
             ON DUPLICATE KEY UPDATE \"LastEdited\" = VALUES(\"LastEdited\"), \"Price\" = VALUES(\"Price\")");
 
         return true;
@@ -423,9 +427,10 @@ class CountryPrice_DistributorManagementTool extends Controller {
         $products = Product::get()
             ->filter(array("AllowPurchase" => 1))
             ->sort("FullSiteTreeSort", "ASC");
-        $defaultPriceText = ' (Default for new variations)';
+        $defaultPriceText = ' (N.B. This is default for new variations ONLY - set actual prices under variations)';
         if($products && $products->count()) {
             foreach($products as $product) {
+                $withDefaultPrices = Permission::check('ADMIN') || (! $product->hasVariations());
                 $html .= $this->createTreeNode($product->FullName, "pricing", array($product));
 
                 //country exceptions
@@ -445,25 +450,29 @@ class CountryPrice_DistributorManagementTool extends Controller {
                         );
                     }
                     //only show default price for ShopAdmin
-                    $html .= $this->createEditNode(
-                        'Default Price' . ($product->hasVariations() ? $defaultPriceText : ''),
-                        EcommercePayment::site_currency(),
-                        $product->Price,
-                        array(
-                            "T" => "Product",
-                            "F" => "Price",
-                            "I" => $product->ID
-                        )
-                    );
+                    if( $withDefaultPrices) {
+                        $html .= $this->createEditNode(
+                            'Default Price' . ($product->hasVariations() ? $defaultPriceText : ''),
+                            EcommercePayment::site_currency(),
+                            $product->Price,
+                            array(
+                                "T" => "Product",
+                                "F" => "Price",
+                                "I" => $product->ID
+                            )
+                        );
+                    }
                 }
 
                 //country prices
                 $outstandingCountries = $this->countryArray;
                 $countryPricesObjects = $product->CountryPrices();
-                $html .= $this->createTreeNode(
-                    'Country Prices' . ($product->hasVariations() ? $defaultPriceText : ''),
-                    " pricing countryPrices"
-                );
+                if($withDefaultPrices ) {
+                    $html .= $this->createTreeNode(
+                        'Country Prices' . ($product->hasVariations() ? $defaultPriceText : ''),
+                        " pricing countryPrices"
+                    );
+                }
                 $arrayOfProductCountryCurencyPrices = array();
                 $countriesWithProductPrices = array();
                 if($countryPricesObjects->count()) {
@@ -481,15 +490,17 @@ class CountryPrice_DistributorManagementTool extends Controller {
                                 "F" => "Price"
                             );
                             $countryName = EcommerceCountry::find_title($countryPricesObject->Country);
-                            $html .= $this->createEditNode(
-                                $countryPricesObject->Country . ' - '. $countryName,
-                                $countryPricesObject->Currency,
-                                $countryPricesObject->Price,
-                                $data,
-                                "input",
-                                array($countryObject),
-                                '[x]'
-                            );
+                            if($withDefaultPrices) {
+                                $html .= $this->createEditNode(
+                                    $countryPricesObject->Country . ' - '. $countryName,
+                                    $countryPricesObject->Currency,
+                                    $countryPricesObject->Price,
+                                    $data,
+                                    "input",
+                                    array($countryObject),
+                                    '[x]'
+                                );
+                            }
                             unset($outstandingCountries[$countryID]);
                         }
                     }
@@ -497,7 +508,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                 $addText = 'Add price to start selling';
                 foreach($outstandingCountries as $countryCode) {
                     if($countryCode != EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
-                        $countryObject = EcommerceCountry::get()->filter(array("Code" =>$countryCode))->first();
+                        $countryObject = EcommerceCountry::get()->filter(array("Code" => $countryCode))->first();
                         if(!$countryObject) {user_error("country not found");}
                         $currencyObject = $countryObject->EcommerceCurrency();
                         $data = array(
@@ -511,17 +522,21 @@ class CountryPrice_DistributorManagementTool extends Controller {
                             'F' => 'Price'
                         );
                         $countryName = EcommerceCountry::find_title($countryCode);
-                        $html .= $this->createEditNode(
-                            $countryCode . ' - '. $countryName,
-                            $currencyObject->Code,
-                            $addText,
-                            $data,
-                            "input",
-                            array($countryObject)
-                        );
+                        if($withDefaultPrices) {
+                            $html .= $this->createEditNode(
+                                $countryCode . ' - '. $countryName,
+                                $currencyObject->Code,
+                                $addText,
+                                $data,
+                                "input",
+                                array($countryObject)
+                            );
+                        }
                     }
                 }
-                $html .= $this->closeTreeNode();
+                if($withDefaultPrices) {
+                    $html .= $this->closeTreeNode();
+                }
                 if($product->hasVariations()) {
                     $variations = $product->Variations();
                     if($variations && $variations->count()) {
@@ -591,6 +606,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                                 foreach($outstandingCountries as $countryCode) {
                                     if($countryCode != EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
                                         $countryObject = EcommerceCountry::get()->filter(array("Code" =>$countryCode))->first();
+                                        if(!$countryObject) {user_error("country not found");}
                                         $currency = $countryObject->EcommerceCurrency();
                                         $data = array(
                                             "T" => "CountryPrice",

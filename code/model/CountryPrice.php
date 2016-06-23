@@ -123,9 +123,9 @@ class CountryPrice extends DataObject {
     function getCMSFields() {
         $fields = parent::getCMSFields();
         // This works only because only NZ uses NZD
-        $countries = EcommerceCountry::get_country_dropdown(false);
+        $countries = EcommerceCountry::get_real_countries_list();
         unset($countries[EcommerceConfig::get('EcommerceCountry', 'default_country_code')]);
-        $field = new DropdownField('Country', 'Country', $countries);
+        $field = DropdownField::create('Country', 'Country', $countries->map('Code', 'Name'));
         $fields->replaceField('Country', $field);
 
         if($this->ID) {
@@ -156,15 +156,18 @@ class CountryPrice extends DataObject {
         } else  {
             //to do BuyableSelectField
         }
-        $fields->addFieldToTab(
-            'Root.Main',
-            $buyableLink = ReadonlyField::create(
-                'ProductOrService',
-                'Product or Service',
-                '<a href="'.$this->Buyable()->CMSEditLink().'">'.$this->getBuyableName().'</a>'
-            )
-        );
-        $buyableLink->dontEscape = true;
+        $buyable = $this->Buyable();
+        if($buyable && $buyable->exists()) {
+            $fields->addFieldToTab(
+                'Root.Main',
+                $buyableLink = ReadonlyField::create(
+                    'ProductOrService',
+                    'Product or Service',
+                    '<a href="'.$buyable->CMSEditLink().'">'.$this->getBuyableName().'</a>'
+                )
+            );
+            $buyableLink->dontEscape = true;
+        }
         $fields->addFieldsToTab(
             'Root.Debug',
             array(
