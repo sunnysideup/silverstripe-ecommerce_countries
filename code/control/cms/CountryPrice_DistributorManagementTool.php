@@ -52,6 +52,21 @@ class CountryPrice_DistributorManagementTool extends Controller {
                     $countries = $distributor->Countries();
                     $canViewAndEdit = true;
                 }
+                $primaryCountry = $distributor->PrimaryCountry();
+                if($primaryCountry && $primaryCountry->exists()) {
+                    $distributorPrimaryCountryCode = $primaryCountry->Code;
+                    $currentCountry = $countryObject = CountryPrice_EcommerceCountry::get_real_country();
+                    $currentCountryCode = '';
+                    if($currentCountry) {
+                        $currentCountryCode = $currentCountry->Code;
+                    }
+                    if($currentCountryCode !== $distributorPrimaryCountryCode) {
+                        CountryPrices_ChangeCountryController::changeto($distributorPrimaryCountryCode);
+                    }
+                }
+                else {
+                    die("ERROR: No primary country has been set for this distributor.");
+                }
             }
             if($countries && $countries->count()) {
                 $this->countryArray = $countries->map("ID", "Code")->toArray();

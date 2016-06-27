@@ -127,7 +127,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
             }
         }
         //is there a valid price ???
-        $countryPrice = $this->updateCalculatedPrice($countryObject);
+        $countryPrice = $this->updateCalculatedPrice();
         if($this->owner instanceof Product && $this->owner->hasMethod('hasVariations') && $this->owner->hasVariations()) {
             return $this->owner->Variations()->First()->canPurchaseByCountry($member, $checkPrice);
         }
@@ -163,7 +163,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * if the default price can be used then we use NULL
      * @return Float | null (ignore this value and use original value)
      */
-    function updateCalculatedPrice($price) {
+    function updateCalculatedPrice($price = null) {
         $countryCode = '';
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if($countryObject) {

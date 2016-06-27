@@ -47,7 +47,11 @@ Order:
 
 OrderStatusLog:
   extensions:
-    - CountryPrice_OrderStatusLog
+    - CountryPrice_OrderStatusLog_AND_OrderAtribute
+
+OrderAtribute:
+  extensions:
+    - CountryPrice_OrderStatusLog_AND_OrderAtribute
 
 StoreAdmin:
   managed_models:

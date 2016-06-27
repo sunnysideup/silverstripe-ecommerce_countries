@@ -1,5 +1,14 @@
 <?php
 
+/**
+ *
+ * Common use:
+ * ```php
+ *    CountryPrices_ChangeCountryController::changeto('XX');
+ *    CountryPrices_ChangeCountryController::new_country_link('XX');
+ * ```
+ *
+ */
 
 class CountryPrices_ChangeCountryController extends ContentController
 {

@@ -128,18 +128,26 @@ class CountryPrice_OrderDOD extends DataExtension {
     }
 
     /**
+     * it is safer to only allow creation on the front-end...
+     *
+     */
+    function canCreate($member) {
+        return false;
+    }
+
+    /**
      *
      * @param string (optional) $countryCode
      * @return Distributor | null
      */
     function getDistributor($countryCode = null){
         if($this->owner->DistributorID) {
-            return Distributor::get()->byID($this->DistributorID);
+            return Distributor::get()->byID($this->owner->DistributorID);
         } else {
             if(!$countryCode) {
                 $countryCode = $this->owner->getCountry();
             }
-            return distributor::get_one_for_country($countryCode);
+            return Distributor::get_one_for_country($countryCode);
         }
     }
 
