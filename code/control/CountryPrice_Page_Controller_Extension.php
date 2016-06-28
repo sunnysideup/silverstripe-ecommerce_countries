@@ -27,10 +27,10 @@ class CountryPrice_Page_Controller_Extension extends Extension
     function onAfterInit()
     {
         $countryID = 0;
-        $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'local_get_parameter');
+        $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'locale_get_parameter');
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
         if(isset($_GET[$param])) {
-            $countryCode = Convert::raw2sql($_GET[$param]);
+            $countryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
             if($countryObject->Code != $countryCode) {
                 return $this->owner->redirect(
                     CountryPrices_ChangeCountryController::new_country_link($countryCode)
@@ -99,13 +99,16 @@ class CountryPrice_Page_Controller_Extension extends Extension
      */
     private function addCountryCodeToUrlIfRequired($countryCode = '')
     {
+        if(isset($_POST) && count($_POST)){
+            return null;
+        }
         $oldURL = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
         $urlParts = parse_url($oldURL);
         parse_str($urlParts['query'], $params);
 
-        $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'local_get_parameter');
-        $params['locale'] = $countryCode;     // Overwrite if exists
+        $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'locale_get_parameter');
+        $params[$param] = $countryCode;     // Overwrite if exists
 
         // Note that this will url_encode all values
         $urlParts['query'] = http_build_query($params);

@@ -2,6 +2,7 @@
 
 class CountryPrice_OrderStatusLog_AND_OrderAtribute extends DataExtension
 {
+
     function canCreate($member = null)
     {
         return true;

@@ -481,7 +481,6 @@ class CountryPrice_DistributorManagementTool extends Controller {
 
                 //country prices
                 $outstandingCountries = $this->countryArray;
-                $countryPricesObjects = $product->CountryPrices();
                 if($withDefaultPrices ) {
                     $html .= $this->createTreeNode(
                         'Country Prices' . ($product->hasVariations() ? $defaultPriceText : ''),
@@ -490,6 +489,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                 }
                 $arrayOfProductCountryCurencyPrices = array();
                 $countriesWithProductPrices = array();
+                $countryPricesObjects = $product->AllCountryPricesForBuyable();
                 if($countryPricesObjects->count()) {
                     foreach($countryPricesObjects as $countryPricesObject) {
                         $arrayOfProductCountryCurencyPrices[$countryPricesObject->Currency.$countryPricesObject->Country] = $countryPricesObject->Currency.$countryPricesObject->Country;
@@ -573,7 +573,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                                     );
                                 }
                                 $outstandingCountries = $this->countryArray;
-                                $countryPricesObjects = $variation->CountryPrices();
+                                $countryPricesObjects = $variation->AllCountryPricesForBuyable();
                                 $html .= $this->createTreeNode("Variation Country Prices", " pricing countryPrices variationCountryPrices");
                                 if($countryPricesObjects->count()) {
                                     $lowestPrice = 999999;
