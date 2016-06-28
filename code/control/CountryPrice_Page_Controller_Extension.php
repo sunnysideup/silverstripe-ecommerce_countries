@@ -99,13 +99,16 @@ class CountryPrice_Page_Controller_Extension extends Extension
      */
     private function addCountryCodeToUrlIfRequired($countryCode = '')
     {
+        if(isset($_POST) && count($_POST)){
+            return null;
+        }
         $oldURL = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
         $urlParts = parse_url($oldURL);
         parse_str($urlParts['query'], $params);
 
         $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'local_get_parameter');
-        $params['locale'] = $countryCode;     // Overwrite if exists
+        $params[$param] = $countryCode;     // Overwrite if exists
 
         // Note that this will url_encode all values
         $urlParts['query'] = http_build_query($params);
