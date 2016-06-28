@@ -12,6 +12,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
         "AllCountries" => "Boolean"
     );
 
+
     private static $many_many = array(
         "IncludedCountries" => "EcommerceCountry",
         "ExcludedCountries" => "EcommerceCountry"
