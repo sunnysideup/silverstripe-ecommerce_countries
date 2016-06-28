@@ -32,7 +32,14 @@ class CountryPrice_OrderDOD extends DataExtension {
      */
     public static function localise_order($countryCode = null)
     {
+        if(self::$_number_of_times_we_have_run_localise_order > 2) {
+            return
+        }
+        self::$_number_of_times_we_have_run_localise_order++;
         $order = ShoppingCart::current_order();
+        if($order->IsSubmitted()) {
+            return true;
+        }
         if( ! $countryCode) {
             $countryCode = $order->getCountry();
         }
@@ -40,9 +47,7 @@ class CountryPrice_OrderDOD extends DataExtension {
         if(Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
             EcommerceCountry::set_for_current_order_only_show_countries(array($countryCode));
         }
-        if($order->IsSubmitted()) {
-            return true;
-        }
+
         //if a country code and currency has been set then all is good
         //from there we keep it this way
         if(
@@ -75,10 +80,7 @@ class CountryPrice_OrderDOD extends DataExtension {
             // Called after because some modifiers use the country field to calculate the values
             $order->calculateOrderAttributes(true);
         }
-        if(self::$_number_of_times_we_have_run_localise_order < 3) {
-            self::$_number_of_times_we_have_run_localise_order++;
-            self::localise_order($countryCode);
-        }
+        self::localise_order($countryCode);
     }
 
 

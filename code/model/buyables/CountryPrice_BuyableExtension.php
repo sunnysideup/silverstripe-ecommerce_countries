@@ -192,10 +192,10 @@ class CountryPrice_BuyableExtension extends DataExtension {
 
             if($countryCode) {
                 $order = ShoppingCart::current_order();
+                CountryPrice_OrderDOD::localise_order();
                 $currency = $order->CurrencyUsed();
                 if($currency) {
                     $currencyCode = strtoupper($currency->Code);
-
                     //1. exact price for country
                     if($currencyCode) {
                         $prices = $this->owner->CountryPricesForCountryAndCurrency(
