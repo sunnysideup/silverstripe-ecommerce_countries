@@ -74,7 +74,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
             //start cms_object hack
             CountryPrice::set_cms_object($this->owner);
             //end cms_object hack
-            $source = $this->owner->CountryPrices();
+            $source = $this->owner->AllCountryPricesForBuyable();
             $table = new GridField(
                 'CountryPrices',
                 'Country Prices',
@@ -136,6 +136,17 @@ class CountryPrice_BuyableExtension extends DataExtension {
     }
 
     /**
+     *
+     * @return DataList
+     */
+    function AllCountryPricesForBuyable()
+    {
+        $filterArray = array("ObjectClass" => ClassInfo::subclassesFor($this->ownerBaseClass), "ObjectID" => $this->owner->ID);
+        return CountryPrice::get()
+            ->filter($filterArray);
+    }
+
+    /**
      * returns all the prices for a particular country and/or currency
      * for the object
      * @param string (optional) $country
@@ -143,16 +154,16 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @return DataList
      */
     function CountryPrices($countryCode = null, $currency = null) {
-        $filterArray = array("ObjectClass" => ClassInfo::subclassesFor($this->ownerBaseClass), "ObjectID" => $this->owner->ID);
-        $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        $allCountryPricesForBuyable = $this->AllCountryPricesForBuyable();
         if($countryObject) {
             $filterArray["Country"] = $countryObject->Code;
         }
         if($currency) {
             $filterArray["Currency"] = $currency;
         }
-        return CountryPrice::get()
+        $allCountryPricesForBuyable = $allCountryPricesForBuyable
             ->filter($filterArray);
+        return $allCountryPricesForBuyable;
     }
 
     private static $_buyable_price = array();
@@ -187,7 +198,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
 
                     //1. exact price for country
                     if($currencyCode) {
-                        $prices = $this->owner->CountryPrices(
+                        $prices = $this->owner->AllCountryPricesForBuyable(
                             $countryCode,
                             $currencyCode
                         );
@@ -207,7 +218,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
                             $distributorCurrencyCode = strtoupper($distributorCurrency->Code);
                             $distributorCountryCode = $distributorCountry->Code;
                             if($distributorCurrencyCode && $distributorCountryCode) {
-                                $prices = $this->owner->CountryPrices(
+                                $prices = $this->owner->AllCountryPricesForBuyable(
                                     $distributorCountryCode,
                                     $distributorCurrencyCode
                                 );
@@ -241,7 +252,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * delete the related prices
      */
     function onBeforeDelete() {
-        $prices = $this->CountryPrices();
+        $prices = $this->AllCountryPricesForBuyable();
         if($prices && $prices->count()) {
             foreach($prices as $price) {
                 $price->delete();
@@ -264,7 +275,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
         if($this->isNew && $this->owner instanceof ProductVariation) {
             $product = $this->owner->Product();
             if($product) {
-                $productPrices = $product->CountryPrices();
+                $productPrices = $product->AllCountryPricesForBuyable();
                 foreach($productPrices as $productPrice) {
                     if($productPrice->Country) {
                         if(
