@@ -12,6 +12,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
         "AllCountries" => "Boolean"
     );
 
+
     private static $many_many = array(
         "IncludedCountries" => "EcommerceCountry",
         "ExcludedCountries" => "EcommerceCountry"
@@ -73,7 +74,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
             //start cms_object hack
             CountryPrice::set_cms_object($this->owner);
             //end cms_object hack
-            $source = $this->owner->CountryPrices();
+            $source = $this->owner->AllCountryPricesForBuyable();
             $table = new GridField(
                 'CountryPrices',
                 'Country Prices',
@@ -112,13 +113,13 @@ class CountryPrice_BuyableExtension extends DataExtension {
         }
         if($this->owner->AllCountries) {
             //is there a valid price ???
-            return floatval($this->updateCalculatedPrice()) > 0 ? null : false;
+            return floatval($this->owner->updateCalculatedPrice()) > 0 ? null : false;
         }
         if($countryCode) {
             $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
             if($included) {
                 //is there a valid price ???
-                return floatval($this->updateCalculatedPrice()) > 0 ? null : false;
+                return floatval($this->owner->updateCalculatedPrice()) > 0 ? null : false;
 
             }
             $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
@@ -127,11 +128,22 @@ class CountryPrice_BuyableExtension extends DataExtension {
             }
         }
         //is there a valid price ???
-        $countryPrice = $this->updateCalculatedPrice();
         if($this->owner instanceof Product && $this->owner->hasMethod('hasVariations') && $this->owner->hasVariations()) {
             return $this->owner->Variations()->First()->canPurchaseByCountry($member, $checkPrice);
         }
+        $countryPrice = $this->owner->updateCalculatedPrice();
         return floatval($countryPrice) > 0 ? null : false;
+    }
+
+    /**
+     *
+     * @return DataList
+     */
+    function AllCountryPricesForBuyable()
+    {
+        $filterArray = array("ObjectClass" => ClassInfo::subclassesFor($this->ownerBaseClass), "ObjectID" => $this->owner->ID);
+        return CountryPrice::get()
+            ->filter($filterArray);
     }
 
     /**
@@ -141,17 +153,17 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @param string (optional) $currency
      * @return DataList
      */
-    function CountryPrices($countryCode = null, $currency = null) {
-        $filterArray = array("ObjectClass" => ClassInfo::subclassesFor($this->ownerBaseClass), "ObjectID" => $this->owner->ID);
+    function CountryPricesForCountryAndCurrency($countryCode = null, $currency = null) {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        $allCountryPricesForBuyable = $this->AllCountryPricesForBuyable();
         if($countryObject) {
             $filterArray["Country"] = $countryObject->Code;
         }
         if($currency) {
             $filterArray["Currency"] = $currency;
         }
-        return CountryPrice::get()
-            ->filter($filterArray);
+        $allCountryPricesForBuyable = $allCountryPricesForBuyable->filter($filterArray);
+        return $allCountryPricesForBuyable;
     }
 
     private static $_buyable_price = array();
@@ -165,11 +177,11 @@ class CountryPrice_BuyableExtension extends DataExtension {
      */
     function updateCalculatedPrice($price = null) {
         $countryCode = '';
-        $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country();
         if($countryObject) {
             $countryCode = $countryObject->Code;
         }
-        if($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+        if($countryCode == '' || $countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
             return null;
         }
         $key = $this->owner->ClassName."___".$this->owner->ID.'____'.$countryCode;
@@ -180,13 +192,13 @@ class CountryPrice_BuyableExtension extends DataExtension {
 
             if($countryCode) {
                 $order = ShoppingCart::current_order();
+                CountryPrice_OrderDOD::localise_order();
                 $currency = $order->CurrencyUsed();
                 if($currency) {
                     $currencyCode = strtoupper($currency->Code);
-
                     //1. exact price for country
                     if($currencyCode) {
-                        $prices = $this->owner->CountryPrices(
+                        $prices = $this->owner->CountryPricesForCountryAndCurrency(
                             $countryCode,
                             $currencyCode
                         );
@@ -206,7 +218,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
                             $distributorCurrencyCode = strtoupper($distributorCurrency->Code);
                             $distributorCountryCode = $distributorCountry->Code;
                             if($distributorCurrencyCode && $distributorCountryCode) {
-                                $prices = $this->owner->CountryPrices(
+                                $prices = $this->owner->CountryPricesForCountryAndCurrency(
                                     $distributorCountryCode,
                                     $distributorCurrencyCode
                                 );
@@ -240,7 +252,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * delete the related prices
      */
     function onBeforeDelete() {
-        $prices = $this->CountryPrices();
+        $prices = $this->AllCountryPricesForBuyable();
         if($prices && $prices->count()) {
             foreach($prices as $price) {
                 $price->delete();
@@ -263,7 +275,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
         if($this->isNew && $this->owner instanceof ProductVariation) {
             $product = $this->owner->Product();
             if($product) {
-                $productPrices = $product->CountryPrices();
+                $productPrices = $product->AllCountryPricesForBuyable();
                 foreach($productPrices as $productPrice) {
                     if($productPrice->Country) {
                         if(
