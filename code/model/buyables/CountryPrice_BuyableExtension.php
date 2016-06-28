@@ -153,7 +153,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @param string (optional) $currency
      * @return DataList
      */
-    function CountryPrices($countryCode = null, $currency = null) {
+    function CountryPricesForCountryAndCurrency($countryCode = null, $currency = null) {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         $allCountryPricesForBuyable = $this->AllCountryPricesForBuyable();
         if($countryObject) {
@@ -162,8 +162,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
         if($currency) {
             $filterArray["Currency"] = $currency;
         }
-        $allCountryPricesForBuyable = $allCountryPricesForBuyable
-            ->filter($filterArray);
+        $allCountryPricesForBuyable = $allCountryPricesForBuyable->filter($filterArray);
         return $allCountryPricesForBuyable;
     }
 
@@ -199,7 +198,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
 
                     //1. exact price for country
                     if($currencyCode) {
-                        $prices = $this->owner->CountryPrices(
+                        $prices = $this->owner->CountryPricesForCountryAndCurrency(
                             $countryCode,
                             $currencyCode
                         );
@@ -219,7 +218,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
                             $distributorCurrencyCode = strtoupper($distributorCurrency->Code);
                             $distributorCountryCode = $distributorCountry->Code;
                             if($distributorCurrencyCode && $distributorCountryCode) {
-                                $prices = $this->owner->AllCountryPricesForBuyable(
+                                $prices = $this->owner->CountryPricesForCountryAndCurrency(
                                     $distributorCountryCode,
                                     $distributorCurrencyCode
                                 );

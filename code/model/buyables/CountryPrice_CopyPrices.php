@@ -99,12 +99,12 @@ class CountryPrice_CopyPrices extends DataExtension {
     public function getUpdatePriceValues($fromCountryCode, $currencyCode, array $values) {
         $fromCountryCode = CountryPrice_EcommerceCountry::get_real_country($fromCountryCode)->Code;
         if($this->owner->hasExtension('CountryPrice_BuyableExtension')) {
-            $countryPrice = $this->owner->AllCountryPricesForBuyable($fromCountry, $currency);
+            $countryPrice = $this->owner->CountryPriceForCountryAndCurrency($fromCountry, $currency);
             if($countryPrice) {
                 $price = $countryPrice->First()->Price;
             }
             else {
-                $countryPrices = $this->owner->AllCountryPricesForBuyable($fromCountryCode, $currencyCode, $values);
+                $countryPrices = $this->owner->CountryPriceForCountryAndCurrency($fromCountryCode, $currencyCode, $values);
                 if($countryPrices && $countryPrices->count()) {
                     $price = $countryPrices->First()->Price;
                 }
