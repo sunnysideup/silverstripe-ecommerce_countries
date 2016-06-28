@@ -30,7 +30,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
         $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'locale_get_parameter');
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
         if(isset($_GET[$param])) {
-            $countryCode = Convert::raw2sql($_GET[$param]);
+            $countryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
             if($countryObject->Code != $countryCode) {
                 return $this->owner->redirect(
                     CountryPrices_ChangeCountryController::new_country_link($countryCode)
