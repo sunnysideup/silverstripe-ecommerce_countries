@@ -33,7 +33,7 @@ class CountryPrice_OrderDOD extends DataExtension {
     public static function localise_order($countryCode = null)
     {
         if(self::$_number_of_times_we_have_run_localise_order > 2) {
-            return
+            return;
         }
         self::$_number_of_times_we_have_run_localise_order++;
         $order = ShoppingCart::current_order();
