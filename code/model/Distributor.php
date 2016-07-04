@@ -58,7 +58,7 @@ class Distributor extends DataObject implements PermissionProvider {
     /**
      * returns the Distributor for the country OR the default Distributor.
      * @param String $countryCode = the country code.
-     * 
+     *
      * @return Distributor
      */
     public static function get_one_for_country($countryCode = '') {
@@ -172,8 +172,9 @@ class Distributor extends DataObject implements PermissionProvider {
      * return ArrayList
      */
     function getCountryList() {
+        $filter = $this->IsDefault ? array("ID" => 0) : array("DistributorID" => $this->ID);
         return EcommerceCountry::get()
-            ->filter($this->IsDefault ? array("ID" => 0) : array("DistributorID" => $this->ID));
+            ->filter($array);
     }
 
     /**

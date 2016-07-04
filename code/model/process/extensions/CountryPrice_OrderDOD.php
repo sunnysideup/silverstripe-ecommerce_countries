@@ -44,8 +44,12 @@ class CountryPrice_OrderDOD extends DataExtension {
             $countryCode = $order->getCountry();
         }
         $currencyObject = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
-        if(Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
-            EcommerceCountry::set_for_current_order_only_show_countries(array($countryCode));
+        if(Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales') || 1 == 1) {
+            $distributor = $order->getDistributor($countryCode);
+            $countryOptions = $distributor->Countries();
+            if($countryOptions && $countryOptions->count()) {
+                EcommerceCountry::set_for_current_order_only_show_countries($countryOptions->column('Code'));
+            }
         }
 
         //if a country code and currency has been set then all is good
