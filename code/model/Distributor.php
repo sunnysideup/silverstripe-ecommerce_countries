@@ -78,12 +78,12 @@ class Distributor extends DataObject implements PermissionProvider {
         $fields = parent::getCMSFields();
         $fieldLabels = $this->FieldLabels();
         $fieldLabelsRight = $this->Config()->get("field_labels_right");
-        $listOfCountriesCovered = EcommerceCountry::get()->exclude(array("DistributorID" => 0))->map("Code", "Title");
+        $listOfCountriesCovered = EcommerceCountry::get()->exclude(array("DistributorID" => 0))->map("ID", "Title");
         //secondary for another country
         $fields->removeByName('Versions');
         if($listOfCountriesCovered && $listOfCountriesCovered->count()) {
             $countryArray =  array(" -- please select --") + $listOfCountriesCovered->toArray();
-            $fields->addFieldToTab("Root.Countries", DropdownField::create("PrimaryCountryID", "Primary Country", $countryArray));
+            $fields->addFieldToTab("Root.CountryDetails", DropdownField::create("PrimaryCountryID", "Primary Country", $countryArray));
         }
         else {
             $fields->removeByName('PrimaryCountryID');
@@ -108,7 +108,7 @@ class Distributor extends DataObject implements PermissionProvider {
                     $this->Countries(),
                     $config
                 );
-                $fields->addFieldToTab("Root.Countries", $countryField);
+                $fields->addFieldToTab("Root.CountryDetails", $countryField);
                 if($this->Version > 1) {
                     $columns = array(
                         'Version' => 'Version',
@@ -199,6 +199,17 @@ class Distributor extends DataObject implements PermissionProvider {
         if(Distributor::get()->filter(array("IsDefault" => 1))->count() == 0) {
             $this->IsDefault = 1;
         }
+        if($this->PrimaryCountryID > 0 && EcommerceCountry::get()->byID(intval($this->PrimaryCountryID))) {
+            $primaryCountry = $this->PrimaryCountry();
+            if( ! $this->Countries()->byID($this->PrimaryCountryID)) {
+                $this->Countries()->add($primaryCountry);
+            }
+        } else {
+            if($firstCountry = $this->Countries()->First()) {
+                self::$_ran_after_write = true;
+                $this->PrimaryCountryID = $firstCountry->ID;
+            }
+        }
     }
 
     private static $_ran_after_write = false;
@@ -210,18 +221,8 @@ class Distributor extends DataObject implements PermissionProvider {
         parent::onAfterWrite();
         if( ! self::$_ran_after_write) {
             self::$_ran_after_write = true;
-            $primaryCountry = $this->PrimaryCountry();
-            if($primaryCountry && $primaryCountry->exists()) {
-                if( ! $this->Countries()->byID($this->PrimaryCountryID)) {
-                    $this->Countries()->add($primaryCountry);
-                }
-            } else {
-                if($firstCountry = $this->Countries()->First()) {
-                    $this->PrimaryCountryID = $firstCountry->ID;
-                }
-            }
+            $this->setupUser();
         }
-        $this->setupUser();
     }
 
     /**
