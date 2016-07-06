@@ -137,7 +137,10 @@ class CountryPrice_Page_Controller_Extension extends Extension
     function ChooseNewCountryList()
     {
         $countries = CountryPrice_EcommerceCountry::get_real_countries_list();
-        $currentCode = CountryPrice_EcommerceCountry::get_real_country();
+        $currentCode = '';
+        if($obj = CountryPrice_EcommerceCountry::get_real_country()) {
+            $currentCode = $obj->Code;
+        }
         $al = ArrayList::create();
         foreach($countries as $country) {
             $isCurrentOne = $currentCode == $country->Code ? true : false;
@@ -151,7 +154,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
                     array(
                         'Link' => CountryPrices_ChangeCountryController::new_country_link($country->Code),
                         'Title' => $country->Name,
-                        'LinkingMode' => ($isCurrentOne? 'current' : 'link'),
+                        'LinkingMode' => ( $isCurrentOne ? 'current' : 'link'),
                         'Currency' => $currency,
                         'CurrencyCode' => $currency
                     )
