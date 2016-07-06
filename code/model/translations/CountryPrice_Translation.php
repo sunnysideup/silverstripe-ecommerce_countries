@@ -30,7 +30,7 @@ class CountryPrice_Translation extends DataObject
      *
      * @var string
      */
-    private static $singular_name = 'Tanslation';
+    private static $singular_name = 'Translation';
     public function i18n_singular_name()
     {
         return self::$singular_name;
@@ -60,7 +60,7 @@ class CountryPrice_Translation extends DataObject
             DropdownField::create(
                 'EcommerceCountryID',
                 'Country',
-                $countries
+                array('' => '-- make sure to select a country --')+$countries
             ),
             'Title'
         );
