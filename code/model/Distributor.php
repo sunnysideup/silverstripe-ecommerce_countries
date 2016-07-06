@@ -58,7 +58,7 @@ class Distributor extends DataObject implements PermissionProvider {
     /**
      * returns the Distributor for the country OR the default Distributor.
      * @param String $countryCode = the country code.
-     * 
+     *
      * @return Distributor
      */
     public static function get_one_for_country($countryCode = '') {
@@ -164,6 +164,10 @@ class Distributor extends DataObject implements PermissionProvider {
                 $field->setRightTitle($value);
             }
         }
+        $fields->removeFieldFromTab(
+            'Root',
+            'Countries'
+        );
         return $fields;
     }
 

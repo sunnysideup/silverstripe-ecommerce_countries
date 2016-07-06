@@ -61,7 +61,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                         $currentCountryCode = $currentCountry->Code;
                     }
                     if($currentCountryCode !== $distributorPrimaryCountryCode) {
-                        CountryPrices_ChangeCountryController::changeto($distributorPrimaryCountryCode);
+                        return $this->redirect(CountryPrices_ChangeCountryController::new_country_link($distributorPrimaryCountryCode));
                     }
                 }
                 else {
