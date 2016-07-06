@@ -164,6 +164,10 @@ class Distributor extends DataObject implements PermissionProvider {
                 $field->setRightTitle($value);
             }
         }
+        $fields->removeFieldFromTab(
+            'Root',
+            'Countries'
+        );
         return $fields;
     }
 
