@@ -120,14 +120,14 @@ class CountryPrice_CopyPrices extends DataExtension {
         if($this->owner->hasExtension('ProductWithVariationDecorator')) {
             $variations = $this->owner->Variations();
             foreach($variations as $variation) {
-                $values += $variation->getUpdatePriceValues($fromCountryCode, $currencyCode, $values);
+                $values = array_merge($values, $variation->getUpdatePriceValues($fromCountryCode, $currencyCode, $values));
             }
         }
         if(is_a($this->owner, 'SiteTree')) {
             $pages = $this->owner->AllChildren();
             if($pages) {
                 foreach($pages as $page) {
-                    $values += $page->getUpdatePriceValues($fromCountryCode, $currencyCode, $values);
+                    $values = array_merge($values, $page->getUpdatePriceValues($fromCountryCode, $currencyCode, $values));
                 }
             }
         }
