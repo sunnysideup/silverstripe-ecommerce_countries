@@ -58,6 +58,10 @@ StoreAdmin:
     - Distributor
 
 
+OrderFormAddress:
+  extensions:
+    - CountryPrice_OrderFormAddressExtension
+
 ---
 Only:
   moduleexists: 'ecommerce_product_variation'
