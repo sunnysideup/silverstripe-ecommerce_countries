@@ -118,6 +118,34 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     }
 
     /**
+     *
+     *
+     * @param  [type] $countryCode [description]
+     * @return DataList
+     */
+    public static function get_sibling_countries($countryCode = null)
+    {
+        $countryObject = self::get_real_country($countryCode);
+        if($countryObject->AlwaysTheSameAsID) {
+            return EcommerceCountry::get()
+                ->filterAny(
+                    array(
+                        'AlwaysTheSameAsID' => array($countryObject->AlwaysTheSameAsID),
+                        "ID" => array($countryObject->AlwaysTheSameAsID, $countryObject->ID)
+                    )
+                );
+        } else {
+            return EcommerceCountry::get()
+                ->filterAny(
+                    array(
+                        'AlwaysTheSameAsID' => $countryObject->ID,
+                        'ID' => $countryObject->ID
+                    )
+                );
+        }
+    }
+
+    /**
      * checks if the country has a distributor
      * and returns it.  If not, returns the defaulf country.
      *
