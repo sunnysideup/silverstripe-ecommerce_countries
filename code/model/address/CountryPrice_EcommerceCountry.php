@@ -14,7 +14,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
         'DeliveryCostNote' => 'Varchar(255)',
         'ShippingEstimation' => 'Varchar(255)',
         'ReturnInformation' => 'Varchar(255)',
-        'ProductNotAvailableNote' => 'HTMLText',
+        'ProductNotAvailableNote' => 'HTMLText'
     );
 
     private static $has_one = array(
@@ -31,6 +31,11 @@ class CountryPrice_EcommerceCountry extends DataExtension {
         "AlwaysTheSameAsID" => true,
         "IsBackupCountry" => "ExactMatchFilter"
     );
+
+    private static $default_sort = array(
+        'Name' => 'DESC'
+    );
+
 
     private static $indexes = array(
         "IsBackupCountry" => true

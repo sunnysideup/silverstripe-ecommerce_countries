@@ -145,15 +145,14 @@ class CountryPrice_Page_Controller_Extension extends Extension
         foreach($countries as $country) {
             $isCurrentOne = $currentCode == $country->Code ? true : false;
             $currency = null;
-            if($isCurrentOne) {
-                $currency = CountryPrice_EcommerceCurrency::get_currency_for_country($country->Code);
-                $currencyCode = CountryPrice_EcommerceCurrency::get_currency_for_country($country->Code);
-            }
+            $currency = CountryPrice_EcommerceCurrency::get_currency_for_country($country->Code);
+            $currencyCode = CountryPrice_EcommerceCurrency::get_currency_for_country($country->Code);
             $al->push(
                 ArrayData::create(
                     array(
                         'Link' => CountryPrices_ChangeCountryController::new_country_link($country->Code),
                         'Title' => $country->Name,
+                        'CountryCode' => $country->Code,
                         'LinkingMode' => ( $isCurrentOne ? 'current' : 'link'),
                         'Currency' => $currency,
                         'CurrencyCode' => $currency
