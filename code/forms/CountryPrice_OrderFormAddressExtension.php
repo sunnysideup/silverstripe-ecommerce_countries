@@ -18,8 +18,8 @@ class CountryPrice_OrderFormAddressExtension extends Extension
             }
             $shippingField->setSource($newSource);
             $js = '
-                var CountryPrice_ShippingCountry_Options_Original = '.Convert::array2json($originalSource).'
-                var CountryPrice_ShippingCountry_Options_New = '.Convert::array2json($newSource).'';
+                var CountryPrice_SetCountriesForDelivery_Original = '.Convert::array2json($originalSource).';
+                var CountryPrice_SetCountriesForDelivery_New      = '.Convert::array2json($newSource).';';
             Requirements::customScript($js, 'CountryPrice_OrderFormAddressExtension_updateFields');
             Requirements::javascript('ecommerce_countries/javascript/CountryPrice_SetCountriesForDelivery.js');
         }
