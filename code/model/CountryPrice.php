@@ -123,9 +123,9 @@ class CountryPrice extends DataObject {
     function getCMSFields() {
         $fields = parent::getCMSFields();
         // This works only because only NZ uses NZD
-        $countries = EcommerceCountry::get_real_countries_list();
+        $countries = CountryPrice_EcommerceCountry::get_real_countries_list()->map('Code', 'Name')->toArray();
         unset($countries[EcommerceConfig::get('EcommerceCountry', 'default_country_code')]);
-        $field = DropdownField::create('Country', 'Country', $countries->map('Code', 'Name'));
+        $field = DropdownField::create('Country', 'Country', $countries);
         $fields->replaceField('Country', $field);
 
         if($this->ID) {
