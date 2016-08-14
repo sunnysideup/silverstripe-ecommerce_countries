@@ -51,8 +51,9 @@ class CountryPrice_Page_Controller_Extension extends Extension
             )
             ->first();
         if($translation) {
-            $this->owner->Content = $translation->Content;
-            $this->owner->Title = $translation->Title;
+            foreach($translation->FieldsToReplace() as $pageField => $translationField) {
+                $this->owner->$pageField = $translation->$translationField;
+            }
             $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
             if($newURL) {
                 return $this->owner->redirect($newURL);
