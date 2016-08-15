@@ -101,5 +101,35 @@ class CountryPrice_Translation extends DataObject
         return $validation;
     }
 
+<<<<<<< HEAD
+=======
+    /**
+     *     'PageField' => 'Title'
+     *     'TranslationField' => 'Title'
+     *
+     * @return ArrayList
+     */
+    function FieldsToReplace()
+    {
+        $al = ArrayList::create();
+        $al->push(
+            ArrayData::create(
+                array(
+                    'PageField' => 'Title',
+                    'TranslationField' => 'Title'
+                )
+            )
+        );
+        $al->push(
+            ArrayData::create(
+                array(
+                    'PageField' => 'Title',
+                    'TranslationField' => 'Title'
+                )
+            )
+        );
+
+    }
+>>>>>>> c5ef15ad87d6333fff710b5b412ebcdee1ff1c96
 
 }
