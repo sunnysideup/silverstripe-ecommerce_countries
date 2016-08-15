@@ -101,4 +101,5 @@ class CountryPrice_Translation extends DataObject
         return $validation;
     }
 
+
 }
