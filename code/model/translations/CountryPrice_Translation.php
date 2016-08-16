@@ -101,15 +101,13 @@ class CountryPrice_Translation extends DataObject
         return $validation;
     }
 
-<<<<<<< HEAD
-=======
     /**
      *     'PageField' => 'Title'
      *     'TranslationField' => 'Title'
      *
      * @return ArrayList
      */
-    function FieldsToReplace()
+    public function FieldsToReplace()
     {
         $al = ArrayList::create();
         $al->push(
@@ -128,8 +126,9 @@ class CountryPrice_Translation extends DataObject
                 )
             )
         );
+        $this->extends('updateFieldsToReplace', $al);
+        return $al;
 
     }
->>>>>>> c5ef15ad87d6333fff710b5b412ebcdee1ff1c96
 
 }

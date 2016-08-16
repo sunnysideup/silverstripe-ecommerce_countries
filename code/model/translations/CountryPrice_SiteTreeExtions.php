@@ -29,4 +29,48 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
         return $fields;
     }
 
+    private static $_translation = array();
+
+    function TranslatedValues($variableOrMethod = '')
+    {
+        $translation = null;
+        $key = $this->owner->ID;
+        if(isset(self::$_translations[$key])) {
+            $translation = self::$_translations[$key];
+        }
+        $countryID = 0;
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country();
+        if($countryObject) {
+            $countryID = $countryObject->ID;
+        }
+        if($countryID) {
+            $translation = $this->owner->dataRecord
+                ->CountryPriceTranslations()
+                ->filter(
+                    array(
+                        "EcommerceCountryID" => $countryID,
+                        'ParentID' => $this->owner->dataRecord->ID
+                    )
+                )
+                ->first();
+            self::$_translations[$key] = $translation;
+        }
+        if($translation) {
+            foreach($translation->FieldsToReplace() as $replaceFields) {
+                $pageField = $replaceFields->PageField;
+                $translationField = $replaceFields->TranslationField;
+                if( ! $variableOrMethod || ($variableOrMethod == $pageField)) {
+                    if($translation->hasMethod($translationField)) {
+                        $this->owner->$pageField = $translation->$translationField();
+                    } else {
+                        $this->owner->$pageField = $translation->$translationField;
+                    }
+                    if($variableOrMethod && ($variableOrMethod == $pageField)) {
+                        return $this->owner->$pageField;
+                    }
+                }
+            }
+        }
+    }
+
 }
