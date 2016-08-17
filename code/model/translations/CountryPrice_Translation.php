@@ -126,7 +126,7 @@ class CountryPrice_Translation extends DataObject
                 )
             )
         );
-        $this->extends('updateFieldsToReplace', $al);
+        $this->extend('updateFieldsToReplace', $al);
         return $al;
 
     }
