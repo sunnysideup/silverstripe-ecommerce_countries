@@ -137,7 +137,7 @@ class CountryPrice_OrderDOD extends DataExtension {
      * it is safer to only allow creation on the front-end...
      *
      */
-    function canCreate($member) {
+    function canCreate($member = null) {
         return false;
     }
 
