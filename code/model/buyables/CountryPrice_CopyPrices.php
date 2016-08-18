@@ -44,7 +44,11 @@ class CountryPrice_CopyPrices extends DataExtension {
                     new DropdownField('From', 'From', $fromCountriesArray),
                     new CheckboxSetField('To', 'To', $toCountries),
                     new HiddenField('CountryCurrencies', '', Convert::array2json($countryCurrencies)),
-                    new LiteralField('UpdatePriceLink', "<p id=\"UpdatePriceLink\" class=\"message good\"><a href=\"$link\" class=\"action ss-ui-button\" target=\"_blank\">Copy Prices</a></p>")
+                    new EcommerceCMSButtonField(
+                        'UpdatePriceLink',
+                        $link,
+                        'Copy Prices'
+                    )
                 ));
             }
         }
