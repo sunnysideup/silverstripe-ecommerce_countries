@@ -35,10 +35,38 @@ class CountryPrices_ChangeCountryController extends ContentController
             ShoppingCart::singleton()->clear();
         }
         CountryPrice_OrderDOD::localise_order($newCountryCode);
-        if($page = ProductGroup::get()->first()) {
-            $this->redirect($page->Link());
+
+        //COPIED FROM DIRECTOR::redirectBack()
+        // Don't cache the redirect back ever
+        HTTP::set_cache_age(0);
+
+        $url = null;
+
+        // In edge-cases, this will be called outside of a handleRequest() context; in that case,
+        // redirect to the homepage - don't break into the global state at this stage because we'll
+        // be calling from a test context or something else where the global state is inappropraite
+        if($this->getRequest()) {
+            if($this->getRequest()->requestVar('BackURL')) {
+                $url = $this->getRequest()->requestVar('BackURL');
+            } else if($this->getRequest()->isAjax() && $this->getRequest()->getHeader('X-Backurl')) {
+                $url = $this->getRequest()->getHeader('X-Backurl');
+            } else if($this->getRequest()->getHeader('Referer')) {
+                $url = $this->getRequest()->getHeader('Referer');
+            }
         }
-        $this->redirectBack();
+
+        if(!$url) $url = Director::baseURL();
+
+        // absolute redirection URLs not located on this site may cause phishing
+        if(Director::is_site_url($url)) {
+            $url = $this->removeQueryStringParameter($url, 'ecomlocale');
+            $url = Director::absoluteURL($url, true);
+            return $this->redirect($url);
+        } else {
+            return false;
+        }
+
+
     }
 
     function Link($action = null)
@@ -46,6 +74,28 @@ class CountryPrices_ChangeCountryController extends ContentController
         return Controller::join_links(Config::inst()->get('CountryPrices_ChangeCountryController', 'url_segment'), $action);
     }
 
+    /**
+     * Remove a query string parameter from an URL.
+     *
+     * @param string $url
+     * @param string $varname
+     *
+     * @return string
+     */
+    function removeQueryStringParameter($url, $varname = 'ecomlocale')
+    {
+        $parsedUrl = parse_url($url);
+        $query = array();
 
+        if (isset($parsedUrl['query'])) {
+            parse_str($parsedUrl['query'], $query);
+            unset($query[$varname]);
+        }
+
+        $path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
+        $query = !empty($query) ? '?'. http_build_query($query) : '';
+
+        return $parsedUrl['scheme']. '://'. $parsedUrl['host']. $path. $query;
+    }
 
 }
