@@ -425,12 +425,12 @@ class CountryPrice_DistributorManagementTool extends Controller {
         $countries =  EcommerceCountry::get()->filter(array("DistributorID" => 0, "DoNotAllowSales" => 0));
         if($countries && $countries->count()){
             $list = implode(", ", $countries->map("ID", "Code")->toArray());
-            $html .= $this->createEditNode("Countries without ". _t('Distributor.SINGULAR_NAME', 'Distributor') ." that allow sales", $list);
+            $html .= $this->createEditNode("Countries without a ". _t('Distributor.SINGULAR_NAME', 'Distributor') ." that allow sales", $list);
         }
         $countries =  EcommerceCountry::get()->filter(array("DistributorID" => 0, "DoNotAllowSales" => 1));
         if($countries && $countries->count()){
             $list = implode(", ", $countries->map("ID", "Code")->toArray());
-            $html .= $this->createEditNode("Countries without ". _t('Distributor.SINGULAR_NAME', 'Distributor') ." that do not allow sales", $list);
+            $html .= $this->createEditNode("Countries without a ". _t('Distributor.SINGULAR_NAME', 'Distributor') ." that do not allow sales", $list);
         }
         return $html;
     }
