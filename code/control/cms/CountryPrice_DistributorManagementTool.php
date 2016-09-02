@@ -408,8 +408,9 @@ class CountryPrice_DistributorManagementTool extends Controller {
                     $distributorName = "<p class=\"message bad\">No ". _t('Distributor.SINGULAR_NAME', 'Distributor') ." has been assigned to this country.</p>";
                 }
                 $html .= $this->createTreeNode($country->Code." - ".$country->Name, $country->Code, array($country));
-                $distributorTitlePlural = _t('EcommerceCountry_Distributor.PLURAL_NAME', 'Distributor');
-                $html .= $this->createEditNode($distributorTitlePlural, $distributorName);
+                $distributorTitlePlural = _t('Distributor.PLURAL_NAME', 'Distributor');
+                $distributorTitleSingluar = _t('Distributor.SINGULAR_NAME', 'Distributor');
+                $html .= $this->createEditNode( $distributorTitleSingluar, $distributorName);
                 $html .= $this->createEditNode("FAQ Content", "", $country->FAQContent, $data + array("F" => "FAQContent"), "textarea");
                 $html .= $this->createEditNode("Top Bar Message","",  $country->TopBarMessage, $data + array("F" => "TopBarMessage"), "");
                 $html .= $this->createEditNode("Country Specific Messages", $countrySpecificMessages);
