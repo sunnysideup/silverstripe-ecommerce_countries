@@ -110,7 +110,7 @@ class CountryPrice_OrderDOD extends DataExtension {
                 'Root.Country',
                 DropdownField::create(
                     'DistributorID',
-                    'Distributor',
+                     _t('Distributor.SINGULAR_NAME', 'Distributor'),
                     array(''=> '--- Please select ---') + Distributor::get()->map()->toArray()
                 )
             );

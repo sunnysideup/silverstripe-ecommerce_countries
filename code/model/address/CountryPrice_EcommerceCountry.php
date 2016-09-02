@@ -84,7 +84,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
                     'Root.FAQPage',
                     new LiteralField(
                         "FAQPageExplanation",
-                        "<p class=\"message warning\">FAQ information can only be added to the main country for a Distributor</p>"
+                        "<p class=\"message warning\">FAQ information can only be added to the main country for a ". _t('Distributor.SINGULAR_NAME', 'Distributor') ."</p>"
                     )
                 );
             }
@@ -95,7 +95,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
             $distributors = array('' => '--- PLEASE SELECT ---') + $distributors;
             $fields->addFieldToTab(
                 'Root.Main',
-                DropdownField::create('DistributorID', 'Distributor', array(0 => "-- Not Selected --") + $distributors),
+                DropdownField::create('DistributorID', _t('Distributor.SINGULAR_NAME', 'Distributor') , array(0 => "-- Not Selected --") + $distributors),
                 "DoNotAllowSales"
             );
 

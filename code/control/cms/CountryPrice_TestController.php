@@ -184,7 +184,7 @@ class CountryPrice_TestController extends ContentController {
             "MyStockistCountryPage" => "The stockist page that is related to the visitor's country",
             "MyCountryFAQPage" => "",
             "MyBackupCountryCode" => "This country is used if the information for the selected country is not available.",
-            "MyDefaultDistributor" => "You can set one default distributor (head office) with a tickbox for any Distributor",
+            "MyDefaultDistributor" => "You can set one default ". _t('Distributor.SINGULAR_NAME', 'Distributor') . " (head office) with a tickbox for any ". _t('Distributor.SINGULAR_NAME', 'Distributor') ,
 
         );
         $array = array(

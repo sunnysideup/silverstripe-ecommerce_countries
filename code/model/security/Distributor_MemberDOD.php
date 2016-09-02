@@ -13,7 +13,7 @@ class Distributor_MemberDOD extends DataExtension {
 
     function updateCMSFields(FieldList $fields) {
         $distributors = Distributor::get()->map('ID', 'Name')->toArray();
-        $fields->addFieldToTab('Root.Distributor', new DropdownField('DistributorID', 'Distributor', $distributors, '', null, '-- Select --'));
+        $fields->addFieldToTab('Root.Distributor', new DropdownField('DistributorID', _t('Distributor.SINGULAR_NAME', 'Distributor') , $distributors, '', null, '-- Select --'));
     }
 
     function onAfterWrite()

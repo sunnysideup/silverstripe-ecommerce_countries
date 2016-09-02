@@ -69,7 +69,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                     }
                 }
                 else {
-                    die("ERROR: No primary country has been set for this distributor.");
+                    die("ERROR: No primary country has been set for this ".  _t('Distributor.SINGULAR_NAME', 'Distributor') .".");
                 }
             }
             if($countries && $countries->count()) {
@@ -77,7 +77,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
             }
         }
         if(!$canViewAndEdit) {
-            Security::permissionFailure($this, 'Please log in first or log in as a distributor');
+            Security::permissionFailure($this, 'Please log in first or log in as a '. _t('Distributor.SINGULAR_NAME', 'Distributor'). '.');
         }
     }
 
@@ -314,7 +314,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                 );
                 if(Permission::check("ADMIN")) {
                     $html .= $this->createEditNode(
-                        "Default Distributor",
+                        "Default " . _t('Distributor.SINGULAR_NAME', 'Distributor'),
                         $distributor->IsDefault ? "YES" : "NO"
                     );
                 }
@@ -344,7 +344,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                 $html .= $this->createEditNode(
                     "Passwords?",
                     '
-                        Distriburs can log in using the email(s) listed above.
+                        ' . _t('Distributor.SINGULAR_NAME', 'Distributor').' can log in using the email(s) listed above.
                         If they do not have a password they can request a
                         <a href="/Security/lostpassword">password reset</a>.
                     '
@@ -405,7 +405,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
                 $data = array('T' => 'EcommerceCountry', 'I' => $country->ID);
                 $distributorName = $country->Distributor()->Name;
                 if(!$distributorName) {
-                    $distributorName = "<p class=\"message bad\">No Distributor has been assigned to this country.</p>";
+                    $distributorName = "<p class=\"message bad\">No ". _t('Distributor.SINGULAR_NAME', 'Distributor') ." has been assigned to this country.</p>";
                 }
                 $html .= $this->createTreeNode($country->Code." - ".$country->Name, $country->Code, array($country));
                 $distributorTitlePlural = _t('EcommerceCountry_Distributor.PLURAL_NAME', 'Distributor');
@@ -424,12 +424,12 @@ class CountryPrice_DistributorManagementTool extends Controller {
         $countries =  EcommerceCountry::get()->filter(array("DistributorID" => 0, "DoNotAllowSales" => 0));
         if($countries && $countries->count()){
             $list = implode(", ", $countries->map("ID", "Code")->toArray());
-            $html .= $this->createEditNode("Countries without distributor that allow sales", $list);
+            $html .= $this->createEditNode("Countries without ". _t('Distributor.SINGULAR_NAME', 'Distributor') ." that allow sales", $list);
         }
         $countries =  EcommerceCountry::get()->filter(array("DistributorID" => 0, "DoNotAllowSales" => 1));
         if($countries && $countries->count()){
             $list = implode(", ", $countries->map("ID", "Code")->toArray());
-            $html .= $this->createEditNode("Countries without distributor that do not allow sales", $list);
+            $html .= $this->createEditNode("Countries without ". _t('Distributor.SINGULAR_NAME', 'Distributor') ." that do not allow sales", $list);
         }
         return $html;
     }
