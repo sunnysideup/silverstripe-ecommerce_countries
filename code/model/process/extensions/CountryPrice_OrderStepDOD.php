@@ -12,7 +12,4 @@ class CountryPrice_OrderStepDOD extends DataExtension {
         'EcommerceOrderStepCountryDatas' => 'EcommerceOrderStepCountryData'
     );
 
-    function updateCMSFields(FieldList $fields) {
-
-    }
 }
