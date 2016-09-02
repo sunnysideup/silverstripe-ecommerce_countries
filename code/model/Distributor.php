@@ -39,7 +39,7 @@ class Distributor extends DataObject implements PermissionProvider {
     );
 
     private static $field_labels_right = array(
-        'IsDefault' => 'Use this only for the  {$this->singular_name} that is applicable when no other {$this->singular_name} applies (e.g. a country that does not have a {$this->singular_name} ).', 
+        'IsDefault' => 'Use this only for the  distributor that is applicable when no other distributor applies (e.g. a country that does not have a distributor).', 
         'Phone' => 'Please format as +64 8 555 5555'
     );
 
