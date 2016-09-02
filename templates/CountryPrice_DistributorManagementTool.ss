@@ -125,7 +125,7 @@ button {
                     <dl>
                         <dt>Name of information</dt>
                         <dd class="editable">
-                            <div>DistributorLabel Relevant Content</div>
+                            <div>$DistributorLabel Relevant Content</div>
                             <a href="#" class="edit">click on me to edit...</a>
                         </dd>
                     </dl>
