@@ -35,11 +35,11 @@ class Distributor extends DataObject implements PermissionProvider {
     );
 
     private static $field_labels = array(
-        'IsDefault' => 'Is Default Distributor? '
+        'IsDefault' => 'Is Default Distributor?'
     );
 
     private static $field_labels_right = array(
-        'IsDefault' => 'Use this only for the '. _t('Distributor.SINGULAR_NAME', 'Distributor'). ' that is applicable when no other ' ._t('Distributor.SINGULAR_NAME', 'Distributor'). '  applies (e.g. a country that does not have a ' . _t('Distributor.SINGULAR_NAME', 'Distributor') . ').',
+        'IsDefault' => "Use this only for the  {$this->i18n_singular_name[]} that is applicable when no other {$this->i18n_singular_name} applies (e.g. a country that does not have a {$this->i18n_singular_name[]} ).",
         'Phone' => 'Please format as +64 8 555 5555'
     );
 
@@ -363,7 +363,7 @@ class Distributor extends DataObject implements PermissionProvider {
                 $member->Email = $this->Email;
                 //$thisMember->SetPassword = substr(session_id, 0, 8);
             }
-            $member->FirstName = cd ../ . ' For';
+            $member->FirstName = _t('Distributor.SINGULAR_NAME', 'Distributor') . ' For';
             $member->Surname = $this->Name;
             $member->DistributorID = $this->ID;
             $member->write();
