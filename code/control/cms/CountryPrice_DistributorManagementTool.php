@@ -31,6 +31,10 @@ class CountryPrice_DistributorManagementTool extends Controller {
      */
     private $countryArray = array();
 
+    function DistributorLabel() {
+        return _t('Distributor.SINGULAR_NAME', 'Distributor');
+    }
+
     /**
      * determine level of access
      */

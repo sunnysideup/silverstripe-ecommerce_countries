@@ -174,12 +174,12 @@ class CountryPrice_TestController extends ContentController {
             "MyCountryCode" => "This is the key function",
             "MyCountryTitle" => "",
             "MyCurrency" => "Based on the currency set in the order.",
-            "MyDistributor" => "You have to set the distributor's countries in order to work out someone's distributor.",
+            "MyDistributor" => "You have to set the ". _t('Distributor.SINGULAR_NAME', 'Distributor') . "'s countries in order to work out someone's ". _t('Distributor.SINGULAR_NAME', 'Distributor') . ".",
             "MyDistributorCountry" => "This is the country that is being used for the sale.  For dodgy countries, we use the backup country.",
-            "MyDeliveryCostNote" => "Set in country, distributor and default country.",
-            "MyShippingDeliveryInfo" => "Set in country, distributor and default country.",
-            "MyShippingReturnInfo" => "Set in country, distributor and default country.",
-            "MyProductNotAvailableNote" => "Set in country, distributor, default country, AND the Ecommerce Config.",
+            "MyDeliveryCostNote" => "Set in country, ". _t('Distributor.SINGULAR_NAME', 'Distributor') . " and default country.",
+            "MyShippingDeliveryInfo" => "Set in country, ". _t('Distributor.SINGULAR_NAME', 'Distributor') . " and default country.",
+            "MyShippingReturnInfo" => "Set in country, ". _t('Distributor.SINGULAR_NAME', 'Distributor') . " and default country.",
+            "MyProductNotAvailableNote" => "Set in country, ". _t('Distributor.SINGULAR_NAME', 'Distributor') . ", default country, AND the Ecommerce Config.",
             "MyStockistSearchPage" => "",
             "MyStockistCountryPage" => "The stockist page that is related to the visitor's country",
             "MyCountryFAQPage" => "",
@@ -204,7 +204,7 @@ class CountryPrice_TestController extends ContentController {
             "MyDefaultDistributor" => "Object",
         );
         echo "<h1>Current Settings</h1>";
-        echo "<p>Most of these settings can be adjusted in the country, distributor and generic e-commerce settings.</p>";
+        echo "<p>Most of these settings can be adjusted in the country, ". _t('Distributor.SINGULAR_NAME', 'Distributor') . " and generic e-commerce settings.</p>";
         foreach($array as $name => $type) {
             $style = "created";
             $notSet = false;
