@@ -55,6 +55,31 @@ class Distributor extends DataObject implements PermissionProvider {
         "Name" => "Asc"
     );
 
+
+    private static $singular_name = "Distributor";
+
+    /**
+     * Return the translated Singular name.
+     *
+     * @return string
+     */
+    public function i18n_singular_name() {
+        return _t('Distributor.SINGULAR_NAME', 'Distributor');
+    }
+
+
+    private static $plural_name = "Distributors";
+
+    /**
+     * Return the translated Singular name.
+     *
+     * @return string
+     */
+    public function i18n_plural_name() {
+        return _t('Distributor.PLURAL_NAME', 'Distributors');
+    }
+
+
     /**
      * returns the Distributor for the country OR the default Distributor.
      * @param String $countryCode = the country code.
@@ -318,9 +343,9 @@ class Distributor extends DataObject implements PermissionProvider {
     {
         return array(
             $perms[Config::inst()->get('Distributor', 'distributor_permission_code')] = array(
-                'name' => 'Distributors',
+                'name' => _t('Distributor.PLURAL_NAME', 'Distributors'),
                 'category' => 'E-commerce',
-                'help' => 'Distribuor access to relevant products and sales data.',
+                'help' => _t('Distributor.SINGULAR_NAME', 'Distributor').' access to relevant products and sales data.',
                 'sort' => 98,
             )
         );
