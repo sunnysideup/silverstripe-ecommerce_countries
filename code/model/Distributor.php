@@ -363,7 +363,7 @@ class Distributor extends DataObject implements PermissionProvider {
                 $member->Email = $this->Email;
                 //$thisMember->SetPassword = substr(session_id, 0, 8);
             }
-            $member->FirstName = _t('Distributor.SINGULAR_NAME', 'Distributor') . ' For';
+            $member->FirstName = cd ../ . ' For';
             $member->Surname = $this->Name;
             $member->DistributorID = $this->ID;
             $member->write();

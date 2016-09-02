@@ -125,7 +125,7 @@ button {
                     <dl>
                         <dt>Name of information</dt>
                         <dd class="editable">
-                            <div>Distributor Relevant Content</div>
+                            <div>DistributorLabel Relevant Content</div>
                             <a href="#" class="edit">click on me to edit...</a>
                         </dd>
                     </dl>
@@ -141,9 +141,9 @@ button {
             </ul>
         </li>
         <li class="mainLI">
-            <h2>Distributor</h2>
+            <h2>$DistributorLabel</h2>
             <ul class="secondUL" id="Distributors">
-                <% if Distributors %>$Distributors<% else %><li class="message bad">There is no distributor information available.</li><% end_if %>
+                <% if Distributors %>$Distributors<% else %><li class="message bad">There is no $DistributorLabel information available.</li><% end_if %>
             </ul>
         </li>
 
