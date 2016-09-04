@@ -121,8 +121,8 @@ class CountryPrice_Translation extends DataObject
         $al->push(
             ArrayData::create(
                 array(
-                    'PageField' => 'Title',
-                    'TranslationField' => 'Title'
+                    'PageField' => 'Content',
+                    'TranslationField' => 'Content'
                 )
             )
         );

@@ -35,25 +35,27 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
     {
         $translation = null;
         $key = $this->owner->ID;
+
         if(isset(self::$_translations[$key])) {
             $translation = self::$_translations[$key];
-        }
-        $countryID = 0;
-        $countryObject = CountryPrice_EcommerceCountry::get_real_country();
-        if($countryObject) {
-            $countryID = $countryObject->ID;
-        }
-        if($countryID) {
-            $translation = $this->owner->dataRecord
-                ->CountryPriceTranslations()
-                ->filter(
-                    array(
-                        "EcommerceCountryID" => $countryID,
-                        'ParentID' => $this->owner->dataRecord->ID
+        } else {
+            $countryID = 0;
+            $countryObject = CountryPrice_EcommerceCountry::get_real_country();
+            if($countryObject) {
+                $countryID = $countryObject->ID;
+            }
+            if($countryID) {
+                $translation = $this->owner->dataRecord
+                    ->CountryPriceTranslations()
+                    ->filter(
+                        array(
+                            "EcommerceCountryID" => $countryID,
+                            'ParentID' => $this->owner->dataRecord->ID
+                        )
                     )
-                )
-                ->first();
-            self::$_translations[$key] = $translation;
+                    ->first();
+                self::$_translations[$key] = $translation;
+            }
         }
         if($translation) {
             foreach($translation->FieldsToReplace() as $replaceFields) {

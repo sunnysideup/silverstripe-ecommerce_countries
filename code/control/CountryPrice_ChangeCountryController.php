@@ -13,7 +13,19 @@
 class CountryPrices_ChangeCountryController extends ContentController
 {
 
+    /**
+     * make sure to match route...
+     * @var string
+     */
     private static $url_segment = 'shoppingcart-countries';
+
+    /**
+     * needs to be saved like this:
+     * ZA => 'myshop.co.za'
+     *
+     * @var array
+     */
+    private static $off_site_url_redirects = array();
 
     private static $allowed_actions = array(
         "changeto" => true
@@ -21,16 +33,25 @@ class CountryPrices_ChangeCountryController extends ContentController
 
     public static function new_country_link($countryCode)
     {
+        $redirectsArray = Config::inst()->get('CountryPrices_ChangeCountryController', 'off_site_url_redirects');
+        if(isset($redirectsArray[$countryCode])) {
+            return $redirectsArray[$countryCode];
+        }
+
         return Injector::inst()->get('CountryPrices_ChangeCountryController')->Link('changeto/'.$countryCode.'/');
     }
 
     function changeto($request)
     {
+        $redirectsArray = Config::inst()->get('CountryPrices_ChangeCountryController', 'off_site_url_redirects');
         $newCountryCode = substr(strtoupper($request->param('ID')), 0, 2);
+        if(isset($redirectsArray[$newCountryCode])) {
+            return $this->redirect($redirectsArray[$newCountryCode]);
+        }
         Session::set('MyCloudFlareCountry', $newCountryCode);
         $o = Shoppingcart::current_order();
         if($o && ($o->getCountry() == $newCountryCode)) {
-
+            //..
         } else {
             ShoppingCart::singleton()->clear();
         }
