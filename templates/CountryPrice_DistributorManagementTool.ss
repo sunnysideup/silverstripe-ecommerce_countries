@@ -287,7 +287,7 @@ button {
 
 
             //start editing text fields
-            jQuery('li[data-name] a').click(
+            jQuery('li[data-name] a.edit').click(
                 function(event) {
                     event.preventDefault();
                     var parent = jQuery(this).closest("li");
@@ -301,11 +301,13 @@ button {
                         jQuery('textarea').jqte(editorScript.jqteSettings);
                     }
                     else {
-                        var value = jQuery(this).text();
-                        var button = 'Update';
-                        if(value == 'Add price to start selling') {
-                            button = value;
-                            value = 0;
+                        var isNew = jQuery(this).closest('li').hasClass('add-node') ? true : false;
+                        if(isNew) {
+                            var button = jQuery(this).text();
+                            var value = 0;
+                        } else {
+                            var button = 'Update';
+                            var value = jQuery(this).text();
                         }
                         var input = '<input type="text" class="text" value="' + value + '" maxlength="255">';
                         input += '<button type="button">' + button + '</button>';
@@ -323,6 +325,7 @@ button {
                 function() {
                     //set variables
                     var parent = jQuery(this).closest("li[data-name]");
+                    jQuery(parent).removeClass('add-node');
                     var data = jQuery.parseJSON(jQuery(parent).attr('data-name'));
 
                     //removing editors
@@ -413,7 +416,7 @@ button {
                                 tempObject['I'] = 0;
                                 newValueAsString = JSON.stringify(tempObject);
                                 jQuery(liHolder).attr('data-name', newValueAsString);
-                                var message = '<span class="updateMessage message good">' + action + ' successfully.</span>';
+                                var message = '<span class="updateMessage message good">' + action + ' successfully. To add again, please reload page.</span>';
                             }
                             else { // Error
                                 var message = '<span class="updateMessage message bad">' + result + '.</span>';
@@ -423,7 +426,7 @@ button {
                             jQuery(parent).find("dt").append(message);
                             jQuery(parent).removeClass('loading');
                             jQuery(liHolder).fadeOut(
-                                1000,
+                                7000,
                                 function() {
                                     jQuery(liHolder).remove();
                                 }

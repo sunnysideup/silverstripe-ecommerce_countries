@@ -549,7 +549,9 @@ class CountryPrice_DistributorManagementTool extends Controller {
                                 $addText,
                                 $data,
                                 "input",
-                                array($countryObject)
+                                array($countryObject),
+                                '[x]',
+                                'add-node'
                             );
                         }
                     }
@@ -746,7 +748,8 @@ class CountryPrice_DistributorManagementTool extends Controller {
         $data = null,
         $fieldType = "input",
         $objectArray = null,
-        $deleteText = ''
+        $deleteText = '',
+        $extraClassesString = ''
 
     ) {
         if(!$data) {
@@ -785,7 +788,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
             }
             $data = " data-name=\"".Convert::raw2att(Convert::raw2json($data))."\"";
         }
-        $filterClass = '';
+        $filterClass = $extraClassesString;
         if($objectArray) {
             foreach($objectArray as $object) {
                 $filterClass .= ' '.$object->ClassName.$object->ID.' gp'.$object->ClassName;
@@ -796,7 +799,7 @@ class CountryPrice_DistributorManagementTool extends Controller {
             $deleteLink = '<a href="#" class="delete-record">'.$deleteText.'</a>';
         }
         return "
-                    <li{$data}{$fieldTypeString} class=\"$filterClass\">
+                    <li{$data}{$fieldTypeString} class=\"$filterClass \">
                         <dl>
                             <dt>$label</dt>
                             <dd class=\"$ddClass valueHolder\">
