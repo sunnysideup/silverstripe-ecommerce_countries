@@ -83,7 +83,7 @@ class TEST_GEOIP_COUNTRY_CODE_BY_NAME extends BuildTask {
             $ar = Config::inst()->get('TEST_GEOIP_COUNTRY_CODE_BY_NAME', 'test_ips');
         }
 
-        foreach($ar as $ip => $description) {
+        foreach(TEST_GEOIP_COUNTRY_CODE_BY_NAME::$test_ips as $ip => $description) {
             $codeArray = Geoip::ip2country($ip);
             echo "<hr /><h2>$ip: ---".print_r($codeArray, 1)."---</h2>";
             if($codeArray["code"] != $description && strlen($description) == 2) {
