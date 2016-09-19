@@ -5,8 +5,8 @@
  *
  */
 
-class CountryPrice_EcommerceCountry extends DataExtension {
-
+class CountryPrice_EcommerceCountry extends DataExtension
+{
     private static $db = array(
         'IsBackupCountry' => 'Boolean',
         'FAQContent' => 'HTMLText',
@@ -41,7 +41,8 @@ class CountryPrice_EcommerceCountry extends DataExtension {
         "IsBackupCountry" => true
     );
 
-    function updateCMSFields(FieldList $fields) {
+    public function updateCMSFields(FieldList $fields)
+    {
         $fields->addFieldToTab(
             "Root.ParentCountry",
             DropdownField::create(
@@ -50,7 +51,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
                 array('' => '--- PLEASE SELECT ---') + EcommerceCountry::get()->filter(array("AlwaysTheSameAsID" => 0))->exclude(array("ID" => $this->owner->ID))->map("ID", "Name")->toArray()
             )
         );
-        if($this->owner->AlwaysTheSameAsID) {
+        if ($this->owner->AlwaysTheSameAsID) {
             $removeByNameArray = array(
                 'IsBackupCountry',
                 'DoNotAllowSales',
@@ -65,21 +66,19 @@ class CountryPrice_EcommerceCountry extends DataExtension {
                 'ParentFor',
                 'Regions'
             );
-            foreach($removeByNameArray as $removeByNameField)
+            foreach ($removeByNameArray as $removeByNameField) {
                 $fields->removeByName(
                     $removeByNameField
                 );
-        }
-        else {
-
+            }
+        } else {
             $fields->addFieldToTab('Root.Messages', TextField::create('TopBarMessage', 'Top Bar Message')->setRightTitle("also see the site config for default messages"));
-            if($this->owner->DistributorID) {
+            if ($this->owner->DistributorID) {
                 $FAQContentField = new HtmlEditorField('FAQContent', 'Content');
                 $FAQContentField->setRows(7);
                 $FAQContentField->setColumns(7);
                 $fields->addFieldToTab('Root.FAQPage', $FAQContentField);
-            }
-            else {
+            } else {
                 $fields->addFieldToTab(
                     'Root.FAQPage',
                     new LiteralField(
@@ -95,7 +94,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
             $distributors = array('' => '--- PLEASE SELECT ---') + $distributors;
             $fields->addFieldToTab(
                 'Root.Main',
-                DropdownField::create('DistributorID', _t('Distributor.SINGULAR_NAME', 'Distributor') , array(0 => "-- Not Selected --") + $distributors),
+                DropdownField::create('DistributorID', _t('Distributor.SINGULAR_NAME', 'Distributor'), array(0 => "-- Not Selected --") + $distributors),
                 "DoNotAllowSales"
             );
 
@@ -126,7 +125,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     public static function get_sibling_countries($countryCode = null)
     {
         $countryObject = self::get_real_country($countryCode);
-        if($countryObject->AlwaysTheSameAsID) {
+        if ($countryObject->AlwaysTheSameAsID) {
             return EcommerceCountry::get()
                 ->filterAny(
                     array(
@@ -155,7 +154,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     public static function get_distributor_country($countryCode = null)
     {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
-        if($countryObject && $countryObject->hasDistributor()) {
+        if ($countryObject && $countryObject->hasDistributor()) {
             //do nothing ...
         } else {
             $countryObject = self::get_backup_country();
@@ -174,7 +173,7 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     public static function get_distributor_primary_country($countryCode = null)
     {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
-        if($countryObject && $countryObject->hasDistributor()) {
+        if ($countryObject && $countryObject->hasDistributor()) {
             return $countryObject->Distributor()->PrimaryCountry();
             //do nothing ...
         } else {
@@ -192,43 +191,43 @@ class CountryPrice_EcommerceCountry extends DataExtension {
      */
     public static function get_real_country($country = null)
     {
-        if($country && ( ! is_object($country))) {
-            if(isset(self::$_get_real_country_cache[$country])) {
+        if ($country && (! is_object($country))) {
+            if (isset(self::$_get_real_country_cache[$country])) {
                 return self::$_get_real_country_cache[$country];
             } else {
                 $originalCode = $country;
             }
         }
         $order = ShoppingCart::current_order();
-        if( ! $country) {
+        if (! $country) {
             $country = $order->getCountry();
         }
-        if( ! $country ) {
+        if (! $country) {
             $country = EcommerceCountry::get_country();
         }
-        if($country instanceof EcommerceCountry) {
+        if ($country instanceof EcommerceCountry) {
             $type = "object";
             //do nothing
-        } elseif(is_numeric($country) && intval($country) == $country)  {
+        } elseif (is_numeric($country) && intval($country) == $country) {
             $type = "number";
             $country = EcommerceCountry::get()->byID($country);
-        } elseif(is_string($country))  {
+        } elseif (is_string($country)) {
             $type = "string";
             $country = strtoupper($country);
             $country = EcommerceCountry::get_country_object(false, $country);
         }
-        if($country && $country instanceof EcommerceCountry) {
-            if($country->AlwaysTheSameAsID) {
+        if ($country && $country instanceof EcommerceCountry) {
+            if ($country->AlwaysTheSameAsID) {
                 $realCountry = $country->AlwaysTheSameAs();
-                if($realCountry && $realCountry->exists()) {
+                if ($realCountry && $realCountry->exists()) {
                     $country = $realCountry;
                 }
             }
         }
-        if(! $country instanceof EcommerceCountry) {
+        if (! $country instanceof EcommerceCountry) {
             user_error('No country could be found');
         }
-        if(!empty($originalCode)) {
+        if (!empty($originalCode)) {
             self::$_get_real_country_cache[$originalCode] = $country;
         }
         return $country;
@@ -237,11 +236,12 @@ class CountryPrice_EcommerceCountry extends DataExtension {
      *
      * @return EcommerceCountry
      */
-    public static function get_backup_country(){
+    public static function get_backup_country()
+    {
         $obj = EcommerceCountry::get()->filter(array("IsBackupCountry" => true))->first();
-        if( ! $obj) {
+        if (! $obj) {
             $obj = EcommerceCountry::get()->filter(array("Code" => EcommerceConfig::get('EcommerceCountry', 'default_country_code')))->first();
-            if( ! $obj) {
+            if (! $obj) {
                 $obj = EcommerceCountry::get()->first();
             }
         }
@@ -254,7 +254,8 @@ class CountryPrice_EcommerceCountry extends DataExtension {
      *
      * @return boolean
      */
-    public function hasDistributor(){
+    public function hasDistributor()
+    {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($this->owner);
 
         return
@@ -267,22 +268,21 @@ class CountryPrice_EcommerceCountry extends DataExtension {
     /**
      * make sure there is always a backup country ...
      */
-    function requireDefaultRecords(){
+    public function requireDefaultRecords()
+    {
         $backupCountry = EcommerceCountry::get()->filter(array("IsBackupCountry" => 1))->first();
-        if(!$backupCountry) {
+        if (!$backupCountry) {
             $backupCountry = self::get_backup_country();
-            if($backupCountry) {
+            if ($backupCountry) {
                 $backupCountry->IsBackupCountry = true;
                 $backupCountry->write();
             }
         }
-        if($backupCountry) {
+        if ($backupCountry) {
             DB::query("UPDATE EcommerceCountry SET IsBackupCountry = 0 WHERE EcommerceCountry.ID <> ".$backupCountry->ID);
             DB::alteration_message("Creating back-up country");
-        }
-        else {
+        } else {
             DB::alteration_message("Back-up country has not been set", "deleted");
         }
     }
-
 }

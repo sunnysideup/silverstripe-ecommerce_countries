@@ -68,8 +68,9 @@ class CountryPrice_Translation extends DataObject
         return $fields;
     }
 
-    function canCreate($member = null) {
-        if(CountryPrice_EcommerceCountry::get_real_countries_list()->count()) {
+    public function canCreate($member = null)
+    {
+        if (CountryPrice_EcommerceCountry::get_real_countries_list()->count()) {
             return parent::canCreate($member);
         }
         return false;
@@ -81,8 +82,8 @@ class CountryPrice_Translation extends DataObject
     protected function validate()
     {
         $validation = parent::validate();
-        if($validation->valid()) {
-            if($this->exists()) {
+        if ($validation->valid()) {
+            if ($this->exists()) {
                 $existing = CountryPrice_Translation::get()
                     ->exclude(array("ID" => $this->ID))
                     ->filter(
@@ -91,7 +92,7 @@ class CountryPrice_Translation extends DataObject
                             "ParentID" => $this->ParentID
                         )
                     );
-                if($existing->count() > 0) {
+                if ($existing->count() > 0) {
                     $validation->error(
                         'There is already an entry for this country and page'
                     );
@@ -128,7 +129,5 @@ class CountryPrice_Translation extends DataObject
         );
         $this->extend('updateFieldsToReplace', $al);
         return $al;
-
     }
-
 }

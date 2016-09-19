@@ -6,13 +6,19 @@
  *
  */
 
-class EcommerceOrderStepCountryData extends DataObject {
-
+class EcommerceOrderStepCountryData extends DataObject
+{
     private static $singular_name = "Country specific Order Step Information";
-        function i18n_singular_name() { return "Country specific Order Step Information";}
+    public function i18n_singular_name()
+    {
+        return "Country specific Order Step Information";
+    }
 
     private static $plural_name = "Country specific Order Step Information Items";
-        function i18n_plural_name() { return "Country specific Order Step Information Items";}
+    public function i18n_plural_name()
+    {
+        return "Country specific Order Step Information Items";
+    }
 
     private static $db = array(
         'CountrySpecificEmailSubject' => 'Varchar(255)',
@@ -41,7 +47,8 @@ class EcommerceOrderStepCountryData extends DataObject {
     );
 
 
-    function getCMSFields() {
+    public function getCMSFields()
+    {
         $fields = parent::getCMSFields();
         $messageField = new HtmlEditorField('CountrySpecificEmailMessage', "Email Content");
         $messageField->setRows(7);
@@ -64,19 +71,17 @@ class EcommerceOrderStepCountryData extends DataObject {
     /**
      * make sure this entry does not exist yet...
      */
-    public function validate() {
+    public function validate()
+    {
         $valid = parent::validate();
         $filter = array(
             "OrderStepID" => $this->OrderStepID,
             "EcommerceCountryID" => $this->EcommerceCountryID
         );
         $exclude = array("ID" => $this->ID);
-        if(EcommerceOrderStepCountryData::get()->filter($filter)->exclude($exclude)->count()) {
+        if (EcommerceOrderStepCountryData::get()->filter($filter)->exclude($exclude)->count()) {
             $valid->error('An entry for this country and order step already exists. Please change the country or review existing records.');
         }
         return $valid;
-
     }
-
-
 }

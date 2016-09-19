@@ -31,20 +31,20 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
 
     private static $_translation = array();
 
-    function TranslatedValues($variableOrMethod = '')
+    public function TranslatedValues($variableOrMethod = '')
     {
         $translation = null;
         $key = $this->owner->ID;
 
-        if(isset(self::$_translations[$key])) {
+        if (isset(self::$_translations[$key])) {
             $translation = self::$_translations[$key];
         } else {
             $countryID = 0;
             $countryObject = CountryPrice_EcommerceCountry::get_real_country();
-            if($countryObject) {
+            if ($countryObject) {
                 $countryID = $countryObject->ID;
             }
-            if($countryID) {
+            if ($countryID) {
                 $translation = $this->owner->dataRecord
                     ->CountryPriceTranslations()
                     ->filter(
@@ -57,22 +57,21 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
                 self::$_translations[$key] = $translation;
             }
         }
-        if($translation) {
-            foreach($translation->FieldsToReplace() as $replaceFields) {
+        if ($translation) {
+            foreach ($translation->FieldsToReplace() as $replaceFields) {
                 $pageField = $replaceFields->PageField;
                 $translationField = $replaceFields->TranslationField;
-                if( ! $variableOrMethod || ($variableOrMethod == $pageField)) {
-                    if($translation->hasMethod($translationField)) {
+                if (! $variableOrMethod || ($variableOrMethod == $pageField)) {
+                    if ($translation->hasMethod($translationField)) {
                         $this->owner->$pageField = $translation->$translationField();
                     } else {
                         $this->owner->$pageField = $translation->$translationField;
                     }
-                    if($variableOrMethod && ($variableOrMethod == $pageField)) {
+                    if ($variableOrMethod && ($variableOrMethod == $pageField)) {
                         return $this->owner->$pageField;
                     }
                 }
             }
         }
     }
-
 }

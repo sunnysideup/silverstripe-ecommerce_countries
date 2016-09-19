@@ -21,6 +21,4 @@ class CountryPrice_EcomDBConfig extends DataExtension
         $field->setRows(7);
         return $fields;
     }
-
-
 }

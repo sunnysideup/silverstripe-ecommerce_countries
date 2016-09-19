@@ -5,8 +5,8 @@
  * The default distributor shows prices of the default currency.
  * Precondition : There is always a default distributor.
  */
-class Distributor extends DataObject implements PermissionProvider {
-
+class Distributor extends DataObject implements PermissionProvider
+{
     private static $db = array(
         'Name' => 'Varchar(255)',
         'IsDefault' => 'Boolean',
@@ -39,7 +39,7 @@ class Distributor extends DataObject implements PermissionProvider {
     );
 
     private static $field_labels_right = array(
-        'IsDefault' => 'Use this only for the  distributor that is applicable when no other distributor applies (e.g. a country that does not have a distributor).', 
+        'IsDefault' => 'Use this only for the  distributor that is applicable when no other distributor applies (e.g. a country that does not have a distributor).',
         'Phone' => 'Please format as +64 8 555 5555'
     );
 
@@ -63,7 +63,8 @@ class Distributor extends DataObject implements PermissionProvider {
      *
      * @return string
      */
-    public function i18n_singular_name() {
+    public function i18n_singular_name()
+    {
         return _t('Distributor.SINGULAR_NAME', 'Distributor');
     }
 
@@ -75,7 +76,8 @@ class Distributor extends DataObject implements PermissionProvider {
      *
      * @return string
      */
-    public function i18n_plural_name() {
+    public function i18n_plural_name()
+    {
         return _t('Distributor.PLURAL_NAME', 'Distributors');
     }
 
@@ -86,11 +88,12 @@ class Distributor extends DataObject implements PermissionProvider {
      *
      * @return Distributor
      */
-    public static function get_one_for_country($countryCode = '') {
+    public static function get_one_for_country($countryCode = '')
+    {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
-        if($countryObject) {
+        if ($countryObject) {
             $distributor = $countryObject->Distributor();
-            if($distributor && $distributor->exists()) {
+            if ($distributor && $distributor->exists()) {
                 return $distributor;
             }
         }
@@ -99,31 +102,29 @@ class Distributor extends DataObject implements PermissionProvider {
             ->First();
     }
 
-    function getCMSFields() {
+    public function getCMSFields()
+    {
         $fields = parent::getCMSFields();
         $fieldLabels = $this->FieldLabels();
         $fieldLabelsRight = $this->Config()->get("field_labels_right");
         $listOfCountriesCovered = EcommerceCountry::get()->exclude(array("DistributorID" => 0))->map("ID", "Title");
         //secondary for another country
         $fields->removeByName('Versions');
-        if($listOfCountriesCovered && $listOfCountriesCovered->count()) {
+        if ($listOfCountriesCovered && $listOfCountriesCovered->count()) {
             $countryArray =  array(" -- please select --") + $listOfCountriesCovered->toArray();
             $fields->addFieldToTab("Root.CountryDetails", DropdownField::create("PrimaryCountryID", "Primary Country", $countryArray));
-        }
-        else {
+        } else {
             $fields->removeByName('PrimaryCountryID');
         }
-        if($this->IsDefault) {
+        if ($this->IsDefault) {
             $fields->removeByName('Countries');
-        }
-        else {
-            if(empty($this->ID)) {
+        } else {
+            if (empty($this->ID)) {
                 $id = 0;
-            }
-            else {
+            } else {
                 $id = $this->ID;
             }
-            if($this->ID) {
+            if ($this->ID) {
                 $config = GridFieldConfig_RelationEditor::create();
                 $config->removeComponentsByType("GridFieldAddNewButton");
                 $gridField = new GridField('pages', 'All pages', SiteTree::get(), $config);
@@ -134,7 +135,7 @@ class Distributor extends DataObject implements PermissionProvider {
                     $config
                 );
                 $fields->addFieldToTab("Root.CountryDetails", $countryField);
-                if($this->Version > 1) {
+                if ($this->Version > 1) {
                     $columns = array(
                         'Version' => 'Version',
                         'LastEdited' => 'Date',
@@ -144,10 +145,10 @@ class Distributor extends DataObject implements PermissionProvider {
                     );
                     $table = '<table class="versions"><thead><tr><th>' . implode('</th><th>', $columns) . '</th></tr></thead><tbody>';
                     $version = $this->Version - 1;
-                    while($version > 0) {
+                    while ($version > 0) {
                         $versionDO = Versioned::get_version('Distributor', $this->ID, $version--);
                         $values = array();
-                        foreach($columns as $column => $title) {
+                        foreach ($columns as $column => $title) {
                             $values[] = $versionDO->$column;
                         }
                         $table .= '<tr><td>' . implode('</td><td>', $values) . '</td></tr>';
@@ -183,9 +184,9 @@ class Distributor extends DataObject implements PermissionProvider {
                 new HTMLEditorField("ProductNotAvailableNote")
             )
         );
-        foreach($fieldLabelsRight as $key => $value) {
+        foreach ($fieldLabelsRight as $key => $value) {
             $field = $fields->dataFieldByName($key);
-            if($field) {
+            if ($field) {
                 $field->setRightTitle($value);
             }
         }
@@ -200,7 +201,8 @@ class Distributor extends DataObject implements PermissionProvider {
      * returns EcommerceCountries that this Distributor is responsible for.
      * return ArrayList
      */
-    function getCountryList() {
+    public function getCountryList()
+    {
         $filter = $this->IsDefault ? array("ID" => 0) : array("DistributorID" => $this->ID);
         return EcommerceCountry::get()
             ->filter($array);
@@ -211,7 +213,8 @@ class Distributor extends DataObject implements PermissionProvider {
      * @param String | Null $action - e.g. edit
      * @return String
      */
-    public function CMSEditLink($action = null) {
+    public function CMSEditLink($action = null)
+    {
         return Controller::join_links(
             Director::baseURL(),
             "/admin/shop/".$this->ClassName."/EditForm/field/".$this->ClassName."/item/".$this->ID."/",
@@ -223,18 +226,19 @@ class Distributor extends DataObject implements PermissionProvider {
      * ensure there is one default Distributor.
      *
      */
-    function onBeforeWrite() {
+    public function onBeforeWrite()
+    {
         parent::onBeforeWrite();
-        if(Distributor::get()->filter(array("IsDefault" => 1))->count() == 0) {
+        if (Distributor::get()->filter(array("IsDefault" => 1))->count() == 0) {
             $this->IsDefault = 1;
         }
-        if($this->PrimaryCountryID > 0 && EcommerceCountry::get()->byID(intval($this->PrimaryCountryID))) {
+        if ($this->PrimaryCountryID > 0 && EcommerceCountry::get()->byID(intval($this->PrimaryCountryID))) {
             $primaryCountry = $this->PrimaryCountry();
-            if( ! $this->Countries()->byID($this->PrimaryCountryID)) {
+            if (! $this->Countries()->byID($this->PrimaryCountryID)) {
                 $this->Countries()->add($primaryCountry);
             }
         } else {
-            if($firstCountry = $this->Countries()->First()) {
+            if ($firstCountry = $this->Countries()->First()) {
                 self::$_ran_after_write = true;
                 $this->PrimaryCountryID = $firstCountry->ID;
             }
@@ -246,9 +250,10 @@ class Distributor extends DataObject implements PermissionProvider {
      * ensure there is one default Distributor.
      *
      */
-    function onAfterWrite() {
+    public function onAfterWrite()
+    {
         parent::onAfterWrite();
-        if( ! self::$_ran_after_write) {
+        if (! self::$_ran_after_write) {
             self::$_ran_after_write = true;
             $this->setupUser();
         }
@@ -258,17 +263,19 @@ class Distributor extends DataObject implements PermissionProvider {
      * @param Member $member
      * @return Boolean
      */
-    function canDelete($member = null) {
+    public function canDelete($member = null)
+    {
         return $this->IsDefault ? false : parent::canEdit($member);
     }
 
-    function requireDefaultRecords() {
+    public function requireDefaultRecords()
+    {
         parent::RequireDefaultRecords();
         $distributorTitleSingular = _t('Distributor.SINGULAR_NAME', 'Distributor');
         $distributorTitlePlural = _t('Distributor.PLURAL_NAME', 'Distributors');
         $filter = array("Title" => $distributorTitleSingular);
         $role = PermissionRole::get()->filter($filter)->first();
-        if(!$role) {
+        if (!$role) {
             $role = PermissionRole::create($filter);
             $role->write();
             DB::alteration_message("Creating ".$distributorTitleSingular." role", 'created');
@@ -276,13 +283,13 @@ class Distributor extends DataObject implements PermissionProvider {
         $codes = array(
             'CMS_ACCESS_SalesAdmin'
         );
-        foreach($codes as $code) {
+        foreach ($codes as $code) {
             $filter = array(
                 "RoleID" => $role->ID,
                 "Code" => $code
             );
             $code = PermissionRoleCode::get()->filter($filter)->first();
-            if(!$code) {
+            if (!$code) {
                 DB::alteration_message("Adding code to ".$distributorTitleSingular." role", 'created');
                 $code = PermissionRoleCode::create($filter);
                 $code->write();
@@ -291,29 +298,27 @@ class Distributor extends DataObject implements PermissionProvider {
 
         $distributorGroup = self::get_distributor_group();
         $distributorPermissionCode = Config::inst()->get('Distributor', 'distributor_permission_code');
-        if(!$distributorGroup) {
+        if (!$distributorGroup) {
             $distributorGroup = new Group();
             $distributorGroup->Code = $distributorPermissionCode;
             $distributorGroup->Title = $distributorTitlePlural;
             $distributorGroup->write();
-            DB::alteration_message($distributorTitlePlural.' Group created',"created");
-            Permission::grant( $distributorGroup->ID, $distributorPermissionCode);
-        }
-        elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$distributorGroup->ID."' AND \"Code\" LIKE '".$distributorPermissionCode."'")->numRecords() == 0 ) {
+            DB::alteration_message($distributorTitlePlural.' Group created', "created");
             Permission::grant($distributorGroup->ID, $distributorPermissionCode);
-            DB::alteration_message($distributorTitlePlural.' group permissions granted',"created");
+        } elseif (DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$distributorGroup->ID."' AND \"Code\" LIKE '".$distributorPermissionCode."'")->numRecords() == 0) {
+            Permission::grant($distributorGroup->ID, $distributorPermissionCode);
+            DB::alteration_message($distributorTitlePlural.' group permissions granted', "created");
         }
         $distributorGroup->Roles()->add($role);
         $distributorGroup = self::get_distributor_group();
-        if(!$distributorGroup) {
+        if (!$distributorGroup) {
             user_error("could not create user group");
-        }
-        else {
+        } else {
             DB::alteration_message('distributor group is ready for use');
         }
         $distributors = Distributor::get();
-        if($distributors && $distributors->count()) {
-            foreach($distributors as $distributor) {
+        if ($distributors && $distributors->count()) {
+            foreach ($distributors as $distributor) {
                 $distributor->setupUser();
             }
         }
@@ -323,7 +328,8 @@ class Distributor extends DataObject implements PermissionProvider {
     /**
      * @return DataObject (Group)
      **/
-    public static function get_distributor_group() {
+    public static function get_distributor_group()
+    {
         $distributorPermissionCode = Config::inst()->get('Distributor', 'distributor_permission_code');
         return Group::get()
             ->where("\"Code\" = '".$distributorPermissionCode."'")
@@ -351,14 +357,14 @@ class Distributor extends DataObject implements PermissionProvider {
         );
     }
 
-    function setupUser()
+    public function setupUser()
     {
         $group = Group::get()->filter(array("Code" => $this->Config()->get('distributor_permission_code')))->first();
-        if($this->Email) {
+        if ($this->Email) {
             $member = Member::get()
                 ->filter(array("Email" => $this->Email))
                 ->First();
-            if(!$member) {
+            if (!$member) {
                 $member = new Member();
                 $member->Email = $this->Email;
                 //$thisMember->SetPassword = substr(session_id, 0, 8);
@@ -367,13 +373,13 @@ class Distributor extends DataObject implements PermissionProvider {
             $member->Surname = $this->Name;
             $member->DistributorID = $this->ID;
             $member->write();
-            if($group) {
+            if ($group) {
                 $member->addToGroupByCode($group->Code);
             }
             $member->write();
         }
-        if($group) {
-            foreach($this->Members() as $member) {
+        if ($group) {
+            foreach ($this->Members() as $member) {
                 $member->addToGroupByCode($group->Code);
             }
         }

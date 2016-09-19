@@ -26,9 +26,9 @@ class CountryPrice_ProductGroup extends DataExtension
         return $fields;
     }
 
-    function getNoProductsInYourCountryMessage()
+    public function getNoProductsInYourCountryMessage()
     {
-        if($this->owner->NoProductsInYourCountry) {
+        if ($this->owner->NoProductsInYourCountry) {
             $message = $this->owner->NoProductsInYourCountry;
         } else {
             $message = $this->owner->EcomConfig()->NoProductsInYourCountry;

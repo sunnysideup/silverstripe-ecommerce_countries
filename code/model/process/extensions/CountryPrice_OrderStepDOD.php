@@ -6,10 +6,9 @@
  *
  */
 
-class CountryPrice_OrderStepDOD extends DataExtension {
-
+class CountryPrice_OrderStepDOD extends DataExtension
+{
     private static $has_many = array(
         'EcommerceOrderStepCountryDatas' => 'EcommerceOrderStepCountryData'
     );
-
 }

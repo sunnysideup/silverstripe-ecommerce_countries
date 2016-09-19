@@ -1,6 +1,6 @@
 <?php
-class CountryPrice_DistributorManagementTool_Log extends DataObject {
-
+class CountryPrice_DistributorManagementTool_Log extends DataObject
+{
     private static $db = array(
         "UserEmail" => "Varchar",
         "ObjectClass"  => "Varchar",
@@ -13,12 +13,13 @@ class CountryPrice_DistributorManagementTool_Log extends DataObject {
         "Distributor" => "Distributor"
     );
 
-    function canDelete($member = null) {
+    public function canDelete($member = null)
+    {
         return false;
     }
 
-    function canEdit($member = null) {
+    public function canEdit($member = null)
+    {
         return false;
     }
-
 }
