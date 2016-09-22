@@ -34,23 +34,23 @@ class CountryPrices_ChangeCountryController extends ContentController
     public static function new_country_link($countryCode)
     {
         $redirectsArray = Config::inst()->get('CountryPrices_ChangeCountryController', 'off_site_url_redirects');
-        if(isset($redirectsArray[$countryCode])) {
+        if (isset($redirectsArray[$countryCode])) {
             return $redirectsArray[$countryCode];
         }
 
         return Injector::inst()->get('CountryPrices_ChangeCountryController')->Link('changeto/'.$countryCode.'/');
     }
 
-    function changeto($request)
+    public function changeto($request)
     {
         $redirectsArray = Config::inst()->get('CountryPrices_ChangeCountryController', 'off_site_url_redirects');
         $newCountryCode = substr(strtoupper($request->param('ID')), 0, 2);
-        if(isset($redirectsArray[$newCountryCode])) {
+        if (isset($redirectsArray[$newCountryCode])) {
             return $this->redirect($redirectsArray[$newCountryCode]);
         }
         Session::set('MyCloudFlareCountry', $newCountryCode);
         $o = Shoppingcart::current_order();
-        if($o && ($o->getCountry() == $newCountryCode)) {
+        if ($o && ($o->getCountry() == $newCountryCode)) {
             //..
         } else {
             ShoppingCart::singleton()->clear();
@@ -58,10 +58,9 @@ class CountryPrices_ChangeCountryController extends ContentController
         CountryPrice_OrderDOD::localise_order($newCountryCode);
 
         $this->redirect($this->findNewURL('ecomlocale', $newCountryCode));
-
     }
 
-    function Link($action = null)
+    public function Link($action = null)
     {
         return Controller::join_links(Config::inst()->get('CountryPrices_ChangeCountryController', 'url_segment'), $action);
     }
@@ -74,7 +73,7 @@ class CountryPrices_ChangeCountryController extends ContentController
      *
      * @return string
      */
-    function findNewURL($varname = 'ecomlocale', $newCountryCode)
+    public function findNewURL($varname = 'ecomlocale', $newCountryCode)
     {
 
         //COPIED FROM DIRECTOR::redirectBack()
@@ -86,27 +85,29 @@ class CountryPrices_ChangeCountryController extends ContentController
         // In edge-cases, this will be called outside of a handleRequest() context; in that case,
         // redirect to the homepage - don't break into the global state at this stage because we'll
         // be calling from a test context or something else where the global state is inappropraite
-        if($this->getRequest()) {
-            if($this->getRequest()->requestVar('BackURL')) {
+        if ($this->getRequest()) {
+            if ($this->getRequest()->requestVar('BackURL')) {
                 $url = $this->getRequest()->requestVar('BackURL');
-            } else if($this->getRequest()->isAjax() && $this->getRequest()->getHeader('X-Backurl')) {
+            } elseif ($this->getRequest()->isAjax() && $this->getRequest()->getHeader('X-Backurl')) {
                 $url = $this->getRequest()->getHeader('X-Backurl');
-            } else if($this->getRequest()->getHeader('Referer')) {
+            } elseif ($this->getRequest()->getHeader('Referer')) {
                 $url = $this->getRequest()->getHeader('Referer');
             }
         }
 
-        if(!$url) $url = Director::baseURL();
+        if (!$url) {
+            $url = Director::baseURL();
+        }
 
         // absolute redirection URLs not located on this site may cause phishing
-        if(Director::is_site_url($url)) {
+        if (Director::is_site_url($url)) {
             $url = Director::absoluteURL($url, true);
             $parsedUrl = parse_url($url);
             $query = array();
 
             if (isset($parsedUrl['query'])) {
                 parse_str($parsedUrl['query'], $query);
-                if($query[$varname] !== $newCountryCode) {
+                if ($query[$varname] !== $newCountryCode) {
                     unset($query[$varname]);
                 }
             }
@@ -120,5 +121,4 @@ class CountryPrices_ChangeCountryController extends ContentController
         }
         return '/';
     }
-
 }

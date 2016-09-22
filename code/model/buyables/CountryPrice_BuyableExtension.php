@@ -5,13 +5,11 @@
  *
  */
 
-class CountryPrice_BuyableExtension extends DataExtension {
-
-
+class CountryPrice_BuyableExtension extends DataExtension 
+{
     private static $db = array(
         "AllCountries" => "Boolean"
     );
-
 
     private static $many_many = array(
         "IncludedCountries" => "EcommerceCountry",
@@ -20,7 +18,8 @@ class CountryPrice_BuyableExtension extends DataExtension {
 
     private static $allow_usage_of_distributor_backup_country_pricing = false;
 
-    function updateCMSFields(FieldList $fields) {
+    function updateCMSFields(FieldList $fields) 
+{
         $excludedCountries = EcommerceCountry::get()
             ->filter(array("DoNotAllowSales" => 1, "AlwaysTheSameAsID" => 0));
         if($excludedCountries->count()) {
@@ -104,7 +103,8 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * @param bool (optional)     $checkPrice
      * @return false | null
      */
-    function canPurchaseByCountry(Member $member = null, $checkPrice = true, $countryCode = '') {
+    function canPurchaseByCountry(Member $member = null, $checkPrice = true, $countryCode = '') 
+    {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if($countryObject) {
             if($this->debug) {debug::log('found country object: '.$countryObject->Code);}
@@ -187,7 +187,8 @@ class CountryPrice_BuyableExtension extends DataExtension {
      * if the default price can be used then we use NULL
      * @return Float | null (ignore this value and use original value)
      */
-    function updateCalculatedPrice($price = null) {
+    function updateCalculatedPrice($price = null) 
+{
         $countryCode = '';
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
         if($countryObject) {
@@ -290,7 +291,8 @@ class CountryPrice_BuyableExtension extends DataExtension {
     /**
      * delete the related prices
      */
-    function onBeforeDelete() {
+    function onBeforeDelete() 
+    {
         $prices = $this->AllCountryPricesForBuyable();
         if($prices && $prices->count()) {
             foreach($prices as $price) {
@@ -304,12 +306,14 @@ class CountryPrice_BuyableExtension extends DataExtension {
     // We us isNew to presave if we should add some country price for the newy created variation based on the "possibly" pre-existing ones of the product
     protected $isNew = false;
 
-    function onBeforeWrite() {
+    function onBeforeWrite() 
+    {
         $this->isNew = $this->owner->ID == 0;
     }
 
 
-    function onAfterWrite() {
+    function onAfterWrite() 
+    {
         //only run if these are variations
         if($this->isNew && $this->owner instanceof ProductVariation) {
             $product = $this->owner->Product();
@@ -329,8 +333,7 @@ class CountryPrice_BuyableExtension extends DataExtension {
                             ->First()
                         ) {
                             //do nothing
-                        }
-                        else {
+                        } else {
                             $countryVariationPrice = new CountryPrice(
                                 array(
                                     'Price' => $productPrice->Price,

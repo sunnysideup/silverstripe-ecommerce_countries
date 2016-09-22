@@ -5,13 +5,14 @@
  *
  */
 
-class CountryPrice_EcommerceCurrency extends DataExtension {
-
+class CountryPrice_EcommerceCurrency extends DataExtension
+{
     private static $has_many = array(
         "EcommerceCountries" => "EcommerceCountry"
     );
 
-    function updateCMSFields(FieldList $fields) {
+    public function updateCMSFields(FieldList $fields)
+    {
         $fields->addFieldToTab(
             "Root.Countries",
             CheckboxSetField::create(
@@ -31,21 +32,22 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
      * @param strin $countryCode
      * @return EcommerceCurrency
      */
-    public static function get_currency_for_country($countryCode) {
+    public static function get_currency_for_country($countryCode)
+    {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
-        if($countryObject) {
+        if ($countryObject) {
             $countryCode = $countryObject->Code;
         }
         $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
         $currencyDO = null;
-        if($countryCode) {
+        if ($countryCode) {
             $currencyCode = isset($currencyPerCountry[$countryCode]) ? $currencyPerCountry[$countryCode] : EcommerceCountry::default_currency();
             $currencyDO = EcommerceCurrency::get_one_from_code($currencyCode);
         }
-        if( ! $currencyDO) {
+        if (! $currencyDO) {
             $currencyDO = EcommerceCurrency::create_new($currencyCode);
         }
-        if( ! $currencyDO) {
+        if (! $currencyDO) {
             $currencyDO = EcommerceCurrency::get_default();
         }
         return $currencyDO;
@@ -61,17 +63,18 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
      *
      * @return array - list of countries and their currencies ...
      */
-    public static function get_currency_per_country() {
+    public static function get_currency_per_country()
+    {
         $cachekey = "EcommerceCurrencyCountryMatrix";
         $cache = SS_Cache::factory($cachekey);
-        if ( ! ($serializedArray = $cache->load($cachekey))) {
+        if (! ($serializedArray = $cache->load($cachekey))) {
             $countries = CountryPrice_EcommerceCountry::get_real_countries_list();
             $unserializedArray = array();
             $defaultCurrencyCode = EcommerceCurrency::default_currency_code();
-            foreach($countries as $countryObject) {
+            foreach ($countries as $countryObject) {
                 $currencyCode = $defaultCurrencyCode;
                 $currency = $countryObject->EcommerceCurrency();
-                if($currency && $currency->exists()) {
+                if ($currency && $currency->exists()) {
                     $currencyCode = $currency->Code;
                 }
                 $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryObject);
@@ -87,16 +90,17 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
      * list of currencies used on the site
      * @return Array
      */
-    public static function get_currency_per_country_used_ones() {
+    public static function get_currency_per_country_used_ones()
+    {
         $resultArray = array();
         $functioningCountryObjects = EcommerceCountry::get()
             ->filter(array("DoNotAllowSales" => 0, 'AlwaysTheSameAsID' => 0))
             ->exclude(array("DistributorID" => 0));
         $countryCurrencies = CountryPrice_EcommerceCurrency::get_currency_per_country();
-        if($functioningCountryObjects->count()) {
+        if ($functioningCountryObjects->count()) {
             $countryCodes = $functioningCountryObjects->map("Code", "Code")->toArray();
-            foreach($countryCodes as $countryCode => $countryCodeAlso) {
-                if(isset($countryCurrencies[$countryCode])) {
+            foreach ($countryCodes as $countryCode => $countryCodeAlso) {
+                if (isset($countryCurrencies[$countryCode])) {
                     $resultArray[$countryCode] = $countryCurrencies[$countryCode];
                 }
             }
@@ -104,6 +108,4 @@ class CountryPrice_EcommerceCurrency extends DataExtension {
 
         return $resultArray;
     }
-
-
 }

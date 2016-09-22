@@ -5,8 +5,8 @@
 /**
  * Adds functionality to Order
  */
-class CountryPrice_OrderDOD extends DataExtension {
-
+class CountryPrice_OrderDOD extends DataExtension
+{
     private static $db = array(
         'IP' => 'Varchar(16)',
         'CurrencyCountry' => 'Varchar(3)',
@@ -32,29 +32,29 @@ class CountryPrice_OrderDOD extends DataExtension {
      */
     public static function localise_order($countryCode = null)
     {
-        if(self::$_number_of_times_we_have_run_localise_order > 2) {
+        if (self::$_number_of_times_we_have_run_localise_order > 2) {
             return;
         }
         self::$_number_of_times_we_have_run_localise_order++;
         $order = ShoppingCart::current_order();
-        if($order->IsSubmitted()) {
+        if ($order->IsSubmitted()) {
             return true;
         }
-        if( ! $countryCode) {
+        if (! $countryCode) {
             $countryCode = $order->getCountry();
         }
         $currencyObject = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
-        if(Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
+        if (Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
             $distributor = $order->getDistributor($countryCode);
             $countryOptions = $distributor->Countries();
-            if($countryOptions && $countryOptions->count()) {
+            if ($countryOptions && $countryOptions->count()) {
                 EcommerceCountry::set_for_current_order_only_show_countries($countryOptions->column('Code'));
             }
         }
 
         //if a country code and currency has been set then all is good
         //from there we keep it this way
-        if(
+        if (
             $order->OriginatingCountryCode ==  $countryCode &&
             $order->CurrencyUsedID == $currencyObject->ID
         ) {
@@ -66,17 +66,17 @@ class CountryPrice_OrderDOD extends DataExtension {
         $orderHasBeenChanged = false;
 
          //check currency ...
-        if($order->CurrencyUsedID != $currencyObject->ID) {
+        if ($order->CurrencyUsedID != $currencyObject->ID) {
             $order->SetCurrency($currencyObject);
             $orderHasBeenChanged = true;
         }
-        if($orderHasBeenChanged) {
+        if ($orderHasBeenChanged) {
             $order->write();
             $items = $order->OrderItems();
-            if($items) {
-                foreach($items as $item) {
+            if ($items) {
+                foreach ($items as $item) {
                     $buyable = $item->Buyable(true);
-                    if( ! $buyable->canPurchase()) {
+                    if (! $buyable->canPurchase()) {
                         $item->delete();
                     }
                 }
@@ -88,21 +88,24 @@ class CountryPrice_OrderDOD extends DataExtension {
     }
 
 
-    function onInit() {
+    public function onInit()
+    {
         $this->setCountryDetailsForOrder();
     }
 
-    function onCalculateOrder() {
+    public function onCalculateOrder()
+    {
         $this->setCountryDetailsForOrder();
         $countryCode = $this->owner->getCountry();
         $distributor = Distributor::get_one_for_country($countryCode);
-        if($distributor) {
+        if ($distributor) {
             $this->owner->DistributorID = $distributor->ID;
         }
     }
 
-    function updateCMSFields(FieldList $fields) {
-        foreach(array("IP", "OriginatingCountryCode", "CurrencyCountry") as $fieldName) {
+    public function updateCMSFields(FieldList $fields)
+    {
+        foreach (array("IP", "OriginatingCountryCode", "CurrencyCountry") as $fieldName) {
             $field = $fields->dataFieldByName($fieldName);
             $field = $field->performReadonlyTransformation();
             $fields->addFieldToTab("Root.Country", $field);
@@ -117,15 +120,17 @@ class CountryPrice_OrderDOD extends DataExtension {
         }
     }
 
-    function canView($member = null) {
+    public function canView($member = null)
+    {
         return $this->canEdit($member);
     }
 
-    function canEdit($member = null) {
-        if($member) {
-            if($distributor = $this->owner->Distributor()) {
-                foreach($distributor->Members() as $distributorMember) {
-                    if($member->ID == $distributorMember->ID) {
+    public function canEdit($member = null)
+    {
+        if ($member) {
+            if ($distributor = $this->owner->Distributor()) {
+                foreach ($distributor->Members() as $distributorMember) {
+                    if ($member->ID == $distributorMember->ID) {
                         return true;
                     }
                 }
@@ -137,7 +142,8 @@ class CountryPrice_OrderDOD extends DataExtension {
      * it is safer to only allow creation on the front-end...
      *
      */
-    function canCreate($member = null) {
+    public function canCreate($member = null)
+    {
         return false;
     }
 
@@ -146,11 +152,12 @@ class CountryPrice_OrderDOD extends DataExtension {
      * @param string (optional) $countryCode
      * @return Distributor | null
      */
-    function getDistributor($countryCode = null){
-        if($this->owner->DistributorID) {
+    public function getDistributor($countryCode = null)
+    {
+        if ($this->owner->DistributorID) {
             return Distributor::get()->byID($this->owner->DistributorID);
         } else {
-            if(!$countryCode) {
+            if (!$countryCode) {
                 $countryCode = $this->owner->getCountry();
             }
             return Distributor::get_one_for_country($countryCode);
@@ -161,8 +168,9 @@ class CountryPrice_OrderDOD extends DataExtension {
      * this needs to run as part of the order live update
      *
      */
-    protected function setCountryDetailsForOrder() {
-        if($this->owner->IsSubmitted()) {
+    protected function setCountryDetailsForOrder()
+    {
+        if ($this->owner->IsSubmitted()) {
             return;
         }
 
@@ -171,7 +179,7 @@ class CountryPrice_OrderDOD extends DataExtension {
 
         //here we need to get the REAL ORIGINAL COUNTRY
         $countryCode = EcommerceCountry::get_country();
-        if(Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
+        if (Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
             $this->owner->CurrencyCountry = $countryCode;
             EcommerceCountry::set_for_current_order_only_show_countries(array($countryCode));
             $this->owner->SetCountryFields($countryCode, $billingAddress = true, $shippingAddress = true);
@@ -180,7 +188,7 @@ class CountryPrice_OrderDOD extends DataExtension {
 
         // set currency
         $currencyObject = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
-        if($currencyObject) {
+        if ($currencyObject) {
             $this->owner->CurrencyUsedID = $currencyObject->ID;
         }
         //the line below causes a loop!!!
@@ -192,11 +200,12 @@ class CountryPrice_OrderDOD extends DataExtension {
      *
      * adds email to order step emails ...
      */
-    function updateReplacementArrayForEmail(ArrayData $arrayData) {
+    public function updateReplacementArrayForEmail(ArrayData $arrayData)
+    {
         $step = $this->owner->MyStep();
         $countryCode = $this->owner->getCountry();
         $countryMessage = null;
-        if($step && $countryCode) {
+        if ($step && $countryCode) {
             $countryMessageObject = EcommerceOrderStepCountryData::get()
                 ->filter(
                     array(
@@ -206,18 +215,16 @@ class CountryPrice_OrderDOD extends DataExtension {
                 )
                 ->first();
         }
-        if($countryMessageObject) {
+        if ($countryMessageObject) {
             $arrayData->setField("Subject", $countryMessageObject->CountrySpecificEmailSubject);
             $arrayData->setField("OrderStepMessage", $countryMessageObject->CountrySpecificEmailMessage);
         }
-        if($distributor = $this->owner->Distributor($countryCode)) {
+        if ($distributor = $this->owner->Distributor($countryCode)) {
             #### START EXCEPTION FOR
             $distributorEmail = $distributor->Email;
-            if($distributorEmail) {
+            if ($distributorEmail) {
                 $arrayData->setField("CC", $distributorEmail);
             }
         }
     }
-
-
 }

@@ -14,7 +14,6 @@
 
 class CountryPrice_Page_Controller_Extension extends Extension
 {
-
     private static $locale_get_parameter = 'ecomlocale';
 
     /**
@@ -24,24 +23,24 @@ class CountryPrice_Page_Controller_Extension extends Extension
      * If the country code in the get parameter is not correct then
      * @return [type] [description]
      */
-    function onAfterInit()
+    public function onAfterInit()
     {
         $countryID = 0;
         $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'locale_get_parameter');
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
-        if(isset($_GET[$param])) {
+        if (isset($_GET[$param])) {
             $countryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
-            if($countryObject->Code != $countryCode) {
+            if ($countryObject->Code != $countryCode) {
                 return $this->owner->redirect(
                     CountryPrices_ChangeCountryController::new_country_link($countryCode)
                 );
             }
         }
 
-        if($countryObject) {
+        if ($countryObject) {
             $countryID = $countryObject->ID;
         }
-        if($countryID) {
+        if ($countryID) {
             $translation = $this->owner->dataRecord
                 ->CountryPriceTranslations()
                 ->filter(
@@ -51,15 +50,15 @@ class CountryPrice_Page_Controller_Extension extends Extension
                     )
                 )
                 ->first();
-            if($translation) {
+            if ($translation) {
                 $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
-                if($newURL) {
+                if ($newURL) {
                     return $this->owner->redirect($newURL);
                 }
-                foreach($translation->FieldsToReplace() as $replaceFields) {
+                foreach ($translation->FieldsToReplace() as $replaceFields) {
                     $pageField = $replaceFields->PageField;
                     $translationField = $replaceFields->TranslationField;
-                    if($translation->hasMethod($translationField)) {
+                    if ($translation->hasMethod($translationField)) {
                         $this->owner->$pageField = $translation->$translationField();
                     } else {
                         $this->owner->$pageField = $translation->$translationField;
@@ -73,23 +72,23 @@ class CountryPrice_Page_Controller_Extension extends Extension
      * returns the best fieldname for
      * @param string $fieldName [description]
      */
-    function CountryDistributorBestContentValue($fieldName)
+    public function CountryDistributorBestContentValue($fieldName)
     {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
 
         //check country
-        if(!empty($countryObject->$fieldName)) {
+        if (!empty($countryObject->$fieldName)) {
             return $countryObject->$fieldName;
         }
 
         //check distributor
         $distributor = Distributor::get_one_for_country($countryObject->Code);
-        if(!empty($distributor->$fieldName)) {
+        if (!empty($distributor->$fieldName)) {
             return $distributor->$fieldName;
         }
         //check EcomConfig
         $distributor = Distributor::get_one_for_country($countryObject->Code);
-        if(!empty($distributor->$fieldName)) {
+        if (!empty($distributor->$fieldName)) {
             return $distributor->$fieldName;
         }
     }
@@ -108,7 +107,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
      */
     private function addCountryCodeToUrlIfRequired($countryCode = '')
     {
-        if(isset($_POST) && count($_POST)){
+        if (isset($_POST) && count($_POST)) {
             return null;
         }
         $oldURL = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
@@ -123,13 +122,13 @@ class CountryPrice_Page_Controller_Extension extends Extension
         $urlParts['query'] = http_build_query($params);
 
         // If you have pecl_http
-        if(function_exists('http_build_url')) {
+        if (function_exists('http_build_url')) {
             $newURL = http_build_url($urlParts);
         } else {
             $newURL =  $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . '?' . $urlParts['query'];
         }
 
-        if($oldURL !== $newURL && self::$_redirection_count < 3) {
+        if ($oldURL !== $newURL && self::$_redirection_count < 3) {
             self::$_redirection_count++;
             return $newURL;
         }
@@ -143,15 +142,15 @@ class CountryPrice_Page_Controller_Extension extends Extension
      *
      * @return ArrayList
      */
-    function ChooseNewCountryList()
+    public function ChooseNewCountryList()
     {
         $countries = CountryPrice_EcommerceCountry::get_real_countries_list();
         $currentCode = '';
-        if($obj = CountryPrice_EcommerceCountry::get_real_country()) {
+        if ($obj = CountryPrice_EcommerceCountry::get_real_country()) {
             $currentCode = $obj->Code;
         }
         $al = ArrayList::create();
-        foreach($countries as $country) {
+        foreach ($countries as $country) {
             $isCurrentOne = $currentCode == $country->Code ? true : false;
             $currency = null;
             $currency = CountryPrice_EcommerceCurrency::get_currency_for_country($country->Code);
@@ -162,7 +161,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
                         'Link' => CountryPrices_ChangeCountryController::new_country_link($country->Code),
                         'Title' => $country->Name,
                         'CountryCode' => $country->Code,
-                        'LinkingMode' => ( $isCurrentOne ? 'current' : 'link'),
+                        'LinkingMode' => ($isCurrentOne ? 'current' : 'link'),
                         'Currency' => $currency,
                         'CurrencyCode' => $currency
                     )

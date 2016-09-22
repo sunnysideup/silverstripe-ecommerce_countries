@@ -7,27 +7,27 @@
  *
  *
  */
-class CountryPrice_CopyPrices extends DataExtension {
-
+class CountryPrice_CopyPrices extends DataExtension
+{
     private static $db = array(
         "AllowCopying" => "Boolean"
     );
 
-    function updateCMSFields(FieldList $fields) {
-        if($this->owner->ID) {
+    public function updateCMSFields(FieldList $fields)
+    {
+        if ($this->owner->ID) {
             $page = is_a($this->owner, 'SiteTree'); // We use singleton to skip the different is_a php versions issues
             $tab = 'Root.Countries.Pricing';
             $fromCountries = CountryPrice_EcommerceCountry::get_real_countries_list();
                 //->where('CountryPrice.ObjectClass = \''.$this->owner->ClassName.'\' AND CountryPrice.ObjectID = '.$this->owner->ID.'')
-            if($fromCountries && $fromCountries->count()) {
+            if ($fromCountries && $fromCountries->count()) {
                 $fromCountriesArray = $fromCountries->map('Code', 'Name')->toArray();
-            }
-            else {
+            } else {
                 $fromCountriesArray = array();
             }
             $allCountries =  EcommerceCountry::get();
             $toCountries = array();
-            foreach($allCountries as $country) {
+            foreach ($allCountries as $country) {
                 $country = CountryPrice_EcommerceCountry::get_real_country($country);
                 $toCountries[$country->Code] = $country->Name . ($country->DoNotAllowSales ? ' (Sales not allowed)' : '');
             }
@@ -38,7 +38,7 @@ class CountryPrice_CopyPrices extends DataExtension {
                 $allowCopyingField = new CheckboxField("AllowCopying", "Allow copying")
             );
             $allowCopyingField->setRightTitle("Turn this on only when you like to copy a bunch of prices.  Otherwise just leave it turned off to avoid accidental copies and speed up the CMS loading times.");
-            if(count($fromCountriesArray) && count($toCountries) && $this->owner->AllowCopying) {
+            if (count($fromCountriesArray) && count($toCountries) && $this->owner->AllowCopying) {
                 $fields->addFieldsToTab($tab, array(
                     new HeaderField('Copy Prices'),
                     new DropdownField('From', 'From', $fromCountriesArray),
@@ -60,24 +60,24 @@ class CountryPrice_CopyPrices extends DataExtension {
      * @param  string $fromCountryCode  the country code to copy from
      * @param  array  $toCountriesArray  the country code to copy to
      */
-    function updatePrices($fromCountryCode, array $toCountriesArray) {
+    public function updatePrices($fromCountryCode, array $toCountriesArray)
+    {
         $fromCountryObject = EcommerceCountry::get()->filter(array("Code" => $fromCountryCode));
-        if($fromCountryObject) {
+        if ($fromCountryObject) {
             $fromCountryObject = CountryPrice_EcommerceCountry::get_real_country($fromCountryObject);
-        }
-        else {
+        } else {
             user_error('From Country is not valid');
         }
         $currencyObject = $fromCountryObject->EcommerceCurrency();
-        if($currencyObject && $currencyObject->Code) {
+        if ($currencyObject && $currencyObject->Code) {
             $values = $this->getUpdatePriceValues($fromCountryCodeA, $currencyObject->Code, array());
-            foreach($toCountriesArray as $toCountryCode) {
+            foreach ($toCountriesArray as $toCountryCode) {
                 $toCountryCode = CountryPrice_EcommerceCountry::get_real_country($toCountryCode)->Code;
-                foreach($values as $value) {
+                foreach ($values as $value) {
                     $sqlValues[] = "(NOW(),NOW(),{$value[0]},'$toCountryCode','".$currencyObject->Code."','{$value[1]}',{$value[2]})";
                 }
             }
-            if(isset($sqlValues)) {
+            if (isset($sqlValues)) {
                 $sqlValues = implode(',', $sqlValues);
                 $sql = "
                     INSERT INTO \"CountryPrice\" (\"Created\",\"LastEdited\",\"Price\",\"Country\",\"Currency\",\"ObjectClass\",\"ObjectID\")
@@ -100,20 +100,20 @@ class CountryPrice_CopyPrices extends DataExtension {
      * @param  array  $values  [description]
      * @return array          [description]
      */
-    public function getUpdatePriceValues($fromCountryCode, $currencyCode, array $values) {
+    public function getUpdatePriceValues($fromCountryCode, $currencyCode, array $values)
+    {
         $fromCountryCode = CountryPrice_EcommerceCountry::get_real_country($fromCountryCode)->Code;
-        if($this->owner->hasExtension('CountryPrice_BuyableExtension')) {
+        if ($this->owner->hasExtension('CountryPrice_BuyableExtension')) {
             $countryPrice = $this->owner->CountryPriceForCountryAndCurrency($fromCountry, $currency);
-            if($countryPrice) {
+            if ($countryPrice) {
                 $price = $countryPrice->First()->Price;
-            }
-            else {
+            } else {
                 $countryPrices = $this->owner->CountryPriceForCountryAndCurrency($fromCountryCode, $currencyCode, $values);
-                if($countryPrices && $countryPrices->count()) {
+                if ($countryPrices && $countryPrices->count()) {
                     $price = $countryPrices->First()->Price;
                 }
             }
-            if(isset($price)) {
+            if (isset($price)) {
                 $values[] = array(
                     $price,
                     $this->owner->ClassName,
@@ -121,16 +121,16 @@ class CountryPrice_CopyPrices extends DataExtension {
                 );
             }
         }
-        if($this->owner->hasExtension('ProductWithVariationDecorator')) {
+        if ($this->owner->hasExtension('ProductWithVariationDecorator')) {
             $variations = $this->owner->Variations();
-            foreach($variations as $variation) {
+            foreach ($variations as $variation) {
                 $values = array_merge($values, $variation->getUpdatePriceValues($fromCountryCode, $currencyCode, $values));
             }
         }
-        if(is_a($this->owner, 'SiteTree')) {
+        if (is_a($this->owner, 'SiteTree')) {
             $pages = $this->owner->AllChildren();
-            if($pages) {
-                foreach($pages as $page) {
+            if ($pages) {
+                foreach ($pages as $page) {
                     $values = array_merge($values, $page->getUpdatePriceValues($fromCountryCode, $currencyCode, $values));
                 }
             }

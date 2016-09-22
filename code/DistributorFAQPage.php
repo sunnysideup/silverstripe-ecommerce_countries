@@ -7,8 +7,8 @@
  *
  */
 
-class DistributorFAQPage extends Page {
-
+class DistributorFAQPage extends Page
+{
     private static $icon = 'mysite/images/treeicons/DistributorFAQPage';
 
     private static $description = 'Frequently asked questions related local distributor. You can enter country specific content that will show up here. ';
@@ -17,11 +17,13 @@ class DistributorFAQPage extends Page {
 
     private static $allow_children = 'none';
 
-    public function canCreate($member = null) {
+    public function canCreate($member = null)
+    {
         return DistributorFAQPage::get()->count() ? true : false;
     }
 
-    function getCMSFields() {
+    public function getCMSFields()
+    {
         $fields = parent::getCMSFields();
         $fields->findOrMakeTab('Root.Main')->removeByName('Content');
         $fields->addFieldToTab('Root.Main', HtmlEditorField::create("Content", "Default Content"));
@@ -36,13 +38,12 @@ class DistributorFAQPage extends Page {
         );
         $ecommerceCountriesEntered = EcommerceCountry::get()->where("\"FAQContent\" IS NOT NULL AND \"FAQContent\" <> ''");
         $list = array();
-        if($ecommerceCountriesEntered && $ecommerceCountriesEntered->count()) {
+        if ($ecommerceCountriesEntered && $ecommerceCountriesEntered->count()) {
             $list = $ecommerceCountriesEntered->map("ID", "Name")->toArray();
         }
-        if($list && count($list)) {
+        if ($list && count($list)) {
             $enteredForContent = implode(", ", $list);
-        }
-        else {
+        } else {
             $enteredForContent = "You have not entered any country specific Content yet";
         }
         $fields->addFieldToTab(
@@ -54,24 +55,24 @@ class DistributorFAQPage extends Page {
     }
 }
 
-class DistributorFAQPage_Controller extends Page_Controller {
+class DistributorFAQPage_Controller extends Page_Controller
+{
 
     /**
      * finds the country specific content
      *
      */
-    function getContent() {
+    public function getContent()
+    {
         $country = CountryPrice_EcommerceCountry::get_distributor_country();
-        if($country && strlen($country->FAQContent) > 17) {
+        if ($country && strlen($country->FAQContent) > 17) {
             return $country->FAQContent;
-        }
-        else {
+        } else {
             return $this->dataRecord->Content;
         }
     }
 
-    function Distributor() {
-
+    public function Distributor()
+    {
     }
-
 }

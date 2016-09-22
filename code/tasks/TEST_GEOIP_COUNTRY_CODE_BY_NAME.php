@@ -1,12 +1,12 @@
 <?php
 
-class TEST_GEOIP_COUNTRY_CODE_BY_NAME extends BuildTask {
-
+class TEST_GEOIP_COUNTRY_CODE_BY_NAME extends BuildTask
+{
     protected $title = "Test GEOIP Functionality";
 
     protected $description = "test a bunch of IP addresses using geoip_country_code_by_name";
 
-    private static $test_ips =  array(
+    private static $test_ips = array(
         "95.141.32.46" => "IT",
         "95.211.217.68" => "NL",
         "91.109.115.41" => "PT",
@@ -75,19 +75,20 @@ class TEST_GEOIP_COUNTRY_CODE_BY_NAME extends BuildTask {
         "95.211.198.87" => "NL"
     );
 
-    public function run($request) {
-        if(isset($_GET["ip"])) {
+    public function run($request)
+    {
+        if (isset($_GET["ip"])) {
             $ar = array($_GET["ip"] => "user defined");
-        }
-        else {
+        } else {
             $ar = Config::inst()->get('TEST_GEOIP_COUNTRY_CODE_BY_NAME', 'test_ips');
         }
-
-        foreach(TEST_GEOIP_COUNTRY_CODE_BY_NAME::$test_ips as $ip => $description) {
-            $codeArray = Geoip::ip2country($ip);
-            echo "<hr /><h2>$ip: ---".print_r($codeArray, 1)."---</h2>";
-            if($codeArray["code"] != $description && strlen($description) == 2) {
-                DB::alteration_message("ERROR - this should be: ".$description, "deleted");
+        if (count($ar)) {
+            foreach ($ar as $ip => $description) {
+                $codeArray = Geoip::ip2country($ip);
+                echo "<hr /><h2>$ip: ---".print_r($codeArray, 1)."---</h2>";
+                if ($codeArray["code"] != $description && strlen($description) == 2) {
+                    DB::alteration_message("ERROR - this should be: ".$description, "deleted");
+                }
             }
         }
         echo "

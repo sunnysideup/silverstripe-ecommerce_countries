@@ -3,16 +3,16 @@
 
 class CountryPrice_OrderFormAddressExtension extends Extension
 {
-    function updateFields($fields)
+    public function updateFields($fields)
     {
         $shippingField = $fields->dataFieldByName('ShippingCountry');
         $originalSource = $shippingField->getSource();
         $newSource = $originalSource;
         $allowedCountries = CountryPrice_EcommerceCountry::get_sibling_countries();
-        if($allowedCountries->count()) {
+        if ($allowedCountries->count()) {
             $allowedCountryCodes = $allowedCountries->column('Code');
-            foreach($newSource as $key => $value) {
-                if( ! in_array($key, $allowedCountryCodes)) {
+            foreach ($newSource as $key => $value) {
+                if (! in_array($key, $allowedCountryCodes)) {
                     unset($newSource[$key]);
                 }
             }
