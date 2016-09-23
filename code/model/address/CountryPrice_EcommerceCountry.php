@@ -187,7 +187,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
     /**
      * returns the 'always the same as' (parent) country if necessary
      * @param  EcommerceCountry | string | int   (optional)  $countryCodeOrObject
-     * @return EcommerceCountry | string | int
+     * @return EcommerceCountry
      */
     public static function get_real_country($country = null)
     {
