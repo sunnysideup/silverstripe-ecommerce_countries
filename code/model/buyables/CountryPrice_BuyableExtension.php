@@ -5,7 +5,7 @@
  *
  */
 
-class CountryPrice_BuyableExtension extends DataExtension 
+class CountryPrice_BuyableExtension extends DataExtension
 {
     private static $db = array(
         "AllCountries" => "Boolean"
@@ -18,19 +18,19 @@ class CountryPrice_BuyableExtension extends DataExtension
 
     private static $allow_usage_of_distributor_backup_country_pricing = false;
 
-    function updateCMSFields(FieldList $fields) 
-{
+    public function updateCMSFields(FieldList $fields)
+    {
         $excludedCountries = EcommerceCountry::get()
             ->filter(array("DoNotAllowSales" => 1, "AlwaysTheSameAsID" => 0));
-        if($excludedCountries->count()) {
+        if ($excludedCountries->count()) {
             $excludedCountries = $excludedCountries->map('ID', 'Name')->toArray();
         }
         $includedCountries = EcommerceCountry::get()
             ->filter(array("DoNotAllowSales" => 0, "AlwaysTheSameAsID" => 0));
-        if($includedCountries->count())  {
+        if ($includedCountries->count()) {
             $includedCountries = $includedCountries->map('ID', 'Name')->toArray();
         }
-        if($this->owner->AllCountries) {
+        if ($this->owner->AllCountries) {
             $tabs = new TabSet('Countries',
                 new Tab(
                     'Include',
@@ -47,7 +47,7 @@ class CountryPrice_BuyableExtension extends DataExtension
                     'Exclude'
                 )
             );
-            if(count($excludedCountries)) {
+            if (count($excludedCountries)) {
                 $includeTab->push(
                     new LiteralField(
                         "ExplanationInclude",
@@ -58,7 +58,7 @@ class CountryPrice_BuyableExtension extends DataExtension
                     new CheckboxSetField('IncludedCountries', '', $excludedCountries)
                 );
             }
-            if(count($includedCountries)) {
+            if (count($includedCountries)) {
                 $excludeTab->push(
                     new LiteralField("ExplanationExclude", "<p>Products are available in all countries listed below.  You can exclude sales of <i>".$this->owner->Title."</i> from these countries by ticking the box next to any of them.</p>")
                 );
@@ -69,7 +69,7 @@ class CountryPrice_BuyableExtension extends DataExtension
         }
 
 
-        if($this->owner->ID) {
+        if ($this->owner->ID) {
             //start cms_object hack
             CountryPrice::set_cms_object($this->owner);
             //end cms_object hack
@@ -103,47 +103,62 @@ class CountryPrice_BuyableExtension extends DataExtension
      * @param bool (optional)     $checkPrice
      * @return false | null
      */
-    function canPurchaseByCountry(Member $member = null, $checkPrice = true, $countryCode = '') 
+    public function canPurchaseByCountry(Member $member = null, $checkPrice = true, $countryCode = '')
     {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
-        if($countryObject) {
-            if($this->debug) {debug::log('found country object: '.$countryObject->Code);}
+        if ($countryObject) {
+            if ($this->debug) {
+                debug::log('found country object: '.$countryObject->Code);
+            }
             $countryCode = $countryObject->Code;
         }
-        if($countryCode == '') {
-            if($this->debug) {debug::log('There is no country Code! ');}
+        if ($countryCode == '') {
+            if ($this->debug) {
+                debug::log('There is no country Code! ');
+            }
             return null;
         }
-        if($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
-            if($this->debug) {debug::log('we are in the default country! exiting now ... ');}
+        if ($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+            if ($this->debug) {
+                debug::log('we are in the default country! exiting now ... ');
+            }
             return null;
         }
-        if($this->owner->AllCountries) {
+        if ($this->owner->AllCountries) {
             //is there a valid price ???
-            if($this->debug) {debug::log('All countries applies - updated  ... new price = '.floatval($this->owner->updateCalculatedPrice()));}
+            if ($this->debug) {
+                debug::log('All countries applies - updated  ... new price = '.floatval($this->owner->updateCalculatedPrice()));
+            }
             return floatval($this->owner->updateCalculatedPrice()) > 0 ? null : false;
         }
-        if($countryCode) {
+        if ($countryCode) {
             $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
-            if($included) {
-                if($this->debug) {debug::log('included countries  ... new price = '.floatval($this->owner->updateCalculatedPrice()));}
+            if ($included) {
+                if ($this->debug) {
+                    debug::log('included countries  ... new price = '.floatval($this->owner->updateCalculatedPrice()));
+                }
                 //is there a valid price ???
                 return floatval($this->owner->updateCalculatedPrice()) > 0 ? null : false;
-
             }
             $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
-            if($excluded) {
-                if($this->debug) {debug::log('excluded country');}
+            if ($excluded) {
+                if ($this->debug) {
+                    debug::log('excluded country');
+                }
                 return false;
             }
         }
         //is there a valid price ???
-        if($this->owner instanceof Product && $this->owner->hasMethod('hasVariations') && $this->owner->hasVariations()) {
-            if($this->debug) {debug::log('check variations ... ');}
+        if ($this->owner instanceof Product && $this->owner->hasMethod('hasVariations') && $this->owner->hasVariations()) {
+            if ($this->debug) {
+                debug::log('check variations ... ');
+            }
             return $this->owner->Variations()->First()->canPurchaseByCountry($member, $checkPrice);
         }
         $countryPrice = $this->owner->updateCalculatedPrice();
-        if($this->debug) {debug::log('nothing applies, but we have a country price... '.$countryPrice);}
+        if ($this->debug) {
+            debug::log('nothing applies, but we have a country price... '.$countryPrice);
+        }
         return floatval($countryPrice) > 0 ? null : false;
     }
 
@@ -151,7 +166,7 @@ class CountryPrice_BuyableExtension extends DataExtension
      *
      * @return DataList
      */
-    function AllCountryPricesForBuyable()
+    public function AllCountryPricesForBuyable()
     {
         $filterArray = array("ObjectClass" => ClassInfo::subclassesFor($this->ownerBaseClass), "ObjectID" => $this->owner->ID);
         return CountryPrice::get()
@@ -165,13 +180,14 @@ class CountryPrice_BuyableExtension extends DataExtension
      * @param string (optional) $currency
      * @return DataList
      */
-    function CountryPricesForCountryAndCurrency($countryCode = null, $currency = null) {
+    public function CountryPricesForCountryAndCurrency($countryCode = null, $currency = null)
+    {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         $allCountryPricesForBuyable = $this->AllCountryPricesForBuyable();
-        if($countryObject) {
+        if ($countryObject) {
             $filterArray["Country"] = $countryObject->Code;
         }
-        if($currency) {
+        if ($currency) {
             $filterArray["Currency"] = $currency;
         }
         $allCountryPricesForBuyable = $allCountryPricesForBuyable->filter($filterArray);
@@ -187,101 +203,130 @@ class CountryPrice_BuyableExtension extends DataExtension
      * if the default price can be used then we use NULL
      * @return Float | null (ignore this value and use original value)
      */
-    function updateCalculatedPrice($price = null) 
-{
+    public function updateCalculatedPrice($price = null)
+    {
         $countryCode = '';
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
-        if($countryObject) {
+        if ($countryObject) {
             $countryCode = $countryObject->Code;
         }
-        if($countryCode == '' || $countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
-            if($this->debug) {debug::log('No country code or default country code: '.$countryCode);}
+        if ($countryCode == '' || $countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+            if ($this->debug) {
+                debug::log('No country code or default country code: '.$countryCode);
+            }
             return null;
         }
         $key = $this->owner->ClassName."___".$this->owner->ID.'____'.$countryCode;
-        if($this->debug) {debug::log('TESTING '.$key.'');}
-        if( ! isset(self::$_buyable_price[$key])) {
+        if ($this->debug) {
+            debug::log('TESTING '.$key.'');
+        }
+        if (! isset(self::$_buyable_price[$key])) {
             //basics
             $currency = null;
             $currencyCode = null;
 
-            if($countryCode) {
+            if ($countryCode) {
                 $order = ShoppingCart::current_order();
                 CountryPrice_OrderDOD::localise_order();
                 $currency = $order->CurrencyUsed();
-                if($currency) {
+                if ($currency) {
                     $currencyCode = strtoupper($currency->Code);
                     //1. exact price for country
-                    if($currencyCode) {
+                    if ($currencyCode) {
                         $prices = $this->owner->CountryPricesForCountryAndCurrency(
                             $countryCode,
                             $currencyCode
                         );
-                        if($prices && $prices->count() == 1){
+                        if ($prices && $prices->count() == 1) {
                             self::$_buyable_price[$key] = $prices->First()->Price;
                             return self::$_buyable_price[$key];
-                        } elseif($prices) {
-                            if($this->debug) {debug::log('MAIN COUNTRY: There is an error number of prices: '.$prices->count());}
+                        } elseif ($prices) {
+                            if ($this->debug) {
+                                debug::log('MAIN COUNTRY: There is an error number of prices: '.$prices->count());
+                            }
                         } else {
-                            if($this->debug) {debug::log('MAIN COUNTRY: There is no country price: ');}
+                            if ($this->debug) {
+                                debug::log('MAIN COUNTRY: There is no country price: ');
+                            }
                         }
                     } else {
-                        if($this->debug) {debug::log('MAIN COUNTRY: There is no currency code '.$currencyCode.'');}
+                        if ($this->debug) {
+                            debug::log('MAIN COUNTRY: There is no currency code '.$currencyCode.'');
+                        }
                     }
                 } else {
-                    if($this->debug) {debug::log('MAIN COUNTRY: there is no currency');}
+                    if ($this->debug) {
+                        debug::log('MAIN COUNTRY: there is no currency');
+                    }
                 }
-                if(Config::inst()->get('CountryPrice_BuyableExtension', 'allow_usage_of_distributor_backup_country_pricing')) {
+                if (Config::inst()->get('CountryPrice_BuyableExtension', 'allow_usage_of_distributor_backup_country_pricing')) {
                     //there is a specific country price ...
                     //check for distributor primary country price
                     // if it is the same currency, then use that one ...
                     $distributorCountry = CountryPrice_EcommerceCountry::get_distributor_primary_country($countryCode);
-                    if($distributorCurrency = $distributorCountry->EcommerceCurrency()) {
-                        if($distributorCurrency->ID == $currency->ID) {
+                    if ($distributorCurrency = $distributorCountry->EcommerceCurrency()) {
+                        if ($distributorCurrency->ID == $currency->ID) {
                             $distributorCurrencyCode = strtoupper($distributorCurrency->Code);
                             $distributorCountryCode = $distributorCountry->Code;
-                            if($distributorCurrencyCode && $distributorCountryCode) {
+                            if ($distributorCurrencyCode && $distributorCountryCode) {
                                 $prices = $this->owner->CountryPricesForCountryAndCurrency(
                                     $distributorCountryCode,
                                     $distributorCurrencyCode
                                 );
-                                if($prices && $prices->count() == 1){
+                                if ($prices && $prices->count() == 1) {
                                     self::$_buyable_price[$key] = $prices->First()->Price;
                                     return self::$_buyable_price[$key];
-                                } elseif($prices) {
-                                    if($this->debug) {debug::log('BACKUP COUNTRY: There is an error number of prices: '.$prices->count());}
+                                } elseif ($prices) {
+                                    if ($this->debug) {
+                                        debug::log('BACKUP COUNTRY: There is an error number of prices: '.$prices->count());
+                                    }
                                 } else {
-                                    if($this->debug) {debug::log('BACKUP COUNTRY: There is no country price: ');}
+                                    if ($this->debug) {
+                                        debug::log('BACKUP COUNTRY: There is no country price: ');
+                                    }
                                 }
                             } else {
-                                if($this->debug) {debug::log('BACKUP COUNTRY: We are missing the distributor currency code ('.$distributorCurrencyCode.') or the distributor country code ('.$distributorCountryCode.')');}
+                                if ($this->debug) {
+                                    debug::log('BACKUP COUNTRY: We are missing the distributor currency code ('.$distributorCurrencyCode.') or the distributor country code ('.$distributorCountryCode.')');
+                                }
                             }
-
                         } else {
-                            if($this->debug) {debug::log('BACKUP COUNTRY: The distributor currency ID ('.$distributorCurrency->ID.') is not the same as the order currency ID ('.$currency->ID.').');}
+                            if ($this->debug) {
+                                debug::log('BACKUP COUNTRY: The distributor currency ID ('.$distributorCurrency->ID.') is not the same as the order currency ID ('.$currency->ID.').');
+                            }
                         }
                     }
                 } else {
-                    if($this->debug) {debug::log('We do not allow backup country pricing');}
+                    if ($this->debug) {
+                        debug::log('We do not allow backup country pricing');
+                    }
                 }
             } else {
-                if($this->debug) {debug::log('There is not Country Code ');}
+                if ($this->debug) {
+                    debug::log('There is not Country Code ');
+                }
             }
             //order must have a country and a currency
-            if( ! $currencyCode ||  ! $countryCode) {
-                if($this->debug) {debug::log('No currency ('.$currencyCode.') or no country code ('.$countryCode.') for order: ');}
+            if (! $currencyCode ||  ! $countryCode) {
+                if ($this->debug) {
+                    debug::log('No currency ('.$currencyCode.') or no country code ('.$countryCode.') for order: ');
+                }
                 self::$_buyable_price[$key] = 0;
                 return self::$_buyable_price[$key];
             }
             //catch error 2: no country price BUT currency is not default currency ...
-            if(EcommercePayment::site_currency() != $currencyCode) {
-                if($this->debug) {debug::log('site currency  ('.EcommercePayment::site_currency().') is not the same order currency ('.$currencyCode.')');}
+            if (EcommercePayment::site_currency() != $currencyCode) {
+                if ($this->debug) {
+                    debug::log('site currency  ('.EcommercePayment::site_currency().') is not the same order currency ('.$currencyCode.')');
+                }
                 self::$_buyable_price[$key] = 0;
                 return self::$_buyable_price[$key];
             }
             //you can revert back to default country price ...
             //returning NULL is basically good ...
-            if($this->debug) {debug::log('SETTING '.$key.' to NULL');}
+            if ($this->debug) {
+                debug::log('SETTING '.$key.' to NULL');
+            }
             self::$_buyable_price[$key] = null;
             return self::$_buyable_price[$key];
         }
@@ -291,11 +336,11 @@ class CountryPrice_BuyableExtension extends DataExtension
     /**
      * delete the related prices
      */
-    function onBeforeDelete() 
+    public function onBeforeDelete()
     {
         $prices = $this->AllCountryPricesForBuyable();
-        if($prices && $prices->count()) {
-            foreach($prices as $price) {
+        if ($prices && $prices->count()) {
+            foreach ($prices as $price) {
                 $price->delete();
             }
         }
@@ -306,22 +351,22 @@ class CountryPrice_BuyableExtension extends DataExtension
     // We us isNew to presave if we should add some country price for the newy created variation based on the "possibly" pre-existing ones of the product
     protected $isNew = false;
 
-    function onBeforeWrite() 
+    public function onBeforeWrite()
     {
         $this->isNew = $this->owner->ID == 0;
     }
 
 
-    function onAfterWrite() 
+    public function onAfterWrite()
     {
         //only run if these are variations
-        if($this->isNew && $this->owner instanceof ProductVariation) {
+        if ($this->isNew && $this->owner instanceof ProductVariation) {
             $product = $this->owner->Product();
-            if($product) {
+            if ($product) {
                 $productPrices = $product->AllCountryPricesForBuyable();
-                foreach($productPrices as $productPrice) {
-                    if($productPrice->Country) {
-                        if(
+                foreach ($productPrices as $productPrice) {
+                    if ($productPrice->Country) {
+                        if (
                             $countryVariationPrice = CountryPrice::get()
                             ->filter(
                                 array(
@@ -357,14 +402,14 @@ class CountryPrice_BuyableExtension extends DataExtension
      * @param member (optiona) $member
      * @return null / bool
      */
-    function canEdit($member = null)
+    public function canEdit($member = null)
     {
-        if( ! $member ) {
+        if (! $member) {
             $member = Member::currentUser();
         }
-        if($member) {
+        if ($member) {
             $distributor = $member->Distributor();
-            if($distributor->exists()) {
+            if ($distributor->exists()) {
                 return true;
             }
         }
