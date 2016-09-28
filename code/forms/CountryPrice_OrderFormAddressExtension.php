@@ -21,7 +21,6 @@ class CountryPrice_OrderFormAddressExtension extends Extension
                 var CountryPrice_SetCountriesForDelivery_Original = '.Convert::array2json($originalSource).';
                 var CountryPrice_SetCountriesForDelivery_New      = '.Convert::array2json($newSource).';';
             Requirements::customScript($js, 'CountryPrice_OrderFormAddressExtension_updateFields');
-            Requirements::javascript('ecommerce_countries/javascript/CountryPrice_SetCountriesForDelivery.js');
         }
     }
 }
