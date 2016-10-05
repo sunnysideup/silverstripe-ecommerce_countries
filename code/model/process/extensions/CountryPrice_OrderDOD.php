@@ -221,7 +221,7 @@ class CountryPrice_OrderDOD extends DataExtension
             $arrayData->setField("Subject", $countryMessageObject->CountrySpecificEmailSubject);
             $arrayData->setField("OrderStepMessage", $countryMessageObject->CountrySpecificEmailMessage);
         } else {
-            debug::log('no country message object for STEP ID: '.$step-ID.' AND country'.CountryPrice_EcommerceCountry::get_real_country($countryCode));
+            debug::log('no country message object for STEP ID: '.$step->ID.' AND country'.CountryPrice_EcommerceCountry::get_real_country($countryCode));
         }
         if ($distributor = $this->owner->Distributor()) {
             debug::log('found a distributor');
