@@ -228,7 +228,7 @@ class CountryPrice_OrderDOD extends DataExtension
             #### START EXCEPTION FOR
             $distributorEmail = $distributor->Email;
             if ($distributorEmail) {
-                $arrayData->setField("CC", $distributorEmail);
+                $arrayData->setField("BCC", $distributorEmail);
             }
         }
     }
