@@ -281,7 +281,8 @@ class Distributor extends DataObject implements PermissionProvider
             DB::alteration_message("Creating ".$distributorTitleSingular." role", 'created');
         }
         $codes = array(
-            'CMS_ACCESS_SalesAdmin'
+            'CMS_ACCESS_SalesAdmin',
+            'CMS_ACCESS_SalesAdminExtras'
         );
         foreach ($codes as $code) {
             $filter = array(
