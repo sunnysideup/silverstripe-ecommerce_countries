@@ -173,7 +173,7 @@ button {
 
 
 
-<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
 <script type="text/javascript" src="/ecommerce_countries/javascript/jquery-te-1.4.0.min.js" charset="utf-8"></script>
 
 
