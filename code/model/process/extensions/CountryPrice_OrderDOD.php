@@ -30,13 +30,16 @@ class CountryPrice_OrderDOD extends DataExtension
      * has all the localised stuff attached to it, specifically
      * the right currency
      */
-    public static function localise_order($countryCode = null)
+    public static function localise_order($countryCode = null, $force = false)
     {
         if (self::$_number_of_times_we_have_run_localise_order > 2) {
             return;
         }
         self::$_number_of_times_we_have_run_localise_order++;
         $order = ShoppingCart::current_order();
+        if(!$order) {
+            return true;
+        }
         if ($order->IsSubmitted()) {
             return true;
         }
@@ -49,6 +52,20 @@ class CountryPrice_OrderDOD extends DataExtension
             $countryOptions = $distributor->Countries();
             if ($countryOptions && $countryOptions->count()) {
                 EcommerceCountry::set_for_current_order_only_show_countries($countryOptions->column('Code'));
+            }
+        }
+        //check if the billing and shipping address have a country so that they will not be overridden by previous Orders
+        //we do this to make sure that the previous address can not change the region and thereby destroy the order in the cart
+        if($billingAddress = $order->CreateOrReturnExistingAddress('BillingAddress')) {
+            if(! $billingAddress->Country || $force) {
+                $billingAddress->Country = $countryCode;
+                $billingAddress->write();
+            }
+        }
+        if($shippingAddress = $order->CreateOrReturnExistingAddress('ShippingAddress')) {
+            if(! $shippingAddress->ShippingCountry || $force) {
+                $shippingAddress->ShippingCountry = $countryCode;
+                $shippingAddress->write();
             }
         }
 
