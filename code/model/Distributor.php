@@ -282,7 +282,8 @@ class Distributor extends DataObject implements PermissionProvider
         }
         $codes = array(
             'CMS_ACCESS_SalesAdmin',
-            'CMS_ACCESS_SalesAdminExtras'
+            'CMS_ACCESS_SalesAdminExtras',
+            'CMS_ACCESS_SalesAdmin_PROCESS'
         );
         foreach ($codes as $code) {
             $filter = array(
