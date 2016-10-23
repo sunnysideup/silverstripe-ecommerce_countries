@@ -18,7 +18,25 @@ class CountryPrice_OrderDOD extends DataExtension
     );
 
     private static $searchable_fields = array(
-        'DistributorID' => 'ExactMatchFilter'
+        'DistributorID' => array(
+            'title' => 'Distributor'
+        ),
+        'OriginatingCountryCode' => array(
+            'field' => 'TextField',
+            'filter' => 'PartialMatchFilter',
+            'title' => 'Country Code (e.g. NZ)'
+        )
+    );
+
+    private static $field_labels = array(
+        'CurrencyCountry' => 'Currency Country',
+        'OriginatingCountryCode' => 'Country'
+    );
+
+    private static $summary_fields = array(
+        'Distributor.Title' => 'Distributor',
+        'OriginatingCountryCode' => 'OriginatingCountryCode',
+        'CurrencyUsed.Title' => 'Currency'
     );
 
     private static $_number_of_times_we_have_run_localise_order = 0;
@@ -144,6 +162,9 @@ class CountryPrice_OrderDOD extends DataExtension
 
     public function canEdit($member = null)
     {
+        if(! $member) {
+            $member = Member::currentUser();
+        }
         if ($member) {
             if ($distributor = $this->owner->Distributor()) {
                 foreach ($distributor->Members() as $distributorMember) {
