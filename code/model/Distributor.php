@@ -381,7 +381,14 @@ class Distributor extends DataObject implements PermissionProvider
             $member->write();
         }
         if ($group) {
-            $group->Members()->removeAll();
+            foreach($group->Members() as $oldGroupMember) {
+                $distributor = $oldGroupMember->Distributor();
+                if($distributor && $distributor->exists()) {
+
+                } else {
+                    $group->Members()->remove($oldGroupMember);
+                }
+            }
             foreach ($this->Members() as $member) {
                 $member->addToGroupByCode($group->Code);
             }
