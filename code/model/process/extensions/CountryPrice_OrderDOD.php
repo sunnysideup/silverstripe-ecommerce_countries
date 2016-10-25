@@ -18,7 +18,25 @@ class CountryPrice_OrderDOD extends DataExtension
     );
 
     private static $searchable_fields = array(
-        'DistributorID' => 'ExactMatchFilter'
+        'DistributorID' => array(
+            'title' => 'Distributor'
+        ),
+        'OriginatingCountryCode' => array(
+            'field' => 'TextField',
+            'filter' => 'PartialMatchFilter',
+            'title' => 'Country Code (e.g. NZ)'
+        )
+    );
+
+    private static $field_labels = array(
+        'CurrencyCountry' => 'Currency Country',
+        'OriginatingCountryCode' => 'Country'
+    );
+
+    private static $summary_fields = array(
+        'Distributor.Title' => 'Distributor',
+        'OriginatingCountryCode' => 'OriginatingCountryCode',
+        'CurrencyUsed.Title' => 'Currency'
     );
 
     private static $_number_of_times_we_have_run_localise_order = 0;
@@ -37,7 +55,7 @@ class CountryPrice_OrderDOD extends DataExtension
         }
         self::$_number_of_times_we_have_run_localise_order++;
         $order = ShoppingCart::current_order();
-        if(!$order) {
+        if (!$order) {
             return true;
         }
         if ($order->IsSubmitted()) {
@@ -56,14 +74,14 @@ class CountryPrice_OrderDOD extends DataExtension
         }
         //check if the billing and shipping address have a country so that they will not be overridden by previous Orders
         //we do this to make sure that the previous address can not change the region and thereby destroy the order in the cart
-        if($billingAddress = $order->CreateOrReturnExistingAddress('BillingAddress')) {
-            if(! $billingAddress->Country || $force) {
+        if ($billingAddress = $order->CreateOrReturnExistingAddress('BillingAddress')) {
+            if (! $billingAddress->Country || $force) {
                 $billingAddress->Country = $countryCode;
                 $billingAddress->write();
             }
         }
-        if($shippingAddress = $order->CreateOrReturnExistingAddress('ShippingAddress')) {
-            if(! $shippingAddress->ShippingCountry || $force) {
+        if ($shippingAddress = $order->CreateOrReturnExistingAddress('ShippingAddress')) {
+            if (! $shippingAddress->ShippingCountry || $force) {
                 $shippingAddress->ShippingCountry = $countryCode;
                 $shippingAddress->write();
             }
@@ -144,6 +162,9 @@ class CountryPrice_OrderDOD extends DataExtension
 
     public function canEdit($member = null)
     {
+        if (! $member) {
+            $member = Member::currentUser();
+        }
         if ($member) {
             if ($distributor = $this->owner->Distributor()) {
                 foreach ($distributor->Members() as $distributorMember) {

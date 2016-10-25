@@ -62,6 +62,14 @@ OrderFormAddress:
   extensions:
     - CountryPrice_OrderFormAddressExtension
 
+SalesAdmin:
+    extensions:
+        - SalesAdmin_CountryPrice
+
+SalesAdminExtras:
+    extensions:
+        - SalesAdmin_CountryPrice
+
 ---
 Only:
   moduleexists: 'ecommerce_product_variation'
