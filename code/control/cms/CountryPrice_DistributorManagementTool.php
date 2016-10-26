@@ -309,11 +309,26 @@ class CountryPrice_DistributorManagementTool extends Controller
                     $distributor->Name,
                     $data + array("F" => "Name")
                 );
+                $distributorFields = array(
+                    'Email',
+                    'Address1',
+                    'Address2',
+                    'Address3',
+                    'Address4',
+                    'Address5',
+                    'Phone',
+                    'DisplayEmail',
+                    'WebAddress',
+                    'DeliveryCostNote',
+                    'ShippingEstimation',
+                    'ReturnInformation'
+                );
+                foreach($distributorFields as $distributorField)
                 $html .= $this->createEditNode(
-                    "Email",
+                    $distributorField,
                     "",
-                    $distributor->Email,
-                    $data + array("F" => "Email")
+                    $distributor->$distributorField,
+                    $data + array("F" => $distributorField)
                 );
                 if (Permission::check("ADMIN")) {
                     $html .= $this->createEditNode(

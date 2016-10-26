@@ -55,7 +55,7 @@ class CountryPrice_OrderDOD extends DataExtension
         }
         self::$_number_of_times_we_have_run_localise_order++;
         $order = ShoppingCart::current_order();
-        if(!$order) {
+        if (!$order) {
             return true;
         }
         if ($order->IsSubmitted()) {
@@ -74,14 +74,14 @@ class CountryPrice_OrderDOD extends DataExtension
         }
         //check if the billing and shipping address have a country so that they will not be overridden by previous Orders
         //we do this to make sure that the previous address can not change the region and thereby destroy the order in the cart
-        if($billingAddress = $order->CreateOrReturnExistingAddress('BillingAddress')) {
-            if(! $billingAddress->Country || $force) {
+        if ($billingAddress = $order->CreateOrReturnExistingAddress('BillingAddress')) {
+            if (! $billingAddress->Country || $force) {
                 $billingAddress->Country = $countryCode;
                 $billingAddress->write();
             }
         }
-        if($shippingAddress = $order->CreateOrReturnExistingAddress('ShippingAddress')) {
-            if(! $shippingAddress->ShippingCountry || $force) {
+        if ($shippingAddress = $order->CreateOrReturnExistingAddress('ShippingAddress')) {
+            if (! $shippingAddress->ShippingCountry || $force) {
                 $shippingAddress->ShippingCountry = $countryCode;
                 $shippingAddress->write();
             }
@@ -162,7 +162,7 @@ class CountryPrice_OrderDOD extends DataExtension
 
     public function canEdit($member = null)
     {
-        if(! $member) {
+        if (! $member) {
             $member = Member::currentUser();
         }
         if ($member) {
@@ -244,7 +244,6 @@ class CountryPrice_OrderDOD extends DataExtension
         $countryCode = $this->owner->getCountry();
         $countryMessage = null;
         if ($step && $countryCode) {
-            //debug::log('doing the country code: '.$countryCode);
             $countryMessageObject = EcommerceOrderStepCountryData::get()
                 ->filter(
                     array(
@@ -255,18 +254,22 @@ class CountryPrice_OrderDOD extends DataExtension
                 ->first();
         }
         if ($countryMessageObject) {
-            //debug::log('setting the message: '.$countryMessageObject->CountrySpecificEmailSubject);
             $arrayData->setField("Subject", $countryMessageObject->CountrySpecificEmailSubject);
             $arrayData->setField("OrderStepMessage", $countryMessageObject->CountrySpecificEmailMessage);
         } else {
-            //debug::log('no country message object for STEP ID: '.$step->ID.' AND country'.CountryPrice_EcommerceCountry::get_real_country($countryCode));
+            debug::log('no country message object for STEP ID: '.$step->ID.' AND country'.CountryPrice_EcommerceCountry::get_real_country($countryCode));
         }
         if ($distributor = $this->owner->Distributor()) {
-            //debug::log('found a distributor');
-            #### START EXCEPTION FOR
             $distributorEmail = $distributor->Email;
             if ($distributorEmail) {
-                $arrayData->setField("BCC", $distributorEmail);
+                $bccArray = array($distributorEmail => $distributorEmail);
+                foreach($distributor->Members() as $member) {
+                    if($member && $member->Email) {
+                        $bccArray[$member->Email] = $member->Email;
+                    }
+                }
+                $arrayData->setField('BCC', implode(', ', $bccArray));
+
             }
         }
     }

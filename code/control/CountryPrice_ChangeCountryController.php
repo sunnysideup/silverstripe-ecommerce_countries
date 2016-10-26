@@ -28,7 +28,8 @@ class CountryPrices_ChangeCountryController extends ContentController
     private static $off_site_url_redirects = array();
 
     private static $allowed_actions = array(
-        "changeto" => true
+        "changeto" => true,
+        "confirmredirection" => true
     );
 
     public static function new_country_link($countryCode)
@@ -120,5 +121,9 @@ class CountryPrices_ChangeCountryController extends ContentController
             return $url;
         }
         return '/';
+    }
+
+    function confirmredirection($request) {
+
     }
 }

@@ -363,15 +363,15 @@ class Distributor extends DataObject implements PermissionProvider
     {
         $group = Group::get()->filter(array("Code" => $this->Config()->get('distributor_permission_code')))->first();
         if ($this->Email) {
+            $filter = array("Email" => $this->Email);
             $member = Member::get()
-                ->filter(array("Email" => $this->Email))
+                ->filter($filter)
                 ->First();
             if (!$member) {
-                $member = new Member();
-                $member->Email = $this->Email;
+                $member = Member::create($filter);
                 //$thisMember->SetPassword = substr(session_id, 0, 8);
             }
-            $member->FirstName = _t('Distributor.SINGULAR_NAME', 'Distributor') . ' For';
+            $member->FirstName = trim(_t('Distributor.SINGULAR_NAME', 'Distributor') . _t('Distributor.FOR', ' for '));
             $member->Surname = $this->Name;
             $member->DistributorID = $this->ID;
             $member->write();
@@ -381,6 +381,14 @@ class Distributor extends DataObject implements PermissionProvider
             $member->write();
         }
         if ($group) {
+            foreach($group->Members() as $oldGroupMember) {
+                $distributor = $oldGroupMember->Distributor();
+                if($distributor && $distributor->exists()) {
+
+                } else {
+                    $group->Members()->remove($oldGroupMember);
+                }
+            }
             foreach ($this->Members() as $member) {
                 $member->addToGroupByCode($group->Code);
             }
