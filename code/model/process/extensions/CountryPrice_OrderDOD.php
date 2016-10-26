@@ -244,7 +244,7 @@ class CountryPrice_OrderDOD extends DataExtension
         $countryCode = $this->owner->getCountry();
         $countryMessage = null;
         if ($step && $countryCode) {
-            debug::log('doing the country code: '.$countryCode);
+            //debug::log('doing the country code: '.$countryCode);
             $countryMessageObject = EcommerceOrderStepCountryData::get()
                 ->filter(
                     array(
@@ -255,14 +255,14 @@ class CountryPrice_OrderDOD extends DataExtension
                 ->first();
         }
         if ($countryMessageObject) {
-            debug::log('setting the message: '.$countryMessageObject->CountrySpecificEmailSubject);
+            //debug::log('setting the message: '.$countryMessageObject->CountrySpecificEmailSubject);
             $arrayData->setField("Subject", $countryMessageObject->CountrySpecificEmailSubject);
             $arrayData->setField("OrderStepMessage", $countryMessageObject->CountrySpecificEmailMessage);
         } else {
-            debug::log('no country message object for STEP ID: '.$step->ID.' AND country'.CountryPrice_EcommerceCountry::get_real_country($countryCode));
+            //debug::log('no country message object for STEP ID: '.$step->ID.' AND country'.CountryPrice_EcommerceCountry::get_real_country($countryCode));
         }
         if ($distributor = $this->owner->Distributor()) {
-            debug::log('found a distributor');
+            //debug::log('found a distributor');
             #### START EXCEPTION FOR
             $distributorEmail = $distributor->Email;
             if ($distributorEmail) {
