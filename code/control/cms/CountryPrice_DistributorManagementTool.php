@@ -323,13 +323,14 @@ class CountryPrice_DistributorManagementTool extends Controller
                     'ShippingEstimation',
                     'ReturnInformation'
                 );
-                foreach($distributorFields as $distributorField)
-                $html .= $this->createEditNode(
+                foreach ($distributorFields as $distributorField) {
+                    $html .= $this->createEditNode(
                     $distributorField,
                     "",
                     $distributor->$distributorField,
                     $data + array("F" => $distributorField)
                 );
+                }
                 if (Permission::check("ADMIN")) {
                     $html .= $this->createEditNode(
                         "Default " . _t('Distributor.SINGULAR_NAME', 'Distributor'),

@@ -123,7 +123,7 @@ class CountryPrices_ChangeCountryController extends ContentController
         return '/';
     }
 
-    function confirmredirection($request) {
-
+    public function confirmredirection($request)
+    {
     }
 }

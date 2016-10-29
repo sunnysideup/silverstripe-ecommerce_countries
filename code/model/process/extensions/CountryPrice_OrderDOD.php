@@ -263,13 +263,12 @@ class CountryPrice_OrderDOD extends DataExtension
             $distributorEmail = $distributor->Email;
             if ($distributorEmail) {
                 $bccArray = array($distributorEmail => $distributorEmail);
-                foreach($distributor->Members() as $member) {
-                    if($member && $member->Email) {
+                foreach ($distributor->Members() as $member) {
+                    if ($member && $member->Email) {
                         $bccArray[$member->Email] = $member->Email;
                     }
                 }
                 $arrayData->setField('BCC', implode(', ', $bccArray));
-
             }
         }
     }
