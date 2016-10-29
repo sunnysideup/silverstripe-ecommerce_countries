@@ -1,103 +1,69 @@
-# Ecommerce Countries
+# Silverstripe ecommerce countries module
+[![Build Status](https://travis-ci.org/sunnysideup/silverstripe-ecommerce_countries.svg?branch=master)](https://travis-ci.org/sunnysideup/silverstripe-ecommerce_countries)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-ecommerce_countries/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-ecommerce_countries/?branch=master)
+[![codecov.io](https://codecov.io/github/sunnysideup/silverstripe-ecommerce_countries/coverage.svg?branch=master)](https://codecov.io/github/sunnysideup/silverstripe-ecommerce_countries?branch=master)
+![helpfulrobot](https://helpfulrobot.io/sunnysideup/ecommerce_countries/badge)
 
-This is a module that can be used when you have complex dealings with several countries (e.g. only sell some products to some countries) for your e-commerce shop.
-
-
-Developers
------------------------------------------------
-Nicolaas Francken [at] sunnysideup.co.nz
-
-
-Requirements
------------------------------------------------
-see composer.json
-
-Demo
------------------------------------------------
-See http://www.silverstripe-ecommerce.com
-
-Installation Instructions
------------------------------------------------
-1. Find out how to add modules to SS and add module as per usual.
-2. copy configurations from this module's \_config.php file
-into mysite/\_config.php file and edit settings as required.
-NB. the idea is not to edit the module at all, but instead customise
-it from your mysite folder, so that you can upgrade the module without redoing the settings.
-
-If you just want one or two things from this module
-then of course you are free to copy them to your
-mysite folder and delete the rest of this module.
+[![Latest Stable Version](https://poser.pugx.org/sunnysideup/ecommerce_countries/version)](https://packagist.org/packages/sunnysideup/ecommerce_countries)
+[![License](https://poser.pugx.org/sunnysideup/ecommerce_countries/license)](https://packagist.org/packages/sunnysideup/ecommerce_countries)
+[![Monthly Downloads](https://poser.pugx.org/sunnysideup/ecommerce_countries/d/monthly)](https://packagist.org/packages/sunnysideup/ecommerce_countries)
 
 
-# NOTES
-things to change for country:
-
-a. availability:
-    see:
-b. price (amount + currency)
-c. payment gateway
-d. taxes
-e. delivery
-
-What can the distributor edit:
-1. price
-2. what is available
-3. taxes
-
-WW = world-wide
-a
-Each visitor is a from a country
-firstly, we need to work out the country used:
+## Documentation
 
 
-AVAILABILITY: sales to country are available
-PRICE: current country price, WW backup price
-GATEWAY: distributor gateway, WW gateway
-TAXES: country tax tax, WW tax
-DELIVERY: country delivery, WW delivery
 
-BY COUNTRY:
-----
-- price (and availability - no price = no availability)
-- currency
-- tax
-- delivery
-- distributor
 
-BY DISTRIBUTOR
-----
-- gateway
+[Browse the API](docs/en/index.xhtml)
 
-backup values ()
-----
-In case country specific ones are not available, you can use:
- * AVAILABILITY: based on backup country
- * PRICE: based on backup country
- * CURRENCY: based on backup country
- * GATEWAY: based on backup distributor
- * TAX: specific tax setting for not-listed country
- * DELIVERY: specific delivery setting for not-listed country
- * DISTRIBUTOR: back-up back-up country
+## Requirements
 
-making countries part of the back-up country...
----
- 1. set currency for country to `null` or the `default currency`
- 2. set distributor for country to `null` or the `default distributor`
- 3. to increase the price, add delivery cost.
 
-useful yml settings for injecting custom solutions
----
 
-setting exchange rates (by default this modul sets all exchange rates to 1 as we use actual prices per currency):
+see [composer.json](composer.json) for details
 
-```yml
-EcommerceCurrency:
-  exchange_provider_class: ExchangeRateProvider_Dummy
+### Suggested Modules
+
+
+
+see [composer.json](composer.json) for details
+
+
+## Installation
+
+
+```
+composer require sunnysideup/ecommerce_countries
 ```
 
-custom gateways:
-```yml
-Injector:
-  EcommercePaymentSupportedMethodsProvider:
-    class: MyCustom_EcommercePaymentSupportedMethodsProvider
-```
+### Configuration
+
+
+
+In the `_config` folder, you will find `*.yml.example` file(s) that show options for
+the configuration of this module. We recommend that you:
+
+  1. copy these `*.yml.example` files into your
+`mysite/_config` folder
+  2. remove the .example extension
+  3. delete the lines you not care about, and
+  4. adjust the configurations that you would like to use.
+
+
+## Contributing
+
+
+
+We welcome any contributions. See [Browse the API](CONTRIBUTING.md) for more details.
+
+## Paid assistance
+
+
+
+You can pay us to create an improved / adapted version of this module for your own projects.  Please contact us if you like to find out more: [www.sunnysideup.co.nz](http://www.sunnysideup.co.nz)
+
+## Author
+
+
+
+Sunny Side Up ltd.
