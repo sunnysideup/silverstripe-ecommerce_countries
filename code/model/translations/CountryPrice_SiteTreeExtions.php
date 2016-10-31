@@ -29,49 +29,62 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
         return $fields;
     }
 
-    private static $_translation = array();
+    private static $_translations = array();
 
-    public function TranslatedValues($variableOrMethod = '')
+    public function loadTranslatedValues($countryID = 0, $variableOrMethod = '')
     {
         $translation = null;
-        $key = $this->owner->ID;
-
-        if (isset(self::$_translations[$key])) {
-            $translation = self::$_translations[$key];
-        } else {
-            $countryID = 0;
+        if( ! $countryID) {
             $countryObject = CountryPrice_EcommerceCountry::get_real_country();
             if ($countryObject) {
                 $countryID = $countryObject->ID;
             }
-            if ($countryID) {
-                $translation = $this->owner->dataRecord
+        }
+        if ($countryID) {
+            $key = $this->owner->ID.'_'.$countryID;
+            if( ! isset(self::$_translations[$key])) {
+                $translation = $this->owner
                     ->CountryPriceTranslations()
                     ->filter(
                         array(
                             "EcommerceCountryID" => $countryID,
-                            'ParentID' => $this->owner->dataRecord->ID
+                            'ParentID' => $this->owner->ID
                         )
                     )
                     ->first();
                 self::$_translations[$key] = $translation;
+            } else {
+                $translation = self::$_translations[$key];
             }
         }
         if ($translation) {
-            foreach ($translation->FieldsToReplace() as $replaceFields) {
+            $fieldsToReplace = $translation->FieldsToReplace();
+            foreach ($fieldsToReplace as $replaceFields) {
                 $pageField = $replaceFields->PageField;
                 $translationField = $replaceFields->TranslationField;
-                if (! $variableOrMethod || ($variableOrMethod == $pageField)) {
+                if( ! $variableOrMethod || $variableOrMethod === $pageField) {
                     if ($translation->hasMethod($translationField)) {
+                        $pageFieldTranslated = $pageField.'Translated';
                         $this->owner->$pageField = $translation->$translationField();
+                        $this->owner->$pageFieldTranslated = $translation->$translationField();
                     } else {
                         $this->owner->$pageField = $translation->$translationField;
                     }
-                    if ($variableOrMethod && ($variableOrMethod == $pageField)) {
-                        return $this->owner->$pageField;
-                    }
+                }
+                if($variableOrMethod) {
+                    return $this->owner->$pageField;
+                }
+            }
+        } else {
+            if($variableOrMethod) {
+                if ($translation->hasMethod($variableOrMethod)) {
+                    return $this->owner->$variableOrMethod();
+                } else {
+                    return $this->owner->$variableOrMethod;
                 }
             }
         }
     }
+
+
 }

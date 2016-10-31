@@ -40,32 +40,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
         if ($countryObject) {
             $countryID = $countryObject->ID;
         }
-        if ($countryID) {
-            $translation = $this->owner->dataRecord
-                ->CountryPriceTranslations()
-                ->filter(
-                    array(
-                        "EcommerceCountryID" => $countryID,
-                        'ParentID' => $this->owner->dataRecord->ID
-                    )
-                )
-                ->first();
-            if ($translation) {
-                $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
-                if ($newURL) {
-                    return $this->owner->redirect($newURL);
-                }
-                foreach ($translation->FieldsToReplace() as $replaceFields) {
-                    $pageField = $replaceFields->PageField;
-                    $translationField = $replaceFields->TranslationField;
-                    if ($translation->hasMethod($translationField)) {
-                        $this->owner->$pageField = $translation->$translationField();
-                    } else {
-                        $this->owner->$pageField = $translation->$translationField;
-                    }
-                }
-            }
-        }
+        $this->owner->dataRecord->loadTranslatedValues($countryID, null);
     }
 
     /**
