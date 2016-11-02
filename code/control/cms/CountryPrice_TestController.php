@@ -120,7 +120,6 @@ class CountryPrice_TestController extends ContentController
     {
         Session::clear("countryfortestingonly");
         Session::clear("MyCloudFlareCountry");
-        Session::clear("MyCloudFlareIPAddress");
         Session::clear("ipfortestingonly");
         Session::save();
     }
