@@ -34,7 +34,7 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
     public function loadTranslatedValues($countryID = 0, $variableOrMethod = '')
     {
         $translation = null;
-        if( ! $countryID) {
+        if (! $countryID) {
             $countryObject = CountryPrice_EcommerceCountry::get_real_country();
             if ($countryObject) {
                 $countryID = $countryObject->ID;
@@ -42,7 +42,7 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
         }
         if ($countryID) {
             $key = $this->owner->ID.'_'.$countryID;
-            if( ! isset(self::$_translations[$key])) {
+            if (! isset(self::$_translations[$key])) {
                 $translation = $this->owner
                     ->CountryPriceTranslations()
                     ->filter(
@@ -62,7 +62,7 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
             foreach ($fieldsToReplace as $replaceFields) {
                 $pageField = $replaceFields->PageField;
                 $translationField = $replaceFields->TranslationField;
-                if( ! $variableOrMethod || $variableOrMethod === $pageField) {
+                if (! $variableOrMethod || $variableOrMethod === $pageField) {
                     if ($translation->hasMethod($translationField)) {
                         $pageFieldTranslated = $pageField.'Translated';
                         $this->owner->$pageField = $translation->$translationField();
@@ -71,12 +71,12 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
                         $this->owner->$pageField = $translation->$translationField;
                     }
                 }
-                if($variableOrMethod) {
+                if ($variableOrMethod) {
                     return $this->owner->$pageField;
                 }
             }
         } else {
-            if($variableOrMethod) {
+            if ($variableOrMethod) {
                 if ($translation->hasMethod($variableOrMethod)) {
                     return $this->owner->$variableOrMethod();
                 } else {
@@ -85,6 +85,4 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
             }
         }
     }
-
-
 }
