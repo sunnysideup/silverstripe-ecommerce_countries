@@ -14,7 +14,8 @@ class CountryPrice_EcommerceCountry extends DataExtension
         'DeliveryCostNote' => 'Varchar(255)',
         'ShippingEstimation' => 'Varchar(255)',
         'ReturnInformation' => 'Varchar(255)',
-        'ProductNotAvailableNote' => 'HTMLText'
+        'ProductNotAvailableNote' => 'HTMLText',
+        'LanguageAndCountryCode' => 'Varchar(20)'
     );
 
     private static $has_one = array(
@@ -39,6 +40,10 @@ class CountryPrice_EcommerceCountry extends DataExtension
 
     private static $indexes = array(
         "IsBackupCountry" => true
+    );
+
+    private static $casting = array(
+        "LanguageAndCountryCode" => 'Varchar'
     );
 
     public function updateCMSFields(FieldList $fields)
@@ -284,5 +289,16 @@ class CountryPrice_EcommerceCountry extends DataExtension
         } else {
             DB::alteration_message("Back-up country has not been set", "deleted");
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function ComputedLanguageAndCountryCode()
+    {
+        if($this->owner->LanguageAndCountryCode) {
+            return $this->owner->LanguageAndCountryCode;
+        }
+        return strtolower('en-'.$this->owner->Code);
     }
 }

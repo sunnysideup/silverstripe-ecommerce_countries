@@ -57,8 +57,8 @@ class CountryPrices_ChangeCountryController extends ContentController
             ShoppingCart::singleton()->clear();
         }
         CountryPrice_OrderDOD::localise_order($newCountryCode, true);
-
-        $this->redirect($this->findNewURL('ecomlocale', $newCountryCode));
+        $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
+        $this->redirect($this->findNewURL($param, $newCountryCode));
     }
 
     public function Link($action = null)

@@ -14,7 +14,6 @@
 
 class CountryPrice_Page_Controller_Extension extends Extension
 {
-    private static $locale_get_parameter = 'ecomlocale';
 
     /**
      * replaces `Title` and `Content` with translated content
@@ -26,7 +25,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
     public function onAfterInit()
     {
         $countryID = 0;
-        $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'locale_get_parameter');
+        $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
         if (isset($_GET[$param])) {
             $countryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
@@ -39,7 +38,12 @@ class CountryPrice_Page_Controller_Extension extends Extension
 
         if ($countryObject) {
             $countryID = $countryObject->ID;
+            $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
+            if($newURL) {
+                $this->owner->redirect($newURL);
+            }
         }
+
         $this->owner->dataRecord->loadTranslatedValues($countryID, null);
     }
 
@@ -90,7 +94,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
         $urlParts = parse_url($oldURL);
         parse_str($urlParts['query'], $params);
 
-        $param = Config::inst()->get('CountryPrice_Page_Controller_Extension', 'locale_get_parameter');
+        $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
         $params[$param] = $countryCode;     // Overwrite if exists
 
         // Note that this will url_encode all values

@@ -6,13 +6,15 @@ class CountryPrice_Translation extends DataObject
 {
     private static $db = array(
         'Title' => 'Varchar(200)',
-        'Content' => 'HTMLText'
+        'Content' => 'HTMLText',
+        'WithoutTranslation' => 'Boolean'
     );
 
     private static $field_labels = array(
         'Title' => 'Page Title',
         'Content' => 'Page Content',
-        'EcommerceCountryID' => 'Country'
+        'EcommerceCountryID' => 'Country',
+        'WithoutTranslation' => 'Without Translation'
     );
 
     private static $has_one = array(
@@ -22,8 +24,14 @@ class CountryPrice_Translation extends DataObject
 
     private static $summary_fields = array(
         'EcommerceCountry.Name' => 'Country',
-        'Title' => 'Title'
+        'Title' => 'Title',
+        'WithoutTranslation.Nice' => 'Price Difference Only'
     );
+
+    /**
+     * @var string
+     */
+    private static $locale_get_parameter = 'ecomlocale';
 
     /**
      * Standard SS variable.
@@ -59,9 +67,18 @@ class CountryPrice_Translation extends DataObject
             'Root.Main',
             DropdownField::create(
                 'EcommerceCountryID',
-                'Country',
+                $fields->dataFieldByName('EcommerceCountryID')->Title(),
                 array('' => '-- make sure to select a country --')+$countries
             ),
+            'Title'
+        );
+        $withoutTranslationField = $fields->dataFieldByName('WithoutTranslation');
+        $fields->addFieldToTab(
+            'Root.Main',
+            CheckboxField::create(
+                'WithoutTranslation',
+                $withoutTranslationField->Title()
+            )->setRightTitle('The page is <em>translated</em> for search engines because it has prices for this country. '),
             'Title'
         );
         $fields->removeFieldFromTab("Root.Main", 'ParentID');
@@ -129,5 +146,14 @@ class CountryPrice_Translation extends DataObject
         );
         $this->extend('updateFieldsToReplace', $al);
         return $al;
+    }
+
+    function Link()
+    {
+        $link = $this->Parent()->Link();
+        if($this->EcommerceCountryID) {
+            $link .= '?'.$this->Config()->get('locale_get_parameter').'='.$this->EcommerceCountry()->Code;
+        }
+        return $link;
     }
 }

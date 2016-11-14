@@ -31,6 +31,16 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
 
     private static $_translations = array();
 
+    /**
+     *
+     * @return DataList
+     */
+    public function AvailableTranslationLinks()
+    {
+        return $this->owner->CountryPriceTranslations()
+            ->innerJoin('EcommerceCountry', '"EcommerceCountry"."ID" = "CountryPrice_Translation"."EcommerceCountryID"');
+    }
+
     public function loadTranslatedValues($countryID = 0, $variableOrMethod = '')
     {
         $translation = null;
@@ -48,8 +58,11 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
                     ->filter(
                         array(
                             "EcommerceCountryID" => $countryID,
-                            'ParentID' => $this->owner->ID
+                            'ParentID' => $this->owner->ID,
                         )
+                    )
+                    ->exclude(
+                        array('WithoutTranslation' => 1)
                     )
                     ->first();
                 self::$_translations[$key] = $translation;
