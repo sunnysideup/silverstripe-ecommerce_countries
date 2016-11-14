@@ -8,7 +8,7 @@
 class CountryPrice_OrderDOD extends DataExtension
 {
     private static $db = array(
-        'IP' => 'Varchar(16)',
+        'IP' => 'Varchar(45)',
         'CurrencyCountry' => 'Varchar(3)',
         'OriginatingCountryCode' => 'Varchar(3)'
     );
@@ -131,16 +131,11 @@ class CountryPrice_OrderDOD extends DataExtension
     public function onCalculateOrder()
     {
         $this->setCountryDetailsForOrder();
-        $countryCode = $this->owner->getCountry();
-        $distributor = Distributor::get_one_for_country($countryCode);
-        if ($distributor) {
-            $this->owner->DistributorID = $distributor->ID;
-        }
     }
 
     public function updateCMSFields(FieldList $fields)
     {
-        foreach (array("IP", "OriginatingCountryCode", "CurrencyCountry") as $fieldName) {
+        foreach (array('IP', 'OriginatingCountryCode', 'CurrencyCountry') as $fieldName) {
             $field = $fields->dataFieldByName($fieldName);
             $field = $field->performReadonlyTransformation();
             $fields->addFieldToTab("Root.Country", $field);
@@ -231,6 +226,11 @@ class CountryPrice_OrderDOD extends DataExtension
         }
         //the line below causes a loop!!!
         //$this->owner->SetCurrency($currencyObject);
+
+        $distributor = Distributor::get_one_for_country($countryCode);
+        if ($distributor) {
+            $this->owner->DistributorID = $distributor->ID;
+        }
     }
 
 
