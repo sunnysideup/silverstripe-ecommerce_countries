@@ -28,6 +28,10 @@ class CountryPrice_Translation extends DataObject
         'WithoutTranslation.Nice' => 'Price Difference Only'
     );
 
+    private static $casting = array(
+        'Link' => 'Varchar'
+    );
+
     /**
      * @var string
      */
@@ -148,12 +152,23 @@ class CountryPrice_Translation extends DataObject
         return $al;
     }
 
+    /**
+     * @return string
+     */
     function Link()
+    {
+        return $this->getLink();
+    }
+
+    /**
+     * @return string
+     */
+    function getLink()
     {
         $link = $this->Parent()->Link();
         if($this->EcommerceCountryID) {
             $link .= '?'.$this->Config()->get('locale_get_parameter').'='.$this->EcommerceCountry()->Code;
         }
-        return $link;
+        return Director::absoluteURL($link);
     }
 }

@@ -149,4 +149,13 @@ class CountryPrice_Page_Controller_Extension extends Extension
         }
         return $al;
     }
+
+    /**
+     * 
+     * @return DataList
+     */
+    function AlternativeHrefLangLinksCachingKey()
+    {
+        return 'AlternativeHrefLangLinksCachingKey'.'-'.$this->owner->dataRecord->ID.'-'.strtotime($this->owner->dataRecord->LastEdited);
+    }
 }
