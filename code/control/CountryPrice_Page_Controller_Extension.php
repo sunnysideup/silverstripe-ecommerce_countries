@@ -38,9 +38,11 @@ class CountryPrice_Page_Controller_Extension extends Extension
 
         if ($countryObject) {
             $countryID = $countryObject->ID;
-            $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
-            if($newURL) {
-                $this->owner->redirect($newURL);
+            if($this->owner->dataRecord->getEcommerceTranslation($countryID)) {
+                $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
+                if($newURL) {
+                    $this->owner->redirect($newURL);
+                }
             }
         }
 
@@ -151,7 +153,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
     }
 
     /**
-     * 
+     *
      * @return DataList
      */
     function AlternativeHrefLangLinksCachingKey()

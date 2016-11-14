@@ -53,18 +53,7 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
         if ($countryID) {
             $key = $this->owner->ID.'_'.$countryID;
             if (! isset(self::$_translations[$key])) {
-                $translation = $this->owner
-                    ->CountryPriceTranslations()
-                    ->filter(
-                        array(
-                            "EcommerceCountryID" => $countryID,
-                            'ParentID' => $this->owner->ID,
-                        )
-                    )
-                    ->exclude(
-                        array('WithoutTranslation' => 1)
-                    )
-                    ->first();
+                $translation = $this->owner->getRealEcommerceTranslation($countryID);
                 self::$_translations[$key] = $translation;
             } else {
                 $translation = self::$_translations[$key];
@@ -97,5 +86,44 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
                 }
             }
         }
+    }
+
+    /**
+     * @var int $countryID
+     *
+     * @return CountryPrice_Translation | null
+     */
+    public function getRealEcommerceTranslation($countryID)
+    {
+        return $this->owner
+            ->CountryPriceTranslations()
+            ->filter(
+                array(
+                    "EcommerceCountryID" => $countryID,
+                    'ParentID' => $this->owner->ID,
+                )
+            )
+            ->exclude(
+                array('WithoutTranslation' => 1)
+            )
+            ->first();
+    }
+
+    /**
+     * @var int $countryID
+     *
+     * @return CountryPrice_Translation | null
+     */
+    public function getEcommerceTranslation($countryID)
+    {
+        return $this->owner
+            ->CountryPriceTranslations()
+            ->filter(
+                array(
+                    "EcommerceCountryID" => $countryID,
+                    'ParentID' => $this->owner->ID,
+                )
+            )
+            ->first();
     }
 }
