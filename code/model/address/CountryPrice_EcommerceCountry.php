@@ -296,7 +296,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
      */
     public function ComputedLanguageAndCountryCode()
     {
-        if($this->owner->LanguageAndCountryCode) {
+        if ($this->owner->LanguageAndCountryCode) {
             return $this->owner->LanguageAndCountryCode;
         }
         return strtolower('en-'.$this->owner->Code);
