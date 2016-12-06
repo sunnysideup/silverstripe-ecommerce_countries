@@ -41,7 +41,7 @@ class CountryPrice_EcommerceCurrency extends DataExtension
         $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
         $currencyDO = null;
         if ($countryCode) {
-            $currencyCode = isset($currencyPerCountry[$countryCode]) ? $currencyPerCountry[$countryCode] : EcommerceCountry::default_currency();
+            $currencyCode = isset($currencyPerCountry[$countryCode]) ? $currencyPerCountry[$countryCode] : EcommerceCurrency::default_currency();
             $currencyDO = EcommerceCurrency::get_one_from_code($currencyCode);
         }
         if (! $currencyDO) {
