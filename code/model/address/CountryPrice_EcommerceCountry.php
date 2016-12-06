@@ -228,8 +228,11 @@ class CountryPrice_EcommerceCountry extends DataExtension
                 return self::get_real_country($countryCode);
             }
         }
-
-        return $country;
+        if ($country && $country instanceof EcommerceCountry) {
+            return $country;
+        }
+        
+        return EcommerceCountry::get()->first();
     }
     /**
      *
