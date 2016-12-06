@@ -41,7 +41,7 @@ class CountryPrice_EcommerceCurrency extends DataExtension
         $currencyPerCountry = CountryPrice_EcommerceCurrency::get_currency_per_country();
         $currencyDO = null;
         if ($countryCode) {
-            $currencyCode = isset($currencyPerCountry[$countryCode]) ? $currencyPerCountry[$countryCode] : EcommerceCountry::default_currency();
+            $currencyCode = isset($currencyPerCountry[$countryCode]) ? $currencyPerCountry[$countryCode] : EcommerceCurrency::default_currency_code();
             $currencyDO = EcommerceCurrency::get_one_from_code($currencyCode);
         }
         if (! $currencyDO) {
@@ -66,7 +66,7 @@ class CountryPrice_EcommerceCurrency extends DataExtension
     public static function get_currency_per_country()
     {
         $cachekey = "EcommerceCurrencyCountryMatrix";
-        $cache = SS_Cache::factory($cachekey);
+        $cache = SS_Cache::factory('CountryPrice_EcommerceCurrency');
         if (! ($serializedArray = $cache->load($cachekey))) {
             $countries = CountryPrice_EcommerceCountry::get_real_countries_list();
             $unserializedArray = array();
