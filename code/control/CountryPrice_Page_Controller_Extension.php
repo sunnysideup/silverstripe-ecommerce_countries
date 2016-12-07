@@ -91,9 +91,12 @@ class CountryPrice_Page_Controller_Extension extends Extension
         if (isset($_POST) && count($_POST)) {
             return null;
         }
-        $oldURL = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $oldURL = "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 
         $urlParts = parse_url($oldURL);
+        if(!isset($urlParts['query'])) {
+            $urlParts['query'] = '';
+        }
         parse_str($urlParts['query'], $params);
 
         $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
