@@ -191,33 +191,25 @@ class CountryPrice_EcommerceCountry extends DataExtension
 
     /**
      * returns the 'always the same as' (parent) country if necessary
-     * @param  EcommerceCountry | string | int   (optional)  $countryCodeOrObject
+     * @param  EcommerceCountry | string | int   (optional)  $country
      * @return EcommerceCountry
      */
     public static function get_real_country($country = null)
     {
-        if ($country && (! is_object($country))) {
-            if (isset(self::$_get_real_country_cache[$country])) {
-                return self::$_get_real_country_cache[$country];
-            } else {
-                $originalCode = $country;
-            }
-        }
+        $originalCountry = $country;
         $order = ShoppingCart::current_order();
-        if (! $country) {
-            $country = $order->getCountry();
-        }
+
+        //get country from EcommerceCountry
         if (! $country) {
             $country = EcommerceCountry::get_country();
         }
+
+        //get the Object
         if ($country instanceof EcommerceCountry) {
-            $type = "object";
             //do nothing
         } elseif (is_numeric($country) && intval($country) == $country) {
-            $type = "number";
             $country = EcommerceCountry::get()->byID($country);
         } elseif (is_string($country)) {
-            $type = "string";
             $country = strtoupper($country);
             $country = EcommerceCountry::get_country_object(false, $country);
         }
@@ -229,13 +221,18 @@ class CountryPrice_EcommerceCountry extends DataExtension
                 }
             }
         }
-        if (! $country instanceof EcommerceCountry) {
-            user_error('No country could be found');
+        else {
+            //last chance ... do this only once ...
+            $countryCode = EcommerceCountry::get_country_default();
+            if($countryCode && !$originalCountry) {
+                return self::get_real_country($countryCode);
+            }
         }
-        if (!empty($originalCode)) {
-            self::$_get_real_country_cache[$originalCode] = $country;
+        if ($country && $country instanceof EcommerceCountry) {
+            return $country;
         }
-        return $country;
+        
+        return EcommerceCountry::get()->first();
     }
     /**
      *
@@ -296,7 +293,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
      */
     public function ComputedLanguageAndCountryCode()
     {
-        if($this->owner->LanguageAndCountryCode) {
+        if ($this->owner->LanguageAndCountryCode) {
             return $this->owner->LanguageAndCountryCode;
         }
         return strtolower('en-'.$this->owner->Code);

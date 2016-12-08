@@ -155,7 +155,7 @@ class CountryPrice_Translation extends DataObject
     /**
      * @return string
      */
-    function Link()
+    public function Link()
     {
         return $this->getLink();
     }
@@ -163,10 +163,10 @@ class CountryPrice_Translation extends DataObject
     /**
      * @return string
      */
-    function getLink()
+    public function getLink()
     {
         $link = $this->Parent()->Link();
-        if($this->EcommerceCountryID) {
+        if ($this->EcommerceCountryID) {
             $link .= '?'.$this->Config()->get('locale_get_parameter').'='.$this->EcommerceCountry()->Code;
         }
         return Director::absoluteURL($link);
