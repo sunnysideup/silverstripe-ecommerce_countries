@@ -52,11 +52,11 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
         }
         if ($countryID) {
             $key = $this->owner->ID.'_'.$countryID;
-            if (! isset(self::$_translations[$key])) {
+            if (isset(self::$_translations[$key])) {
+                $translation = self::$_translations[$key];
+            } else {
                 $translation = $this->owner->getRealEcommerceTranslation($countryID);
                 self::$_translations[$key] = $translation;
-            } else {
-                $translation = self::$_translations[$key];
             }
         }
         if ($translation) {
@@ -95,12 +95,11 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
      */
     public function getRealEcommerceTranslation($countryID)
     {
-        return $this->owner
-            ->CountryPriceTranslations()
+        return CountryPrice_Translation::get()
             ->filter(
                 array(
                     "EcommerceCountryID" => $countryID,
-                    'ParentID' => $this->owner->ID,
+                    'ParentID' => $this->owner->ID
                 )
             )
             ->exclude(
