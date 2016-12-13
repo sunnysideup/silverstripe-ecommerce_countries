@@ -41,6 +41,18 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
             ->innerJoin('EcommerceCountry', '"EcommerceCountry"."ID" = "CountryPrice_Translation"."EcommerceCountryID"');
     }
 
+    /**
+     *
+     * @return CountryPrice_Translation | null
+     */
+    public function CanonicalLink()
+    {
+        return $this->owner->CountryPriceTranslations()
+            ->innerJoin('EcommerceCountry', '"EcommerceCountry"."ID" = "CountryPrice_Translation"."EcommerceCountryID"')
+            ->filter(array('EcommerceCountry.IsBackupCountry' => 1))
+            ->first();
+    }
+
     public function loadTranslatedValues($countryID = 0, $variableOrMethod = '')
     {
         $translation = null;
