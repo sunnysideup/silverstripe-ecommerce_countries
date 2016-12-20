@@ -94,7 +94,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
         $oldURL = "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 
         $urlParts = parse_url($oldURL);
-        if(!isset($urlParts['query'])) {
+        if (!isset($urlParts['query'])) {
             $urlParts['query'] = '';
         }
         parse_str($urlParts['query'], $params);

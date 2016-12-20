@@ -220,11 +220,10 @@ class CountryPrice_EcommerceCountry extends DataExtension
                     $country = $realCountry;
                 }
             }
-        }
-        else {
+        } else {
             //last chance ... do this only once ...
             $countryCode = EcommerceCountry::get_country_default();
-            if($countryCode && !$originalCountry) {
+            if ($countryCode && !$originalCountry) {
                 return self::get_real_country($countryCode);
             }
         }
