@@ -1,7 +1,7 @@
 ---
 Name: ecommerce_countries
 Before: 'mysite/*'
-After: 'framework/*','cms/*', 'ecommerce/*'
+After: ['framework/*','cms/*', 'ecommerce/*']
 ---
 
 SiteTree:
