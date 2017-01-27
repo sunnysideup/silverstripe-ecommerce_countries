@@ -53,6 +53,11 @@ class CountryPrice extends DataObject
         'Currency' => 'PartialMatchFilter'
     );
 
+    /**
+     * caching only variable
+     * @var EcommerceCountry | null
+     */
+    private $_myBuyable = null;
 
     /**
      * the buyable we relate to
@@ -60,11 +65,21 @@ class CountryPrice extends DataObject
      */
     public function Buyable()
     {
-        $className = $this->ObjectClass;
-        if (class_exists($this->ObjectClass)) {
-            return $className::get()->byID($this->ObjectID);
+        if(! $this->_myBuyable) {
+            $className = $this->ObjectClass;
+            if ( class_exists($this->ObjectClass) ) {
+                $this->_myBuyable = $className::get()->byID($this->ObjectID);
+            }
         }
+
+        return $this->_myBuyable;
     }
+
+    /**
+     * caching only variable
+     * @var EcommerceCountry | null
+     */
+    private $_myCountryObject = null;
 
     /**
      *
@@ -72,9 +87,15 @@ class CountryPrice extends DataObject
      */
     public function CountryObject()
     {
-        if ($this->Country) {
-            return EcommerceCountry::get()->filter(array("Code" => $this->Country))->First();
+        if(! $this->_myCountryObject) {
+            if ($this->Country) {
+                $this->_myCountryObject =  EcommerceCountry::get()
+                    ->filter(array("Code" => $this->Country))
+                    ->First();
+            }
         }
+
+        return $this->_myCountryObject;
     }
 
     /**
@@ -275,4 +296,7 @@ class CountryPrice extends DataObject
     {
         return self::$location_country;
     }
+
+
+
 }
