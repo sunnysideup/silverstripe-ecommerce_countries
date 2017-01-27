@@ -137,4 +137,15 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
             )
             ->first();
     }
+
+    /**
+     * @var int $countryID
+     *
+     * @return bool
+     */
+    public function hasCountryLocalInURL($countryID)
+    {
+        return $this->getEcommerceTranslation($countryID) ? true : false;
+    }
+
 }
