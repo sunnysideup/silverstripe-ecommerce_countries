@@ -38,7 +38,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
 
         if ($countryObject) {
             $countryID = $countryObject->ID;
-            if ($this->owner->dataRecord->getEcommerceTranslation($countryID)) {
+            if ($this->owner->dataRecord->hasCountryLocalInURL($countryID)) {
                 $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
                 if ($newURL) {
                     $this->owner->redirect($newURL);
