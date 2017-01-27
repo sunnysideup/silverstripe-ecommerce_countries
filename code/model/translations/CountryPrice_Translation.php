@@ -4,6 +4,9 @@
 
 class CountryPrice_Translation extends DataObject
 {
+
+    private static $automatically_create_dummy_translations_for_products_and_productgroups = true;
+
     private static $db = array(
         'Title' => 'Varchar(200)',
         'Content' => 'HTMLText',
@@ -14,7 +17,7 @@ class CountryPrice_Translation extends DataObject
         'Title' => 'Page Title',
         'Content' => 'Page Content',
         'EcommerceCountryID' => 'Country',
-        'WithoutTranslation' => 'Without Translation'
+        'WithoutTranslation' => 'Price Difference Only'
     );
 
     private static $has_one = array(
@@ -82,7 +85,7 @@ class CountryPrice_Translation extends DataObject
             CheckboxField::create(
                 'WithoutTranslation',
                 $withoutTranslationField->Title()
-            )->setRightTitle('The page is <em>translated</em> for search engines because it has prices for this country. '),
+            )->setDescription('The page is <em>translated</em> for search engines because it has prices for this country. '),
             'Title'
         );
         $fields->removeFieldFromTab("Root.Main", 'ParentID');
@@ -95,6 +98,11 @@ class CountryPrice_Translation extends DataObject
             return parent::canCreate($member);
         }
         return false;
+    }
+
+    public function canEdit($member = null)
+    {
+        return $this->WithoutTranslation ? false : parent::canEdit($member);
     }
 
     /**
@@ -171,4 +179,55 @@ class CountryPrice_Translation extends DataObject
         }
         return Director::absoluteURL($link);
     }
+
+    public function requireDefaultRecords()
+    {
+        parent::requireDefaultRecords();
+        if(Config::inst()->get('CountryPrice_Translation', 'automatically_create_dummy_translations_for_products_and_productgroups')) {
+            $prices = CountryPrice::get();
+            $ecommerceCountries = array();
+            foreach($prices as $price) {
+                if($countryObject = $price->CountryObject()) {
+                    if($buyable = $price->Buyable()) {
+                        if($buyable instanceof Product) {
+                            $filter = array(
+                                'EcommerceCountryID' => $countryObject->ID,
+                                'ParentID' => $buyable->ID
+                            );
+                            $ecommerceCountries[$countryObject->ID] = $countryObject;
+                            if(! CountryPrice_Translation::get()->filter($filter)->first()) {
+                                DB::alteration_message(
+                                    'Creating fake translation for '.$buyable->Title.' for country '.$countryObject->Code,
+                                    'created'
+                                );
+                                $obj = CountryPrice_Translation::create($filter);
+                                $obj->WithoutTranslation = true;
+                                $obj->write();
+                            }
+                        }
+                    }
+                }
+            }
+            if(count($ecommerceCountries)) {
+                foreach(ProductGroup::get() as $productGroup) {
+                    foreach($ecommerceCountries as $countryID => $countryObject) {
+                        $filter = array(
+                            'EcommerceCountryID' => $countryObject->ID,
+                            'ParentID' => $productGroup->ID
+                        );
+                        if(! CountryPrice_Translation::get()->filter($filter)->first()) {
+                            DB::alteration_message(
+                                'Creating fake translation for '.$productGroup->Title.' for country '.$countryObject->Code,
+                                'created'
+                            );
+                            $obj = CountryPrice_Translation::create($filter);
+                            $obj->WithoutTranslation = true;
+                            $obj->write();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }
