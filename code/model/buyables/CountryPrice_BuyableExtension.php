@@ -129,7 +129,8 @@ class CountryPrice_BuyableExtension extends DataExtension
             if ($this->debug) {
                 debug::log('All countries applies - updated  ... new price = '.floatval($this->owner->updateCalculatedPrice()));
             }
-            return floatval($this->owner->updateCalculatedPrice()) > 0 ? null : false;
+            //null basically means - ignore ...
+            return floatval($this->owner->getCalculatedPrice()) > 0 ? null : false;
         }
         if ($countryCode) {
             $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
@@ -137,8 +138,8 @@ class CountryPrice_BuyableExtension extends DataExtension
                 if ($this->debug) {
                     debug::log('included countries  ... new price = '.floatval($this->owner->updateCalculatedPrice()));
                 }
-                //is there a valid price ???
-                return floatval($this->owner->updateCalculatedPrice()) > 0 ? null : false;
+                //null basically means - ignore ...
+                return floatval($this->owner->getCalculatedPrice()) > 0 ? null : false;
             }
             $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
             if ($excluded) {
@@ -148,14 +149,17 @@ class CountryPrice_BuyableExtension extends DataExtension
                 return false;
             }
         }
-        //is there a valid price ???
         if ($this->owner instanceof Product && $this->owner->hasMethod('hasVariations') && $this->owner->hasVariations()) {
             if ($this->debug) {
                 debug::log('check variations ... ');
             }
+
+            //check variations ...
             return $this->owner->Variations()->First()->canPurchaseByCountry($member, $checkPrice);
         }
-        $countryPrice = $this->owner->updateCalculatedPrice();
+
+        //is there a valid price ???
+        $countryPrice = $this->owner->getCalculatedPrice();
         if ($this->debug) {
             debug::log('nothing applies, but we have a country price... '.$countryPrice);
         }
@@ -200,10 +204,11 @@ class CountryPrice_BuyableExtension extends DataExtension
      *
      * updates the calculated price to the local price...
      * if there is no price then we return 0
-     * if the default price can be used then we use NULL
+     * if the default price can be used then we use NULL (i.e. ignore it!)
+     * @param float $price (optional)
      * @return Float | null (ignore this value and use original value)
      */
-    public function updateCalculatedPrice($price = null)
+    public function updateBeforeCalculatedPrice($price = null)
     {
         $countryCode = '';
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
@@ -214,6 +219,7 @@ class CountryPrice_BuyableExtension extends DataExtension
             if ($this->debug) {
                 debug::log('No country code or default country code: '.$countryCode);
             }
+
             return null;
         }
         $key = $this->owner->ClassName."___".$this->owner->ID.'____'.$countryCode;
@@ -328,8 +334,10 @@ class CountryPrice_BuyableExtension extends DataExtension
                 debug::log('SETTING '.$key.' to NULL');
             }
             self::$_buyable_price[$key] = null;
+
             return self::$_buyable_price[$key];
         }
+        
         return self::$_buyable_price[$key];
     }
 
