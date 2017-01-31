@@ -94,7 +94,7 @@ class CountryPrice_BuyableExtension extends DataExtension
         $fields->addFieldToTab('Root.Countries', $tabs);
     }
 
-    private $debug = true;
+    private $debug = false;
 
     /**
      * This is called from /ecommerce/code/Product
