@@ -94,7 +94,7 @@ class CountryPrice_BuyableExtension extends DataExtension
         $fields->addFieldToTab('Root.Countries', $tabs);
     }
 
-    private $debug = false;
+    private $debug = true;
 
     /**
      * This is called from /ecommerce/code/Product
@@ -223,9 +223,6 @@ class CountryPrice_BuyableExtension extends DataExtension
             return null;
         }
         $key = $this->owner->ClassName."___".$this->owner->ID.'____'.$countryCode;
-        if ($this->debug) {
-            debug::log('TESTING '.$key.'');
-        }
         if (! isset(self::$_buyable_price[$key])) {
             //basics
             $currency = null;
@@ -281,6 +278,7 @@ class CountryPrice_BuyableExtension extends DataExtension
                                 );
                                 if ($prices && $prices->count() == 1) {
                                     self::$_buyable_price[$key] = $prices->First()->Price;
+
                                     return self::$_buyable_price[$key];
                                 } elseif ($prices) {
                                     if ($this->debug) {
@@ -328,16 +326,14 @@ class CountryPrice_BuyableExtension extends DataExtension
                 self::$_buyable_price[$key] = 0;
                 return self::$_buyable_price[$key];
             }
-            //you can revert back to default country price ...
-            //returning NULL is basically good ...
             if ($this->debug) {
-                debug::log('SETTING '.$key.' to NULL');
+                debug::log('SETTING '.$key.' to ZERO - NOT FOR SALE');
             }
-            self::$_buyable_price[$key] = null;
+            self::$_buyable_price[$key] = 0;
 
             return self::$_buyable_price[$key];
         }
-        
+
         return self::$_buyable_price[$key];
     }
 
