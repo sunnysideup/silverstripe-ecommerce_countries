@@ -190,19 +190,21 @@ class CountryPrice_Translation extends DataObject
                 if($countryObject = $price->CountryObject()) {
                     if($buyable = $price->Buyable()) {
                         if($buyable instanceof Product) {
-                            $filter = array(
-                                'EcommerceCountryID' => $countryObject->ID,
-                                'ParentID' => $buyable->ID
-                            );
-                            $ecommerceCountries[$countryObject->ID] = $countryObject;
-                            if(! CountryPrice_Translation::get()->filter($filter)->first()) {
-                                DB::alteration_message(
-                                    'Creating fake translation for '.$buyable->Title.' for country '.$countryObject->Code,
-                                    'created'
+                            if($buyable->ID && $countryObject->ID) {
+                                $filter = array(
+                                    'EcommerceCountryID' => $countryObject->ID,
+                                    'ParentID' => $buyable->ID
                                 );
-                                $obj = CountryPrice_Translation::create($filter);
-                                $obj->WithoutTranslation = true;
-                                $obj->write();
+                                $ecommerceCountries[$countryObject->ID] = $countryObject;
+                                if(! CountryPrice_Translation::get()->filter($filter)->first()) {
+                                    DB::alteration_message(
+                                        'Creating fake translation for '.$buyable->Title.' for country '.$countryObject->Code,
+                                        'created'
+                                    );
+                                    $obj = CountryPrice_Translation::create($filter);
+                                    $obj->WithoutTranslation = true;
+                                    $obj->write();
+                                }
                             }
                         }
                     }
