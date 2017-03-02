@@ -9,7 +9,9 @@ class CountryPrice_Translation extends DataObject
 
     private static $db = array(
         'Title' => 'Varchar(200)',
+        'UseOriginalTitle' => 'Boolean',
         'Content' => 'HTMLText',
+        'UseOriginalContent' => 'Boolean',
         'WithoutTranslation' => 'Boolean'
     );
 
@@ -69,26 +71,53 @@ class CountryPrice_Translation extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        $countries = CountryPrice_EcommerceCountry::get_real_countries_list()->map()->toArray();
-        $fields->addFieldToTab(
-            'Root.Main',
-            DropdownField::create(
-                'EcommerceCountryID',
-                $fields->dataFieldByName('EcommerceCountryID')->Title(),
-                array('' => '-- make sure to select a country --')+$countries
-            ),
-            'Title'
-        );
         $withoutTranslationField = $fields->dataFieldByName('WithoutTranslation');
-        $fields->addFieldToTab(
-            'Root.Main',
-            CheckboxField::create(
-                'WithoutTranslation',
-                $withoutTranslationField->Title()
-            )->setDescription('The page is <em>translated</em> for search engines because it has prices for this country. '),
-            'Title'
+        $withoutTranslationField = CheckboxField::create(
+            'WithoutTranslation',
+            $withoutTranslationField->Title()
+        )
+        ->setDescription('The page is <em>translated</em> for search engines because it has prices for this country. ');
+
+        $countries = CountryPrice_EcommerceCountry::get_real_countries_list()->map()->toArray();
+        $countryDropdownField = DropdownField::create(
+            'EcommerceCountryID',
+            $fields->dataFieldByName('EcommerceCountryID')->Title(),
+            array('' => '-- make sure to select a country --')+$countries
         );
+
         $fields->removeFieldFromTab("Root.Main", 'ParentID');
+        if($this->WithoutTranslation) {
+            return FieldList::create(
+                array(
+                    $countryDropdownField,
+                    $withoutTranslationField
+                )
+            );
+        } else {
+            $fields->addFieldToTab(
+                'Root.Main',
+                $countryDropdownField,
+                'Title'
+            );
+            $fields->addFieldToTab(
+                'Root.Main',
+                $withoutTranslationField,
+                'Title'
+            );
+        }
+        $dbFields = $this->inheritedDatabaseFields();
+        foreach($dbFields as $dbField => $fieldType) {
+            $useField = 'UseOriginal'.$dbField;
+            if(!empty($this->$useField)) {
+                $fields->replaceField(
+                    $dbField,
+                    $fields->dataFieldByName($dbField)->performReadonlyTransformation()
+                );
+            }
+            if($fields->dataFieldByName($useField)){
+                $fields->dataFieldByName($useField)->setDescription(_t('CountryPrice_Translation.IGNORE', 'Use original value for ') . $dbField);
+            }
+        }
         return $fields;
     }
 
@@ -98,11 +127,6 @@ class CountryPrice_Translation extends DataObject
             return parent::canCreate($member);
         }
         return false;
-    }
-
-    public function canEdit($member = null)
-    {
-        return $this->WithoutTranslation ? false : parent::canEdit($member);
     }
 
     /**
@@ -157,6 +181,12 @@ class CountryPrice_Translation extends DataObject
             )
         );
         $this->extend('updateFieldsToReplace', $al);
+        foreach($al as $fieldToReplace) {
+            $ignoreField = 'UseOriginal' . $fieldToReplace->PageField;
+            if(!empty($this->owner->$ignoreField)) {
+                $al->remove($fieldToReplace);
+            }
+        }
         return $al;
     }
 
