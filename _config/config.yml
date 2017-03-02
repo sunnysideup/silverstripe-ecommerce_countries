@@ -6,7 +6,7 @@ After: ['framework/*','cms/*', 'ecommerce/*']
 
 SiteTree:
   extensions:
-    - CountryPrice_SiteTreeExtions
+    - CountryPrice_SiteTreeExtensions
 
 Page_Controller:
   extensions:
