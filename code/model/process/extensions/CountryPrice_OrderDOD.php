@@ -236,13 +236,18 @@ class CountryPrice_OrderDOD extends DataExtension
 
     /**
      *
-     * adds email to order step emails ...
+     * 1. adds distribut emails to order step emails ... if $step->SendEmailToDistributor === true
+     *
+     * 2. adds country specific data into arrayData that is used for search
+     * and replace in email ...
+     *
+     * @param ArrayData $arrayData
      */
     public function updateReplacementArrayForEmail(ArrayData $arrayData)
     {
         $step = $this->owner->MyStep();
         $countryCode = $this->owner->getCountry();
-        $countryMessage = null;
+        $countryMessageObject = null;
         if ($step && $countryCode) {
             $countryMessageObject = EcommerceOrderStepCountryData::get()
                 ->filter(
@@ -254,21 +259,27 @@ class CountryPrice_OrderDOD extends DataExtension
                 ->first();
         }
         if ($countryMessageObject) {
-            $arrayData->setField("Subject", $countryMessageObject->CountrySpecificEmailSubject);
-            $arrayData->setField("OrderStepMessage", $countryMessageObject->CountrySpecificEmailMessage);
-        } else {
-            debug::log('no country message object for STEP ID: '.$step->ID.' AND country'.CountryPrice_EcommerceCountry::get_real_country($countryCode));
+            $arrayData->setField(
+                "Subject",
+                $countryMessageObject->CountrySpecificEmailSubject
+            );
+            $arrayData->setField(
+                "OrderStepMessage",
+                $countryMessageObject->CountrySpecificEmailMessage
+            );
         }
-        if ($distributor = $this->owner->Distributor()) {
-            $distributorEmail = $distributor->Email;
-            if ($distributorEmail) {
-                $bccArray = array($distributorEmail => $distributorEmail);
-                foreach ($distributor->Members() as $member) {
-                    if ($member && $member->Email) {
-                        $bccArray[$member->Email] = $member->Email;
+        if($step->SendEmailToDistributor) {
+            if ($distributor = $this->owner->Distributor()) {
+                $distributorEmail = $distributor->Email;
+                if ($distributorEmail) {
+                    $bccArray = array($distributorEmail => $distributorEmail);
+                    foreach ($distributor->Members() as $member) {
+                        if ($member && $member->Email) {
+                            $bccArray[$member->Email] = $member->Email;
+                        }
                     }
+                    $arrayData->setField('BCC', implode(', ', $bccArray));
                 }
-                $arrayData->setField('BCC', implode(', ', $bccArray));
             }
         }
     }
