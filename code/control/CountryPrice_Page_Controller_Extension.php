@@ -36,8 +36,10 @@ class CountryPrice_Page_Controller_Extension extends Extension
             }
         }
 
+        //check that there is a country!
         if ($countryObject) {
             $countryID = $countryObject->ID;
+            //check that there is a translation
             if ($this->owner->dataRecord->hasCountryLocalInURL($countryID)) {
                 $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
                 if ($newURL) {
@@ -91,32 +93,21 @@ class CountryPrice_Page_Controller_Extension extends Extension
         if (isset($_POST) && count($_POST)) {
             return null;
         }
+        //to do: add query here!
         $oldURL = "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 
-        $urlParts = parse_url($oldURL);
-        if (!isset($urlParts['query'])) {
-            $urlParts['query'] = '';
+        $hasCountrySegment = CountryPrice_Translation::get_country_url_provider()->hasCountrySegment($oldURL);
+        if($hasCountrySegment){
+            $newURL = CountryPrice_Translation::get_country_url_provider()->replaceCountryCodeInUrl($countryCode, $oldURL);
         }
-        parse_str($urlParts['query'], $params);
-
-        $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
-        $params[$param] = $countryCode;     // Overwrite if exists
-
-        // Note that this will url_encode all values
-        $urlParts['query'] = http_build_query($params);
-
-        // If you have pecl_http
-        if (function_exists('http_build_url')) {
-            $newURL = http_build_url($urlParts);
-        } else {
-            $newURL =  $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . '?' . $urlParts['query'];
+        else {
+            $newURL = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($countryCode, $oldURL);
         }
 
         if ($oldURL !== $newURL && self::$_redirection_count < 3) {
             self::$_redirection_count++;
             return $newURL;
         }
-
         return null;
     }
 

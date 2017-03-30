@@ -7,6 +7,17 @@ class CountryPrice_Translation extends DataObject
 
     private static $automatically_create_dummy_translations_for_products_and_productgroups = true;
 
+    private static $dependencies = array(
+        'CountryURLProvider' => '%$CountryURLProvider',
+    );
+
+    /**
+     * automatically populated by the dependency manager.
+     *
+     * @var CountryURLProvider
+     */
+    public $CountryURLProvider = null;
+
     private static $db = array(
         'Title' => 'Varchar(200)',
         'UseOriginalTitle' => 'Boolean',
@@ -62,6 +73,12 @@ class CountryPrice_Translation extends DataObject
     public function i18n_plural_name()
     {
         return self::$plural_name;
+    }
+
+    public static function get_country_url_provider()
+    {
+        $obj = Injector::inst()->get('CountryPrice_Translation');
+        return $obj->CountryURLProvider;
     }
 
     /**
@@ -205,7 +222,13 @@ class CountryPrice_Translation extends DataObject
     {
         $link = $this->Parent()->Link();
         if ($this->EcommerceCountryID) {
-            $link .= '?'.$this->Config()->get('locale_get_parameter').'='.$this->EcommerceCountry()->Code;
+            $hasCountrySegment = CountryPrice_Translation::get_country_url_provider()->hasCountrySegment($link);
+            if($hasCountrySegment){
+                $link = CountryPrice_Translation::get_country_url_provider()->replaceCountryCodeInUrl($this->EcommerceCountry()->Code, $link);
+            }
+            else {
+                $link = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($this->EcommerceCountry()->Code, $link);
+            }
         }
         return Director::absoluteURL($link);
     }

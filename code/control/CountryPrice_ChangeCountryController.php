@@ -99,7 +99,6 @@ class CountryPrices_ChangeCountryController extends ContentController
         if (!$url) {
             $url = Director::baseURL();
         }
-
         // absolute redirection URLs not located on this site may cause phishing
         if (Director::is_site_url($url)) {
             $url = Director::absoluteURL($url, true);
@@ -114,10 +113,16 @@ class CountryPrices_ChangeCountryController extends ContentController
             }
 
             $path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
+
             $query = !empty($query) ? '?'. http_build_query($query) : '';
 
-            $url = $parsedUrl['scheme']. '://'. $parsedUrl['host']. $path. $query;
-
+            $hasCountrySegment = CountryPrice_Translation::get_country_url_provider()->hasCountrySegment($url);
+            if($hasCountrySegment){
+                $url = CountryPrice_Translation::get_country_url_provider()->replaceCountryCodeInUrl($newCountryCode, $url);
+            }
+            else {
+                $url = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($newCountryCode, $url);
+            }
             return $url;
         }
         return '/';
