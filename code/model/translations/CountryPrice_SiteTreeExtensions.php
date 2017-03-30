@@ -1,7 +1,7 @@
 <?php
 
 
-class CountryPrice_SiteTreeExtions extends SiteTreeExtension
+class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
 {
     private static $has_many = array(
         'CountryPriceTranslations' => 'CountryPrice_Translation'
@@ -75,14 +75,15 @@ class CountryPrice_SiteTreeExtions extends SiteTreeExtension
             $fieldsToReplace = $translation->FieldsToReplace();
             foreach ($fieldsToReplace as $replaceFields) {
                 $pageField = $replaceFields->PageField;
+                $pageFieldTranslated = $pageField . 'Translated';
                 $translationField = $replaceFields->TranslationField;
                 if (! $variableOrMethod || $variableOrMethod === $pageField) {
                     if ($translation->hasMethod($translationField)) {
-                        $pageFieldTranslated = $pageField.'Translated';
                         $this->owner->$pageField = $translation->$translationField();
                         $this->owner->$pageFieldTranslated = $translation->$translationField();
                     } else {
                         $this->owner->$pageField = $translation->$translationField;
+                        $this->owner->$pageFieldTranslated = $translation->$translationField;
                     }
                 }
                 if ($variableOrMethod) {

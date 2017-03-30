@@ -69,8 +69,8 @@ class CountryPrices_ChangeCountryController extends ContentController
     /**
      * Remove a query string parameter from an URL.
      *
-     * @param string $url
      * @param string $varname
+     * @param string $newCountryCode
      *
      * @return string
      */
