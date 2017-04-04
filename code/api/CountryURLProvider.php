@@ -10,7 +10,7 @@
 
 class CountryURLProvider extends Object implements CountryURLProviderInterface
 {
-    private static $country_segments  = array('nz', 'au', 'gb', 'eu', 'us', 'row');
+    private static $country_segments  = array('nz', 'au', 'gb', 'eu', 'jp', 'us', 'zz');
 
     public function hasCountrySegment($url = ''){
         $url = $this->getDefaultURL($url);
