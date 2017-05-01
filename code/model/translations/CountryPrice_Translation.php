@@ -135,6 +135,14 @@ class CountryPrice_Translation extends DataObject
                 $fields->dataFieldByName($useField)->setDescription(_t('CountryPrice_Translation.IGNORE', 'Use original value for ') . $dbField);
             }
         }
+        $fields->addFieldToTab(
+            'Root.ParentPage',
+            CMSEditLinkField::create(
+                $name = 'MyParent',
+                $title = 'My Parent Page',
+                $linkedObject = $this->Parent()
+            )
+        );
         return $fields;
     }
 
