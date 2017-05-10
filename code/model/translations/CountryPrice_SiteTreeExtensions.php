@@ -45,7 +45,7 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
      *
      * @return CountryPrice_Translation | null
      */
-    public function CanonicalLink()
+    public function CanonicalObject()
     {
         return $this->owner->getCountryPriceTranslations()
             ->innerJoin('EcommerceCountry', '"EcommerceCountry"."ID" = "CountryPrice_Translation"."EcommerceCountryID"')
