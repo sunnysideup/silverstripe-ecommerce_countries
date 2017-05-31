@@ -22,7 +22,7 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
             GridField::create(
                 'CountryPriceTranslations',
                 'Translations',
-                $this->owner->getCountryPriceTranslations(),
+                $this->owner->CountryPriceTranslations(),
                 GridFieldConfigForOrderItems::create()
             )
         );
@@ -37,7 +37,7 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
      */
     public function AvailableTranslationLinks()
     {
-        return $this->owner->getCountryPriceTranslations()
+        return $this->owner->CountryPriceTranslations()
             ->innerJoin('EcommerceCountry', '"EcommerceCountry"."ID" = "CountryPrice_Translation"."EcommerceCountryID"');
     }
 
@@ -47,7 +47,7 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
      */
     public function CanonicalObject()
     {
-        return $this->owner->getCountryPriceTranslations()
+        return $this->owner->CountryPriceTranslations()
             ->innerJoin('EcommerceCountry', '"EcommerceCountry"."ID" = "CountryPrice_Translation"."EcommerceCountryID"')
             ->filter(array('EcommerceCountry.IsBackupCountry' => 1))
             ->first();
@@ -129,7 +129,7 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
     public function getEcommerceTranslation($countryID)
     {
         return $this->owner
-            ->getCountryPriceTranslations()
+            ->CountryPriceTranslations()
             ->filter(
                 array(
                     "EcommerceCountryID" => $countryID,
@@ -149,24 +149,5 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
         return $this->getEcommerceTranslation($countryID) ? true : false;
     }
 
-    /**
-     * we have added this because we got some weird mixups with magical methods
-     * @return DataList (of CountryPrice_Translation objects)
-     */
-    function CountryPriceTranslations()
-    {
-        return $this->getCountryPriceTranslations();
-    }
-
-    /**
-     * we have added this because we got some weird mixups with magical methods
-     * @return DataList (of CountryPrice_Translation objects)
-     */
-    function getCountryPriceTranslations()
-    {
-        return CountryPrice_Translation::get()->filter(
-            array('CountryPrice_Translation.ParentID' => $this->owner->ID)
-        );
-    }
 
 }
