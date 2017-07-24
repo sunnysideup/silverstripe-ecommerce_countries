@@ -102,7 +102,7 @@ class CountryPrice_Translation extends DataObject
             array('' => '-- make sure to select a country --')+$countries
         );
 
-        $fields->removeFieldFromTab("Root.Main", 'ParentID');
+        // //$fields->removeFieldFromTab("Root.Main", 'ParentID');
         if($this->WithoutTranslation) {
             return FieldList::create(
                 array(
@@ -132,11 +132,23 @@ class CountryPrice_Translation extends DataObject
                 );
             }
             if($fields->dataFieldByName($useField)){
-                $fields->dataFieldByName($useField)->setDescription(_t('CountryPrice_Translation.IGNORE', 'Use original value for ') . $dbField);
+                $fields->dataFieldByName($useField)->setDescription(_t('CountryPrice_Translation.IGNORE', 'Use untranslated value for ') . $dbField);
             }
+        }
+        if($this->exists() && $this->ParentID) {
+            $fields->addFieldToTab(
+                'Root.ParentPage',
+                CMSEditLinkField::create(
+                    $name = 'MyParent',
+                    $title = 'My Parent Page',
+                    $linkedObject = $this->Parent()
+                )
+            );
         }
         return $fields;
     }
+
+
 
     public function canCreate($member = null)
     {
@@ -164,7 +176,7 @@ class CountryPrice_Translation extends DataObject
                     );
                 if ($existing->count() > 0) {
                     $validation->error(
-                        'There is already an entry for this country and page'
+                        'There is already an entry for this page for this country.'
                     );
                 }
             }
@@ -236,6 +248,8 @@ class CountryPrice_Translation extends DataObject
     public function requireDefaultRecords()
     {
         parent::requireDefaultRecords();
+        //get rid of rogue entries:
+        DB::query('DELETE FROM CountryPrice_Translation WHERE EcommerceCountryID = 0 OR ParentID = 0');
         if(Config::inst()->get('CountryPrice_Translation', 'automatically_create_dummy_translations_for_products_and_productgroups')) {
             $prices = CountryPrice::get();
             $ecommerceCountries = array();
@@ -283,6 +297,8 @@ class CountryPrice_Translation extends DataObject
                 }
             }
         }
+
     }
+
 
 }

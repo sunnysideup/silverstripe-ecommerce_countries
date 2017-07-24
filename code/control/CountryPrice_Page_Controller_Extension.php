@@ -154,4 +154,20 @@ class CountryPrice_Page_Controller_Extension extends Extension
     {
         return 'AlternativeHrefLangLinksCachingKey'.'-'.$this->owner->dataRecord->ID.'-'.strtotime($this->owner->dataRecord->LastEdited);
     }
+
+    /**
+     *
+     * @param string $link - passed by reference
+     */
+    public function UpdateCanonicalLink(&$link)
+    {
+        $obj = $this->owner->dataRecord->CanonicalObject();
+        if($obj) {
+            $link = $obj->Link();
+        } else {
+            $link = $this->owner->dataRecord->AbsoluteLink();
+        }
+        return $link;
+    }
+
 }

@@ -49,17 +49,14 @@ class CountryPrice_OrderStepDOD extends DataExtension
                 ),
             )
         );
-        if($this->owner->SendEmailToDistributor) {
-            $customisation = _t(
-                'CountryPrice_OrderStepDOD.CUSTOMISATION_PER_COUNTRY',
-                'Customisation per country');
-            $gridField->setTitle($customisation);
-            $fields->addFieldsToTab(
-                'Root.EcommerceOrderStepCountryDatas',
-                $gridField
-            );
-        }
-
+        $customisation = _t(
+            'CountryPrice_OrderStepDOD.CUSTOMISATION_PER_COUNTRY',
+            'Customisation per country');
+        $gridField->setTitle($customisation);
+        $fields->addFieldsToTab(
+            'Root.EcommerceOrderStepCountryDatas',
+            $gridField
+        );
     }
 
 }
