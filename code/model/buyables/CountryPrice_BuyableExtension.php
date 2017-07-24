@@ -107,63 +107,59 @@ class CountryPrice_BuyableExtension extends DataExtension
     {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if ($countryObject) {
-            if ($this->debug) {
-                debug::log('found country object: '.$countryObject->Code);
-            }
+            if ($this->debug) {debug::log('found country object: '.$countryObject->Code);}
             $countryCode = $countryObject->Code;
         }
         if ($countryCode == '') {
-            if ($this->debug) {
-                debug::log('There is no country Code! ');
-            }
+            if ($this->debug) {debug::log('There is no country Code! ');}
+
+            //we can not decide
             return null;
-        }
-        $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
-        if ($excluded) {
-            if ($this->debug) {
-                debug::log('excluded country');
+        } else {
+            $canSell = false;
+            $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
+            if ($excluded) {
+                if ($this->debug) {debug::log('excluded country');}
+
+                //no!
+                return false;
             }
-            return false;
-        }        
-        if ($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
-            if ($this->debug) {
-                debug::log('we are in the default country! exiting now ... ');
-            }
-            return null;
-        }
-        if ($this->owner->AllCountries) {
-            //is there a valid price ???
-            if ($this->debug) {
-                debug::log('All countries applies - updated  ... new price = '.floatval($this->owner->updateCalculatedPrice()));
-            }
-            //null basically means - ignore ...
-            return floatval($this->owner->getCalculatedPrice()) > 0 ? null : false;
-        }
-        if ($countryCode) {
-            $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
-            if ($included) {
-                if ($this->debug) {
-                    debug::log('included countries  ... new price = '.floatval($this->owner->updateCalculatedPrice()));
+            elseif ($this->owner->AllCountries) {
+                //is there a valid price ???
+                if ($this->debug) {debug::log('All countries applies - updated  ... new price = '.floatval($this->owner->updateCalculatedPrice()));}
+                $canSell = true;
+            } elseif ($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+                if ($this->debug) {debug::log('we are in the default country! exiting now ... ');}
+                $canSell = true;
+            } elseif($this->IncludedCountries()->count()) {
+                $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
+                if ($included) {
+                    if ($this->debug) {debug::log('In included countries');}
+                    //null basically means - ignore ...
+                    $canSell = true;
+                } else {
+
+                    return false;
                 }
-                //null basically means - ignore ...
-                return floatval($this->owner->getCalculatedPrice()) > 0 ? null : false;
             }
-        }
-        if ($this->owner instanceof Product && $this->owner->hasMethod('hasVariations') && $this->owner->hasVariations()) {
-            if ($this->debug) {
-                debug::log('check variations ... ');
+            if ($this->debug) {debug::log('the product is for '.($canSell ? '' : 'NOT ').'sale in principal... ');}
+            if (
+                $canSell &&
+                $this->owner instanceof Product &&
+                $this->owner->hasMethod('hasVariations') &&
+                $this->owner->hasVariations()->count()
+            ) {
+                if ($this->debug) {debug::log('check variations ... ');}
+                //check variations ...
+                return $this->owner->Variations()->First()->canPurchaseByCountry($member, $checkPrice);
             }
 
-            //check variations ...
-            return $this->owner->Variations()->First()->canPurchaseByCountry($member, $checkPrice);
-        }
+            //is there a valid price ???
+            $countryPrice = $this->owner->getCalculatedPrice();
+            if ($this->debug) {debug::log('nothing applies, but we have a country price... '.$countryPrice);}
 
-        //is there a valid price ???
-        $countryPrice = $this->owner->getCalculatedPrice();
-        if ($this->debug) {
-            debug::log('nothing applies, but we have a country price... '.$countryPrice);
+            return floatval($countryPrice) > 0 ? null : false;
         }
-        return floatval($countryPrice) > 0 ? null : false;
     }
 
     /**
