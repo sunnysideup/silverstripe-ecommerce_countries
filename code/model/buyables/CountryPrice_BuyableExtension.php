@@ -118,6 +118,13 @@ class CountryPrice_BuyableExtension extends DataExtension
             }
             return null;
         }
+        $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
+        if ($excluded) {
+            if ($this->debug) {
+                debug::log('excluded country');
+            }
+            return false;
+        }        
         if ($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
             if ($this->debug) {
                 debug::log('we are in the default country! exiting now ... ');
@@ -140,13 +147,6 @@ class CountryPrice_BuyableExtension extends DataExtension
                 }
                 //null basically means - ignore ...
                 return floatval($this->owner->getCalculatedPrice()) > 0 ? null : false;
-            }
-            $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
-            if ($excluded) {
-                if ($this->debug) {
-                    debug::log('excluded country');
-                }
-                return false;
             }
         }
         if ($this->owner instanceof Product && $this->owner->hasMethod('hasVariations') && $this->owner->hasVariations()) {
