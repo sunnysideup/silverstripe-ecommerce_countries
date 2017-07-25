@@ -98,7 +98,7 @@ class CountryPrice_BuyableExtension extends DataExtension
 
     /**
      * This is called from /ecommerce/code/Product
-     * returning NULL is like returning TRUE, i.e. ignore this.
+     * returning NULL is like returning TRUE OR FALSE, i.e. ignore this.
      * @param Member (optional)   $member
      * @param bool (optional)     $checkPrice
      * @return false | null
@@ -117,42 +117,41 @@ class CountryPrice_BuyableExtension extends DataExtension
             return null;
         } else {
             $canSell = false;
-            $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
-            if ($excluded) {
-                if ($this->debug) {debug::log('excluded country');}
 
-                //no!
-                return false;
-            }
-            elseif ($this->owner->AllCountries) {
+            //easy  ... overrules all ...
+            if ($this->owner->AllCountries) {
                 //is there a valid price ???
                 if ($this->debug) {debug::log('All countries applies - updated  ... new price = '.floatval($this->owner->updateCalculatedPrice()));}
                 $canSell = true;
-            } elseif ($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
-                if ($this->debug) {debug::log('we are in the default country! exiting now ... ');}
-                $canSell = true;
-            } elseif($this->IncludedCountries()->count()) {
-                $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
-                if ($included) {
-                    if ($this->debug) {debug::log('In included countries');}
-                    //null basically means - ignore ...
-                    $canSell = true;
-                } else {
+            } else {
 
+
+                //excluded first...
+                $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
+                if ($excluded) {
+                    if ($this->debug) {debug::log('excluded country');}
+
+                    //no!
                     return false;
                 }
+
+                //default country is included by default ...
+                if ($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+                    if ($this->debug) {debug::log('we are in the default country! exiting now ... ');}
+                    $canSell = true;
+                } elseif($this->owner->IncludedCountries()->count()) {
+                    $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
+                    if ($included) {
+                        if ($this->debug) {debug::log('In included countries');}
+                        //null basically means - ignore ...
+                        $canSell = true;
+                    } else {
+                        //if countries are included and the current country is not included ...
+                        return false;
+                    }
+                }
             }
-            if ($this->debug) {debug::log('the product is for '.($canSell ? '' : 'NOT ').'sale in principal... ');}
-            if (
-                $canSell &&
-                $this->owner instanceof Product &&
-                $this->owner->hasMethod('hasVariations') &&
-                $this->owner->hasVariations()->count()
-            ) {
-                if ($this->debug) {debug::log('check variations ... ');}
-                //check variations ...
-                return $this->owner->Variations()->First()->canPurchaseByCountry($member, $checkPrice);
-            }
+            if ($this->debug) {debug::log('the product is '.($canSell ? '' : 'NOT ').' for sale - lets check price ... ');}
 
             //is there a valid price ???
             $countryPrice = $this->owner->getCalculatedPrice();
