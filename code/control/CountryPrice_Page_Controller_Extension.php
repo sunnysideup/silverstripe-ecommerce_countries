@@ -27,17 +27,18 @@ class CountryPrice_Page_Controller_Extension extends Extension
         $countryID = 0;
         $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
-        if (isset($_GET[$param])) {
-            $countryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
-            if ($countryObject->Code != $countryCode) {
-                return $this->owner->redirect(
-                    CountryPrices_ChangeCountryController::new_country_link($countryCode)
-                );
+        if($countryObject && $countryObject->Code) {
+            if (isset($_GET[$param])) {
+                $countryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
+                if($countryCode) {
+                    if (strtoupper($countryObject->Code) != $countryCode) {
+                        return $this->owner->redirect(
+                            CountryPrices_ChangeCountryController::new_country_link($countryCode)
+                        );
+                    }
+                }
             }
-        }
-
-        //check that there is a country!
-        if ($countryObject) {
+            
             $countryID = $countryObject->ID;
             //check that there is a translation
             if ($this->owner->dataRecord->hasCountryLocalInURL($countryID)) {
@@ -104,7 +105,6 @@ class CountryPrice_Page_Controller_Extension extends Extension
         else {
             $newURL = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($countryCode, $oldURL);
         }
-
         if ($oldURL !== $newURL && self::$_redirection_count < 3) {
             self::$_redirection_count++;
             return $newURL;

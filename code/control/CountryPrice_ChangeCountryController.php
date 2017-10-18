@@ -58,7 +58,8 @@ class CountryPrices_ChangeCountryController extends ContentController
         }
         CountryPrice_OrderDOD::localise_order($newCountryCode, true);
         $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
-        $this->redirect($this->findNewURL($param, $newCountryCode));
+
+        return $this->redirect($this->findNewURL($param, $newCountryCode));
     }
 
     public function Link($action = null)
@@ -123,7 +124,7 @@ class CountryPrices_ChangeCountryController extends ContentController
             else {
                 $url = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($newCountryCode, $url);
             }
-            return $url;
+            return $url.$query;
         }
         return '/';
     }
