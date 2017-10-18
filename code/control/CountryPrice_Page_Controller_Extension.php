@@ -94,7 +94,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
             return null;
         }
         //to do: add query here!
-        $protocol = Director::is_https() ? 'https://' : 'http://'
+        $protocol = Director::is_https() ? 'https://' : 'http://';
         $oldURL = $protocol.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 
         $hasCountrySegment = CountryPrice_Translation::get_country_url_provider()->hasCountrySegment($oldURL);
