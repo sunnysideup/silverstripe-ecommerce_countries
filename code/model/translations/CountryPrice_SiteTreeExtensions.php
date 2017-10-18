@@ -47,10 +47,17 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
      */
     public function CanonicalObject()
     {
-        return $this->owner->CountryPriceTranslations()
-            ->innerJoin('EcommerceCountry', '"EcommerceCountry"."ID" = "CountryPrice_Translation"."EcommerceCountryID"')
-            ->filter(array('EcommerceCountry.IsBackupCountry' => 1))
-            ->first();
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country();
+        if($countryObject && $countryObject->Code) {
+            $object = $this->owner->CountryPriceTranslations()
+                ->innerJoin('EcommerceCountry', '"EcommerceCountry"."ID" = "CountryPrice_Translation"."EcommerceCountryID"')
+                ->filter(array('EcommerceCountry.Code' => $countryObject->Code))
+                ->first();
+            if($object && $object->exists()) {
+                return $object;
+            }
+        }
+        return false;
     }
 
     public function loadTranslatedValues($countryID = 0, $variableOrMethod = '')

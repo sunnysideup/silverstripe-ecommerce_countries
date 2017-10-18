@@ -153,7 +153,11 @@ class CountryPrice_Page_Controller_Extension extends Extension
      */
     public function AlternativeHrefLangLinksCachingKey()
     {
-        return 'AlternativeHrefLangLinksCachingKey'.'-'.$this->owner->dataRecord->ID.'-'.strtotime($this->owner->dataRecord->LastEdited);
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country();
+        if($countryObject && $countryObject->Code) {
+            return 'AlternativeHrefLangLinksCachingKey-'.$countryObject->Code.'-'.$this->owner->dataRecord->ID.'-'.strtotime($this->owner->dataRecord->LastEdited);
+        }
+        return 'AlternativeHrefLangLinksCachingKey'.$this->owner->dataRecord->ID.'-'.$this->owner->dataRecord->ID.'-'.strtotime($this->owner->dataRecord->LastEdited);
     }
 
     /**
