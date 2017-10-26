@@ -300,7 +300,7 @@ class CountryPrice_TestController extends ContentController
 
     public function MyDefaultDistributor()
     {
-        return Distributor::get_one_for_country("");
+        return Distributor::get_default_distributor();
     }
 
 

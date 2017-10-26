@@ -97,9 +97,12 @@ class Distributor extends DataObject implements PermissionProvider
                 return $distributor;
             }
         }
-        return Distributor::get()
-            ->filter(array("IsDefault" => 1))
-            ->First();
+        return self::get_default_distributor();
+    }
+
+    public static function get_default_distributor()
+    {
+        return  DataObject::get_one('Distributor', array("IsDefault" => 1));
     }
 
     public function getCMSFields()

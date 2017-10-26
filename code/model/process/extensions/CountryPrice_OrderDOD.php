@@ -150,6 +150,23 @@ class CountryPrice_OrderDOD extends DataExtension
         }
     }
 
+    /**
+     * Event handler called after writing to the database.
+     */
+    public function onAfterWrite()
+    {
+        if(! $this->owner->DistributorID) {
+            if($defaultDistributor = Distributor::get_default_distributor()) {
+                if($defaultDistributor->exists()) {
+                    if($defaultDistributor->ID) {
+                        $this->owner->DistributorID = $defaultDistributor->ID;
+                        $this->owner->write();
+                    }
+                }
+            }
+        }
+    }
+
     public function canView($member = null)
     {
         return $this->canEdit($member);
