@@ -58,7 +58,12 @@ class CountryPrices_ChangeCountryController extends ContentController
         }
         CountryPrice_OrderDOD::localise_order($newCountryCode, true);
         $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
-
+        if(isset($_GET['force']) && $_GET['force']) {
+            return $this->redirect(self::$url_segment . '/changeto/' .$newCountryCode . '/'. '?force-back-home');
+        }
+        if(isset($_GET['force-back-home']) || $_GET['force-back-home']) {
+            return $this->redirect('/');
+        }
         return $this->redirect($this->findNewURL($param, $newCountryCode));
     }
 
