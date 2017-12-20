@@ -197,6 +197,16 @@ class Distributor extends DataObject implements PermissionProvider
             'Root',
             'Countries'
         );
+        $fields->addFieldToTab(
+            'Root.Main',
+            $distributorsAdminLink = ReadonlyField::create(
+                'distributors-admin-link',
+                'Manage Prices',
+                '<h2><a href="/distributors-admin/" target="_blank">Distributor Price Admin</a></h2>'
+            )
+        );
+        $distributorsAdminLink->dontEscape = true;
+
         return $fields;
     }
 
