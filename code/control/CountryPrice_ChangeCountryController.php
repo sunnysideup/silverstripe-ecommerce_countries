@@ -79,7 +79,7 @@ class CountryPrices_ChangeCountryController extends ContentController
     public function changeto($request)
     {
         //check for offsite redirects???
-        $newCountryCode = strotoupper($request->param('ID'));
+        $newCountryCode = strtoupper($request->param('ID'));
         self::set_new_country($newCountryCode);
 
         //redirect now

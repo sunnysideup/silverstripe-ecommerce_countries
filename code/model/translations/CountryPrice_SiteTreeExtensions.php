@@ -108,11 +108,6 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
         }
     }
 
-    /**
-     * cache for all translations ...
-     * @var [type]
-     */
-    private $_translations_all_cache = [];
 
     /**
      * @var int $countryID

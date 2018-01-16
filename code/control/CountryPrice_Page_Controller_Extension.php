@@ -35,7 +35,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
         }
         if (isset($_GET[$param])) {
             $urlCountryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
-            if($countryCode) {
+            if($urlCountryCode) {
                 if ($oldCountryCode !== $urlCountryCode) {
                     $countryObject = DataObject::get_one('EcommerceCountry', ['Code' => $urlCountryCode]);
                     if($countryObject) {
