@@ -230,9 +230,10 @@ class CountryPrice_EcommerceCountry extends DataExtension
         if ($country && $country instanceof EcommerceCountry) {
             return $country;
         }
-        
+
         return EcommerceCountry::get()->first();
     }
+    
     /**
      *
      * @return EcommerceCountry

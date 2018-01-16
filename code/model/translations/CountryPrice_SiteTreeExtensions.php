@@ -109,6 +109,12 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
     }
 
     /**
+     * cache for all translations ...
+     * @var [type]
+     */
+    private $_translations_all_cache = [];
+
+    /**
      * @var int $countryID
      *
      * @return CountryPrice_Translation | null
@@ -129,21 +135,30 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
     }
 
     /**
+     * cache for all translations ...
+     * @var [type]
+     */
+    private $_translations_all_cache = [];
+
+    /**
      * @var int $countryID
      *
      * @return CountryPrice_Translation | null
      */
     public function getEcommerceTranslation($countryID)
     {
-        return $this->owner
-            ->CountryPriceTranslations()
-            ->filter(
-                array(
-                    "EcommerceCountryID" => $countryID,
-                    'ParentID' => $this->owner->ID,
+        if(!isset($this->_translations_all_cache[$countryID])) {
+            $this->_translations_all_cache[$countryID] = $this->owner
+                ->CountryPriceTranslations()
+                ->filter(
+                    array(
+                        "EcommerceCountryID" => $countryID,
+                        'ParentID' => $this->owner->ID,
+                    )
                 )
-            )
-            ->first();
+                ->first();
+        }
+        return $this->_translations_all_cache[$countryID];
     }
 
     /**
@@ -151,7 +166,7 @@ class CountryPrice_SiteTreeExtensions extends SiteTreeExtension
      *
      * @return bool
      */
-    public function hasCountryLocalInURL($countryID)
+    public function thisPageHasTranslation($countryID)
     {
         return $this->getEcommerceTranslation($countryID) ? true : false;
     }

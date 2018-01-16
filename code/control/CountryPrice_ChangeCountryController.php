@@ -32,23 +32,16 @@ class CountryPrices_ChangeCountryController extends ContentController
         "confirmredirection" => true
     );
 
-    public static function new_country_link($countryCode)
+    /**
+     * only call this function if it is a NEW country we are dealing with!
+     *
+     * @param string $newCountryCode
+     *
+     */
+    public static function set_new_country($newCountryCode)
     {
-        $redirectsArray = Config::inst()->get('CountryPrices_ChangeCountryController', 'off_site_url_redirects');
-        if (isset($redirectsArray[$countryCode])) {
-            return $redirectsArray[$countryCode];
-        }
+        $newCountryCode = strtoupper($newCountryCode);
 
-        return Injector::inst()->get('CountryPrices_ChangeCountryController')->Link('changeto/'.$countryCode.'/');
-    }
-
-    public function changeto($request)
-    {
-        $redirectsArray = Config::inst()->get('CountryPrices_ChangeCountryController', 'off_site_url_redirects');
-        $newCountryCode = substr(strtoupper($request->param('ID')), 0, 2);
-        if (isset($redirectsArray[$newCountryCode])) {
-            return $this->redirect($redirectsArray[$newCountryCode]);
-        }
         Session::set('MyCloudFlareCountry', $newCountryCode);
         $o = Shoppingcart::current_order();
         if ($o && ($o->getCountry() == $newCountryCode)) {
@@ -57,13 +50,49 @@ class CountryPrices_ChangeCountryController extends ContentController
             ShoppingCart::singleton()->clear();
         }
         CountryPrice_OrderDOD::localise_order($newCountryCode, true);
+
+    }
+
+    /**
+     * link to change to a new country.
+     *
+     * @param string $newCountryCode
+     *
+     */
+    public static function new_country_link($newCountryCode)
+    {
+        $newCountryCode = strtoupper($newCountryCode);
+        $redirectsArray = Config::inst()->get('CountryPrices_ChangeCountryController', 'off_site_url_redirects');
+        if (isset($redirectsArray[$newCountryCode])) {
+            return $redirectsArray[$newCountryCode];
+        }
+
+        return Injector::inst()->get('CountryPrices_ChangeCountryController')->Link('changeto/'.strtolower($newCountryCode).'/');
+    }
+
+    /**
+     *
+     * @param  SS_HTTPRequest $request
+     *
+     * @return SS_HTTPResponse
+     */
+    public function changeto($request)
+    {
+        //check for offsite redirects???
+        $newCountryCode = strotoupper($request->param('ID'));
+        self::set_new_country($newCountryCode);
+
+        //redirect now
         $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
         if(isset($_GET['force']) && $_GET['force']) {
+
             return $this->redirect(self::$url_segment . '/changeto/' .$newCountryCode . '/'. '?force-back-home');
         }
         if(isset($_GET['force-back-home']) || $_GET['force-back-home']) {
+
             return $this->redirect('/');
         }
+
         return $this->redirect($this->findNewURL($param, $newCountryCode));
     }
 

@@ -25,23 +25,38 @@ class CountryPrice_Page_Controller_Extension extends Extension
     public function onAfterInit()
     {
         $countryID = 0;
+        //provided by stealth ...
         $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
         if($countryObject && $countryObject->Code) {
-            if (isset($_GET[$param])) {
-                $countryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
-                if($countryCode) {
-                    if (strtoupper($countryObject->Code) != $countryCode) {
-                        return $this->owner->redirect(
-                            CountryPrices_ChangeCountryController::new_country_link($countryCode)
-                        );
+            $oldCountryCode = strtoupper($countryObject->Code);
+        } else {
+            $oldCountryCode = 'XX';
+        }
+        if (isset($_GET[$param])) {
+            $urlCountryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
+            if($countryCode) {
+                if ($oldCountryCode !== $urlCountryCode) {
+                    $countryObject = DataObject::get_one('EcommerceCountry', ['Code' => $urlCountryCode]);
+                    if($countryObject) {
+                        //change country Object
+                        //reset everything ...
+                        CountryPrices_ChangeCountryController::set_new_country($urlCountryCode);
+                    } else {
+                        return $this->redirect('404-country-not-found');
                     }
                 }
             }
-            
+        }
+        if($countryObject) {
+
+            //check if a redirect is required ...
+            $this->checkForOffsiteRedirects($countryObject);
+
             $countryID = $countryObject->ID;
             //check that there is a translation
-            if ($this->owner->dataRecord->hasCountryLocalInURL($countryID)) {
+            if ($this->owner->dataRecord->thisPageHasTranslation($countryID)) {
+                //if there is a translation but it is not showing in the URL then redirect
                 $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
                 if ($newURL) {
                     $this->owner->redirect($newURL);
@@ -173,6 +188,23 @@ class CountryPrice_Page_Controller_Extension extends Extension
             $link = $this->owner->dataRecord->AbsoluteLink();
         }
         return $link;
+    }
+
+    /**
+     * redirects visitors to another website if they are listed as such in
+     * CountryPrices_ChangeCountryController.off_site_url_redirects
+     *
+     * @param  EcommerceCountry $countryObject current country of visitor
+     *
+     * @return null|SS_HTTPResponse
+     */
+    protected function checkForOffsiteRedirects($countryObject)
+    {
+        $redirectsArray = Config::inst()->get('CountryPrices_ChangeCountryController', 'off_site_url_redirects');
+        $myCountryCode = strtoupper($countryObject->Code);
+        if (isset($redirectsArray[$myCountryCode])) {
+            return $this->redirect($redirectsArray[$myCountryCode]);
+        }
     }
 
 }
