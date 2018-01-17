@@ -26,28 +26,8 @@ class CountryPrice_Page_Controller_Extension extends Extension
     {
         $countryID = 0;
         //provided by stealth ...
-        $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
-        if($countryObject && $countryObject->Code) {
-            $oldCountryCode = strtoupper($countryObject->Code);
-        } else {
-            $oldCountryCode = 'XX';
-        }
-        if (isset($_GET[$param])) {
-            $urlCountryCode = preg_replace("/[^A-Z]+/", "", strtoupper(Convert::raw2sql($_GET[$param])));
-            if($urlCountryCode) {
-                if ($oldCountryCode !== $urlCountryCode) {
-                    $countryObject = DataObject::get_one('EcommerceCountry', ['Code' => $urlCountryCode]);
-                    if($countryObject) {
-                        //change country Object
-                        //reset everything ...
-                        CountryPrices_ChangeCountryController::set_new_country($urlCountryCode);
-                    } else {
-                        return $this->redirect('404-country-not-found');
-                    }
-                }
-            }
-        }
+
         if($countryObject) {
 
             //check if a redirect is required ...
