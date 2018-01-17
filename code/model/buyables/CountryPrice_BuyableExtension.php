@@ -154,7 +154,7 @@ class CountryPrice_BuyableExtension extends DataExtension
             if ($this->debug) {debug::log('the product is '.($canSell ? '' : 'NOT ').' for sale - lets check price ... ');}
 
             //is there a valid price ???
-            $countryPrice = $this->owner->getCalculatedPrice();
+            $countryPrice = $this->owner->getCalculatedPrice(true);
             if ($this->debug) {debug::log('nothing applies, but we have a country price... '.$countryPrice);}
 
             return floatval($countryPrice) > 0 ? null : false;
@@ -210,7 +210,7 @@ class CountryPrice_BuyableExtension extends DataExtension
         if ($countryObject) {
             $countryCode = $countryObject->Code;
         }
-        if ($countryCode == '' || $countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+        if ($countryCode === '' || $countryCode === EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
             if ($this->debug) {
                 debug::log('No country code or default country code: '.$countryCode);
             }
@@ -225,8 +225,22 @@ class CountryPrice_BuyableExtension extends DataExtension
 
             if ($countryCode) {
                 $order = ShoppingCart::current_order();
-                CountryPrice_OrderDOD::localise_order();
-                $currency = $order->CurrencyUsed();
+                //if the order has never been localised, then we do this now!!!!
+                if(count(self::$_buyable_price) === 0) {
+                    CountryPrice_OrderDOD::localise_order($countryCode, $force = true, $runAgain = true);
+
+                    // CRUCIAL!!!!
+                    // reload order with new values!
+                    $order = ShoppingCart::current_order();
+                }
+                if($order && $order->exists()) {
+                    $currency = $order->CurrencyUsed();
+                }
+                if($currency && $currency->exists()) {
+                    //do nothing
+                } else {
+                    $currency = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
+                }
                 if ($currency) {
                     $currencyCode = strtoupper($currency->Code);
                     //1. exact price for country
@@ -240,7 +254,7 @@ class CountryPrice_BuyableExtension extends DataExtension
                             return self::$_buyable_price[$key];
                         } elseif ($prices) {
                             if ($this->debug) {
-                                debug::log('MAIN COUNTRY: There is an error number of prices: '.$prices->count());
+                                debug::log('MAIN COUNTRY: There is an error number of prices: '.$prices->count().' based on a search for '.$countryCode.' - '.$currencyCode);
                             }
                         } else {
                             if ($this->debug) {
@@ -310,23 +324,19 @@ class CountryPrice_BuyableExtension extends DataExtension
                 if ($this->debug) {
                     debug::log('No currency ('.$currencyCode.') or no country code ('.$countryCode.') for order: ');
                 }
-                self::$_buyable_price[$key] = 0;
-                return self::$_buyable_price[$key];
             }
             //catch error 2: no country price BUT currency is not default currency ...
             if (EcommercePayment::site_currency() != $currencyCode) {
                 if ($this->debug) {
                     debug::log('site currency  ('.EcommercePayment::site_currency().') is not the same order currency ('.$currencyCode.')');
                 }
-                self::$_buyable_price[$key] = 0;
-                return self::$_buyable_price[$key];
-            }
-            if ($this->debug) {
-                debug::log('SETTING '.$key.' to ZERO - NOT FOR SALE');
+
+            } else {
+                if ($this->debug) {
+                    debug::log('SETTING '.$key.' to ZERO - NOT FOR SALE');
+                }
             }
             self::$_buyable_price[$key] = 0;
-
-            return self::$_buyable_price[$key];
         }
 
         return self::$_buyable_price[$key];
