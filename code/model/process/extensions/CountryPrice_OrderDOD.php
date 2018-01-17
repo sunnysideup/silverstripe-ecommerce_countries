@@ -48,78 +48,84 @@ class CountryPrice_OrderDOD extends DataExtension
      * has all the localised stuff attached to it, specifically
      * the right currency
      */
-    public static function localise_order($countryCode = null, $force = false)
+    public static function localise_order($countryCode = null, $force = false, $runAgain = false)
     {
+        if($runAgain) {
+            self::$_number_of_times_we_have_run_localise_order = 0;
+        }
         if (self::$_number_of_times_we_have_run_localise_order > 2) {
             return;
         }
         self::$_number_of_times_we_have_run_localise_order++;
         $order = ShoppingCart::current_order();
-        if (!$order) {
-            return true;
-        }
-        if ($order->IsSubmitted()) {
-            return true;
-        }
-        if (! $countryCode) {
-            $countryCode = $order->getCountry();
-        }
-        $currencyObject = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
-        if (Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
-            $distributor = $order->getDistributor($countryCode);
-            $countryOptions = $distributor->Countries();
-            if ($countryOptions && $countryOptions->count()) {
-                EcommerceCountry::set_for_current_order_only_show_countries($countryOptions->column('Code'));
+        if ($order && $order->exists()) {
+            if ($order->IsSubmitted()) {
+                return true;
             }
-        }
-        //check if the billing and shipping address have a country so that they will not be overridden by previous Orders
-        //we do this to make sure that the previous address can not change the region and thereby destroy the order in the cart
-        if ($billingAddress = $order->CreateOrReturnExistingAddress('BillingAddress')) {
-            if (! $billingAddress->Country || $force) {
-                $billingAddress->Country = $countryCode;
-                $billingAddress->write();
+            if (! $countryCode) {
+                $countryCode = $order->getCountry();
             }
-        }
-        if ($shippingAddress = $order->CreateOrReturnExistingAddress('ShippingAddress')) {
-            if (! $shippingAddress->ShippingCountry || $force) {
-                $shippingAddress->ShippingCountry = $countryCode;
-                $shippingAddress->write();
-            }
-        }
-
-        //if a country code and currency has been set then all is good
-        //from there we keep it this way
-        if (
-            $order->OriginatingCountryCode ==  $countryCode &&
-            $order->CurrencyUsedID == $currencyObject->ID
-        ) {
-            return true;
-        }
-        $order->resetLocale = true;
-        $order->write();
-        $order = Order::get()->byID($order->ID);
-        $orderHasBeenChanged = false;
-
-         //check currency ...
-        if ($order->CurrencyUsedID != $currencyObject->ID) {
-            $order->SetCurrency($currencyObject);
-            $orderHasBeenChanged = true;
-        }
-        if ($orderHasBeenChanged) {
-            $order->write();
-            $items = $order->OrderItems();
-            if ($items) {
-                foreach ($items as $item) {
-                    $buyable = $item->Buyable(true);
-                    if (! $buyable->canPurchase()) {
-                        $item->delete();
-                    }
+            $currencyObject = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
+            if (Config::inst()->get('CountryPrice_OrderDOD', 'only_allow_within_country_sales')) {
+                $distributor = $order->getDistributor($countryCode);
+                $countryOptions = $distributor->Countries();
+                if ($countryOptions && $countryOptions->count()) {
+                    EcommerceCountry::set_for_current_order_only_show_countries($countryOptions->column('Code'));
                 }
             }
-            // Called after because some modifiers use the country field to calculate the values
-            $order->calculateOrderAttributes(true);
+            //check if the billing and shipping address have a country so that they will not be overridden by previous Orders
+            //we do this to make sure that the previous address can not change the region and thereby destroy the order in the cart
+            if ($billingAddress = $order->CreateOrReturnExistingAddress('BillingAddress')) {
+                if (! $billingAddress->Country || $force) {
+                    $billingAddress->Country = $countryCode;
+                    $billingAddress->write();
+                }
+            }
+            if ($shippingAddress = $order->CreateOrReturnExistingAddress('ShippingAddress')) {
+                if (! $shippingAddress->ShippingCountry || $force) {
+                    $shippingAddress->ShippingCountry = $countryCode;
+                    $shippingAddress->write();
+                }
+            }
+
+            //if a country code and currency has been set then all is good
+            //from there we keep it this way
+            if (
+                $order->OriginatingCountryCode ==  $countryCode &&
+                $order->CurrencyUsedID == $currencyObject->ID
+            ) {
+                return true;
+            }
+            $order->resetLocale = true;
+            $order->write();
+            $order = Order::get()->byID($order->ID);
+            $orderHasBeenChanged = false;
+
+             //check currency ...
+            if ($order->CurrencyUsedID != $currencyObject->ID) {
+                $order->SetCurrency($currencyObject);
+                $orderHasBeenChanged = true;
+            }
+            if ($orderHasBeenChanged) {
+                ShoppingCart::reset_order_reference();
+                $order->write();
+                $items = $order->OrderItems();
+                if ($items) {
+                    foreach ($items as $item) {
+                        $buyable = $item->Buyable(true);
+                        if (! $buyable->canPurchase()) {
+                            $item->delete();
+                        }
+                    }
+                }
+                // Called after because some modifiers use the country field to calculate the values
+                $order->calculateOrderAttributes(true);
+            }
+            self::localise_order($countryCode);
+        } else {
+            Session::set('temporary_country_order_store', $countryCode);
         }
-        self::localise_order($countryCode);
+
     }
 
 
