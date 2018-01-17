@@ -192,48 +192,133 @@ class CountryPrice_EcommerceCountry extends DataExtension
     /**
      * returns the 'always the same as' (parent) country if necessary
      * @param  EcommerceCountry | string | int   (optional)  $country
+     *
      * @return EcommerceCountry
      */
     public static function get_real_country($country = null)
     {
-        $originalCountry = $country;
-        $order = ShoppingCart::current_order();
 
-        //get country from EcommerceCountry
-        if (! $country) {
-            $country = EcommerceCountry::get_country();
+        if($country && $country instanceof EcommerceCountry) {
+            $cacheKey = $country->Code;
+        } elseif($country) {
+            $cacheKey = $country;
+        } else {
+            $cacheKey = 'notprovided';
         }
+        if(isset(self::$_get_real_country_cache[$cacheKey]) && self::$_get_real_country_cache[$cacheKey]) {
 
-        //get the Object
-        if ($country instanceof EcommerceCountry) {
-            //do nothing
-        } elseif (is_numeric($country) && intval($country) == $country) {
-            $country = EcommerceCountry::get()->byID($country);
-        } elseif (is_string($country)) {
-            $country = strtoupper($country);
-            $country = EcommerceCountry::get_country_object(false, $country);
-        }
-        if ($country && $country instanceof EcommerceCountry) {
-            if ($country->AlwaysTheSameAsID) {
-                $realCountry = $country->AlwaysTheSameAs();
-                if ($realCountry && $realCountry->exists()) {
-                    $country = $realCountry;
+        } else {
+            //save original - just in case...
+            $originalCountry = $country;
+
+            //no country provided
+            if (! $country) {
+                $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
+
+                // 1. CHECK FROM URL
+                $urlCountryCode = null;
+                if (isset($_GET[$param])) {
+                    $urlCountryCode = Convert::raw2sql(preg_replace("/[^A-Z]+/", "", strtoupper($_GET[$param])));
+                }
+
+                // 2. CHECK WHAT THE SYSTEM THINKS THE COUNTRY CHOULD BE
+
+                //now we check it from order / session ....
+                $order = ShoppingCart::current_order();
+                if($order && $order->exists()) {
+                    Session::clear('temporary_country_order_store');
+                    $countryCode = $order->getCountry();
+                } else {
+                    $countryCode = Session::get('temporary_country_order_store');
+                }
+
+                //if we still dont have a country then we use the standard e-commerce methods ...
+                if(! $countryCode) {
+                    $countryCode = EcommerceCountry::get_country();
+                }
+
+                //lets make our object!
+                if($countryCode) {
+                    $country = DataObject::get_one('EcommerceCountry', ['Code' => $countryCode]);
+                }
+
+                if($country && $country instanceof EcommerceCountry) {
+                    //do nothing
+                } else {
+                    $country = null;
+                }
+                //IF THE COUNTRY DOES NOT MATCH THE URL COUNTRY THEN THE URL WINS!!!!
+                if($urlCountryCode) {
+                    if (
+                            ($country && $country->Code !== $urlCountryCode)
+                        ||
+                            ! $country
+
+                    ){
+                        $country = DataObject::get_one('EcommerceCountry', ['Code' => $urlCountryCode]);
+                        if($country) {
+                            //change country Object
+                            //reset everything ...
+                            CountryPrices_ChangeCountryController::set_new_country($country);
+
+                            // return self::get_real_country($country);
+                        } else {
+                            return $this->redirect('404-country-not-found');
+                        }
+                    } else {
+
+                    }
                 }
             }
-        } else {
-            //last chance ... do this only once ...
-            $countryCode = EcommerceCountry::get_country_default();
-            if ($countryCode && !$originalCountry) {
-                return self::get_real_country($countryCode);
+
+
+            //MAKE SURE WE HAVE AN OBJECT
+            //get the Object
+            if ($country instanceof EcommerceCountry) {
+                //do nothing
+            } elseif (is_numeric($country) && intval($country) == $country) {
+                $country = EcommerceCountry::get()->byID($country);
+            } elseif (is_string($country)) {
+                $country = strtoupper($country);
+                $country = EcommerceCountry::get_country_object(false, $country);
             }
-        }
-        if ($country && $country instanceof EcommerceCountry) {
-            return $country;
+
+
+            //LOOK FOR REPLACEMENT COUNTRIES
+            //substitute (always the same as) check ....
+            if ($country && $country instanceof EcommerceCountry) {
+                if ($country->AlwaysTheSameAsID) {
+                    $realCountry = $country->AlwaysTheSameAs();
+                    if ($realCountry && $realCountry->exists()) {
+                        $country = $realCountry;
+                    }
+                }
+            } else {
+                //last chance ... do this only once ...
+                $countryCode = EcommerceCountry::get_country_default();
+                if ($countryCode && !$originalCountry) {
+                    $country = self::get_real_country($countryCode);
+                }
+            }
+
+            //FINAL BOARDING CALL!
+            //surely we have one now???
+            if ($country && $country instanceof EcommerceCountry) {
+                //do nothing
+            } else {
+                //final backup....
+                $country = EcommerceCountry::get()->first();
+            }
+
+            //set to cache ...
+            self::$_get_real_country_cache[$cacheKey] = $country;
+
         }
 
-        return EcommerceCountry::get()->first();
+        return self::$_get_real_country_cache[$cacheKey];
+
     }
-    
+
     /**
      *
      * @return EcommerceCountry
