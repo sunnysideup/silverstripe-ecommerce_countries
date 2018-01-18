@@ -108,4 +108,38 @@ class CountryPrice_EcommerceCurrency extends DataExtension
 
         return $resultArray;
     }
+
+    private static $_money_object_currency = array();
+    /***
+     *
+     * updates the Currency Code in the get_money_object_from_order_currency function
+     * this is required for the googlebot read correctly the correct currencty as it does not have an order (see allowWrites in ShoppingCart class)
+     * @param string $currencyCode
+     * @return Array
+     */
+    public function updateCurrencyCodeForMoneyObect($currencyCode)
+    {
+        $countryCode = '';
+        $countryObject = CountryPrice_EcommerceCountry::get_real_country();
+        if ($countryObject) {
+            $countryCode = $countryObject->Code;
+        }
+        if ($countryCode === '' || $countryCode === EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+            return null;
+        }
+        $key = $this->owner->ClassName.'____'.$countryCode;
+        if (! isset(self::$_money_object_currency[$key])) {
+            if(is_null($currencyCode)){
+                $currency = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
+                if ($currency) {
+                    $currencyCode = strtoupper($currency->Code);
+                }
+                else {
+                    return null;
+                }
+            }
+            self::$_money_object_currency[$key] = $currencyCode;
+        }
+        return self::$_money_object_currency[$key];
+    }
 }
