@@ -65,9 +65,9 @@ class CountryPrice extends DataObject
      */
     public function Buyable()
     {
-        if(! $this->_myBuyable) {
+        if (! $this->_myBuyable) {
             $className = $this->ObjectClass;
-            if ( class_exists($this->ObjectClass) ) {
+            if (class_exists($this->ObjectClass)) {
                 $this->_myBuyable = $className::get()->byID($this->ObjectID);
             }
         }
@@ -87,7 +87,7 @@ class CountryPrice extends DataObject
      */
     public function CountryObject()
     {
-        if(! $this->_myCountryObject) {
+        if (! $this->_myCountryObject) {
             if ($this->Country) {
                 $this->_myCountryObject =  EcommerceCountry::get()
                     ->filter(array("Code" => $this->Country))
@@ -296,7 +296,4 @@ class CountryPrice extends DataObject
     {
         return self::$location_country;
     }
-
-
-
 }

@@ -51,7 +51,6 @@ class CountryPrices_ChangeCountryController extends ContentController
         }
 
         CountryPrice_OrderDOD::localise_order($newCountryCode, $force = true, $runAgain = true);
-
     }
 
     /**
@@ -85,12 +84,10 @@ class CountryPrices_ChangeCountryController extends ContentController
 
         //redirect now
         $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
-        if(isset($_GET['force']) && $_GET['force']) {
-
+        if (isset($_GET['force']) && $_GET['force']) {
             return $this->redirect(self::$url_segment . '/changeto/' .$newCountryCode . '/'. '?force-back-home');
         }
-        if(isset($_GET['force-back-home']) || $_GET['force-back-home']) {
-
+        if (isset($_GET['force-back-home']) || $_GET['force-back-home']) {
             return $this->redirect('/');
         }
 
@@ -153,10 +150,9 @@ class CountryPrices_ChangeCountryController extends ContentController
             $query = !empty($query) ? '?'. http_build_query($query) : '';
 
             $hasCountrySegment = CountryPrice_Translation::get_country_url_provider()->hasCountrySegment($url);
-            if($hasCountrySegment){
+            if ($hasCountrySegment) {
                 $url = CountryPrice_Translation::get_country_url_provider()->replaceCountryCodeInUrl($newCountryCode, $url);
-            }
-            else {
+            } else {
                 $url = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($newCountryCode, $url);
             }
             return $url.$query;

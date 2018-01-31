@@ -13,5 +13,4 @@ interface CountryURLProviderInterface
     /**
      */
     public function addCountryCodeToUrl($countryCode, $url = '');
-
 }

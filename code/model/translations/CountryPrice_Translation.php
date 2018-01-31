@@ -4,7 +4,6 @@
 
 class CountryPrice_Translation extends DataObject
 {
-
     private static $automatically_create_dummy_translations_for_products_and_productgroups = true;
 
     private static $dependencies = array(
@@ -103,7 +102,7 @@ class CountryPrice_Translation extends DataObject
         );
 
         // //$fields->removeFieldFromTab("Root.Main", 'ParentID');
-        if($this->WithoutTranslation) {
+        if ($this->WithoutTranslation) {
             return FieldList::create(
                 array(
                     $countryDropdownField,
@@ -123,19 +122,19 @@ class CountryPrice_Translation extends DataObject
             );
         }
         $dbFields = $this->inheritedDatabaseFields();
-        foreach($dbFields as $dbField => $fieldType) {
+        foreach ($dbFields as $dbField => $fieldType) {
             $useField = 'UseOriginal'.$dbField;
-            if(!empty($this->$useField)) {
+            if (!empty($this->$useField)) {
                 $fields->replaceField(
                     $dbField,
                     $fields->dataFieldByName($dbField)->performReadonlyTransformation()
                 );
             }
-            if($fields->dataFieldByName($useField)){
+            if ($fields->dataFieldByName($useField)) {
                 $fields->dataFieldByName($useField)->setDescription(_t('CountryPrice_Translation.IGNORE', 'Use untranslated value for ') . $dbField);
             }
         }
-        if($this->exists() && $this->ParentID) {
+        if ($this->exists() && $this->ParentID) {
             $fields->addFieldToTab(
                 'Root.ParentPage',
                 CMSEditLinkField::create(
@@ -210,9 +209,9 @@ class CountryPrice_Translation extends DataObject
             )
         );
         $this->extend('updateFieldsToReplace', $al);
-        foreach($al as $fieldToReplace) {
+        foreach ($al as $fieldToReplace) {
             $ignoreField = 'UseOriginal' . $fieldToReplace->PageField;
-            if(!empty($this->owner->$ignoreField)) {
+            if (!empty($this->owner->$ignoreField)) {
                 $al->remove($fieldToReplace);
             }
         }
@@ -235,10 +234,9 @@ class CountryPrice_Translation extends DataObject
         $link = $this->Parent()->Link();
         if ($this->EcommerceCountryID) {
             $hasCountrySegment = CountryPrice_Translation::get_country_url_provider()->hasCountrySegment($link);
-            if($hasCountrySegment){
+            if ($hasCountrySegment) {
                 $link = CountryPrice_Translation::get_country_url_provider()->replaceCountryCodeInUrl($this->EcommerceCountry()->Code, $link);
-            }
-            else {
+            } else {
                 $link = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($this->EcommerceCountry()->Code, $link);
             }
         }
@@ -250,20 +248,20 @@ class CountryPrice_Translation extends DataObject
         parent::requireDefaultRecords();
         //get rid of rogue entries:
         DB::query('DELETE FROM CountryPrice_Translation WHERE EcommerceCountryID = 0 OR ParentID = 0');
-        if(Config::inst()->get('CountryPrice_Translation', 'automatically_create_dummy_translations_for_products_and_productgroups')) {
+        if (Config::inst()->get('CountryPrice_Translation', 'automatically_create_dummy_translations_for_products_and_productgroups')) {
             $prices = CountryPrice::get();
             $ecommerceCountries = array();
-            foreach($prices as $price) {
-                if($countryObject = $price->CountryObject()) {
-                    if($buyable = $price->Buyable()) {
-                        if($buyable instanceof Product) {
-                            if($buyable->ID && $countryObject->ID) {
+            foreach ($prices as $price) {
+                if ($countryObject = $price->CountryObject()) {
+                    if ($buyable = $price->Buyable()) {
+                        if ($buyable instanceof Product) {
+                            if ($buyable->ID && $countryObject->ID) {
                                 $filter = array(
                                     'EcommerceCountryID' => $countryObject->ID,
                                     'ParentID' => $buyable->ID
                                 );
                                 $ecommerceCountries[$countryObject->ID] = $countryObject;
-                                if(! CountryPrice_Translation::get()->filter($filter)->first()) {
+                                if (! CountryPrice_Translation::get()->filter($filter)->first()) {
                                     DB::alteration_message(
                                         'Creating fake translation for '.$buyable->Title.' for country '.$countryObject->Code,
                                         'created'
@@ -277,14 +275,14 @@ class CountryPrice_Translation extends DataObject
                     }
                 }
             }
-            if(count($ecommerceCountries)) {
-                foreach(ProductGroup::get() as $productGroup) {
-                    foreach($ecommerceCountries as $countryID => $countryObject) {
+            if (count($ecommerceCountries)) {
+                foreach (ProductGroup::get() as $productGroup) {
+                    foreach ($ecommerceCountries as $countryID => $countryObject) {
                         $filter = array(
                             'EcommerceCountryID' => $countryObject->ID,
                             'ParentID' => $productGroup->ID
                         );
-                        if(! CountryPrice_Translation::get()->filter($filter)->first()) {
+                        if (! CountryPrice_Translation::get()->filter($filter)->first()) {
                             DB::alteration_message(
                                 'Creating fake translation for '.$productGroup->Title.' for country '.$countryObject->Code,
                                 'created'
@@ -297,8 +295,5 @@ class CountryPrice_Translation extends DataObject
                 }
             }
         }
-
     }
-
-
 }

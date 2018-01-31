@@ -31,14 +31,16 @@ class CountryPrice_BuyableExtension extends DataExtension
             $includedCountries = $includedCountries->map('ID', 'Name')->toArray();
         }
         if ($this->owner->AllCountries) {
-            $tabs = new TabSet('Countries',
+            $tabs = new TabSet(
+                'Countries',
                 new Tab(
                     'Include',
                     new CheckboxField("AllCountries", "All Countries")
                 )
             );
         } else {
-            $tabs = new TabSet('Countries',
+            $tabs = new TabSet(
+                'Countries',
                 $includeTab = new Tab(
                     'Include',
                     new CheckboxField("AllCountries", "All Countries")
@@ -107,11 +109,15 @@ class CountryPrice_BuyableExtension extends DataExtension
     {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if ($countryObject) {
-            if ($this->debug) {debug::log('found country object: '.$countryObject->Code);}
+            if ($this->debug) {
+                debug::log('found country object: '.$countryObject->Code);
+            }
             $countryCode = $countryObject->Code;
         }
         if ($countryCode == '') {
-            if ($this->debug) {debug::log('There is no country Code! ');}
+            if ($this->debug) {
+                debug::log('There is no country Code! ');
+            }
 
             //we can not decide
             return null;
@@ -121,7 +127,9 @@ class CountryPrice_BuyableExtension extends DataExtension
             //easy  ... overrules all ...
             if ($this->owner->AllCountries) {
                 //is there a valid price ???
-                if ($this->debug) {debug::log('All countries applies - updated  ... new price = '.floatval($this->owner->updateCalculatedPrice()));}
+                if ($this->debug) {
+                    debug::log('All countries applies - updated  ... new price = '.floatval($this->owner->updateCalculatedPrice()));
+                }
                 $canSell = true;
             } else {
 
@@ -129,7 +137,9 @@ class CountryPrice_BuyableExtension extends DataExtension
                 //excluded first...
                 $excluded = $this->owner->getManyManyComponents('ExcludedCountries', "\"Code\" = '$countryCode'")->Count();
                 if ($excluded) {
-                    if ($this->debug) {debug::log('excluded country');}
+                    if ($this->debug) {
+                        debug::log('excluded country');
+                    }
 
                     //no!
                     return false;
@@ -137,12 +147,16 @@ class CountryPrice_BuyableExtension extends DataExtension
 
                 //default country is included by default ...
                 if ($countryCode == EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
-                    if ($this->debug) {debug::log('we are in the default country! exiting now ... ');}
+                    if ($this->debug) {
+                        debug::log('we are in the default country! exiting now ... ');
+                    }
                     $canSell = true;
-                } elseif($this->owner->IncludedCountries()->count()) {
+                } elseif ($this->owner->IncludedCountries()->count()) {
                     $included = $this->owner->getManyManyComponents('IncludedCountries', "\"Code\" = '$countryCode'")->Count();
                     if ($included) {
-                        if ($this->debug) {debug::log('In included countries');}
+                        if ($this->debug) {
+                            debug::log('In included countries');
+                        }
                         //null basically means - ignore ...
                         $canSell = true;
                     } else {
@@ -151,11 +165,15 @@ class CountryPrice_BuyableExtension extends DataExtension
                     }
                 }
             }
-            if ($this->debug) {debug::log('the product is '.($canSell ? '' : 'NOT ').' for sale - lets check price ... ');}
+            if ($this->debug) {
+                debug::log('the product is '.($canSell ? '' : 'NOT ').' for sale - lets check price ... ');
+            }
 
             //is there a valid price ???
             $countryPrice = $this->owner->getCalculatedPrice(true);
-            if ($this->debug) {debug::log('nothing applies, but we have a country price... '.$countryPrice);}
+            if ($this->debug) {
+                debug::log('nothing applies, but we have a country price... '.$countryPrice);
+            }
 
             return floatval($countryPrice) > 0 ? null : false;
         }
@@ -226,17 +244,17 @@ class CountryPrice_BuyableExtension extends DataExtension
             if ($countryCode) {
                 $order = ShoppingCart::current_order();
                 //if the order has never been localised, then we do this now!!!!
-                if(count(self::$_buyable_price) === 0) {
+                if (count(self::$_buyable_price) === 0) {
                     CountryPrice_OrderDOD::localise_order($countryCode, $force = true, $runAgain = true);
 
                     // CRUCIAL!!!!
                     // reload order with new values!
                     $order = ShoppingCart::current_order();
                 }
-                if($order && $order->exists()) {
+                if ($order && $order->exists()) {
                     $currency = $order->CurrencyUsed();
                 }
-                if($currency && $currency->exists()) {
+                if ($currency && $currency->exists()) {
                     //do nothing
                 } else {
                     $currency = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
@@ -330,7 +348,6 @@ class CountryPrice_BuyableExtension extends DataExtension
                 if ($this->debug) {
                     debug::log('site currency  ('.EcommercePayment::site_currency().') is not the same order currency ('.$currencyCode.')');
                 }
-
             } else {
                 if ($this->debug) {
                     debug::log('SETTING '.$key.' to ZERO - NOT FOR SALE');

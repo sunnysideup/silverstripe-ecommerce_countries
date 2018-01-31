@@ -12,49 +12,52 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
 {
     private static $country_segments  = array('nz', 'au', 'gb', 'eu', 'jp', 'us', 'zz');
 
-    public function hasCountrySegment($url = ''){
+    public function hasCountrySegment($url = '')
+    {
         $url = $this->getDefaultURL($url);
         $parsedUrl = parse_url($url);
         $pathSegments = explode("/", $parsedUrl['path']);
         $firstSegment = '';
         $countries =  Config::inst()->get('CountryURLProvider', 'country_segments');
-        foreach ($pathSegments as $position => $segment){
-            if($segment){
+        foreach ($pathSegments as $position => $segment) {
+            if ($segment) {
                 $firstSegment = $segment;
                 break;
             }
         }
-        if(in_array($firstSegment, $countries)){
+        if (in_array($firstSegment, $countries)) {
             return true;
         }
         return false;
     }
 
-    public function replaceCountryCodeInUrl($countryCode, $url = ''){
+    public function replaceCountryCodeInUrl($countryCode, $url = '')
+    {
         $url = $this->getDefaultURL($url);
         $parsedUrl = parse_url($url);
         $pathParts = explode('/', $parsedUrl['path']);
         $countries =  Config::inst()->get('CountryURLProvider', 'country_segments');
-        foreach($pathParts as $pathPartsKey => $pathPart) {
+        foreach ($pathParts as $pathPartsKey => $pathPart) {
             //check for first match
-            if(in_array($pathPart, $countries)) {
+            if (in_array($pathPart, $countries)) {
                 $pathParts[$pathPartsKey] = strtolower($countryCode);
                 break;
             }
         }
         $parsedUrl['path'] = implode('/', $pathParts);
         $url = $parsedUrl['scheme']. '://'. $parsedUrl['host']. $parsedUrl['path'];
-        if(isset($parsedUrl['query'])){
+        if (isset($parsedUrl['query'])) {
             $url = $url . $parsedUrl['query'];
         }
         return $url;
     }
 
-    public function addCountryCodeToUrl($countryCode, $url = ''){
+    public function addCountryCodeToUrl($countryCode, $url = '')
+    {
         $url = $this->getDefaultURL($url);
         $parsedUrl = parse_url($url);
         $url = $parsedUrl['scheme']. '://'. $parsedUrl['host']. '/'. strtolower($countryCode) . $parsedUrl['path'];
-        if(isset($parsedUrl['query'])){
+        if (isset($parsedUrl['query'])) {
             $url = $url . $parsedUrl['query'];
         }
         return $url;
@@ -62,10 +65,9 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
 
     private function getDefaultURL($url = '')
     {
-        if($url) {
+        if ($url) {
             return Director::absoluteURL($url);
         }
         return (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
     }
-
 }

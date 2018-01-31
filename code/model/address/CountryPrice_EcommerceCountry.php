@@ -180,7 +180,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
         $countryObject = CountryPrice_EcommerceCountry::get_real_country($countryCode);
         if ($countryObject && $countryObject->hasDistributor()) {
             return $countryObject->Distributor()->PrimaryCountry();
-            //do nothing ...
+        //do nothing ...
         } else {
             $countryObject = self::get_backup_country();
         }
@@ -197,16 +197,14 @@ class CountryPrice_EcommerceCountry extends DataExtension
      */
     public static function get_real_country($country = null)
     {
-
-        if($country && $country instanceof EcommerceCountry) {
+        if ($country && $country instanceof EcommerceCountry) {
             $cacheKey = $country->Code;
-        } elseif($country) {
+        } elseif ($country) {
             $cacheKey = $country;
         } else {
             $cacheKey = 'notprovided';
         }
-        if(isset(self::$_get_real_country_cache[$cacheKey]) && self::$_get_real_country_cache[$cacheKey]) {
-
+        if (isset(self::$_get_real_country_cache[$cacheKey]) && self::$_get_real_country_cache[$cacheKey]) {
         } else {
             //save original - just in case...
             $originalCountry = $country;
@@ -225,7 +223,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
 
                 //now we check it from order / session ....
                 $order = ShoppingCart::current_order();
-                if($order && $order->exists()) {
+                if ($order && $order->exists()) {
                     Session::clear('temporary_country_order_store');
                     $countryCode = $order->getCountry();
                 } else {
@@ -233,40 +231,39 @@ class CountryPrice_EcommerceCountry extends DataExtension
                 }
 
                 //if we still dont have a country then we use the standard e-commerce methods ...
-                if(! $countryCode) {
+                if (! $countryCode) {
                     $countryCode = EcommerceCountry::get_country();
                 }
 
                 //lets make our object!
-                if($countryCode) {
+                if ($countryCode) {
                     $country = DataObject::get_one('EcommerceCountry', ['Code' => $countryCode]);
                 }
 
-                if($country && $country instanceof EcommerceCountry) {
+                if ($country && $country instanceof EcommerceCountry) {
                     //do nothing
                 } else {
                     $country = null;
                 }
                 //IF THE COUNTRY DOES NOT MATCH THE URL COUNTRY THEN THE URL WINS!!!!
-                if($urlCountryCode) {
+                if ($urlCountryCode) {
                     if (
                             ($country && $country->Code !== $urlCountryCode)
                         ||
                             ! $country
 
-                    ){
+                    ) {
                         $country = DataObject::get_one('EcommerceCountry', ['Code' => $urlCountryCode]);
-                        if($country) {
+                        if ($country) {
                             //change country Object
                             //reset everything ...
                             CountryPrices_ChangeCountryController::set_new_country($country);
 
-                            // return self::get_real_country($country);
+                        // return self::get_real_country($country);
                         } else {
                             return $this->redirect('404-country-not-found');
                         }
                     } else {
-
                     }
                 }
             }
@@ -312,11 +309,9 @@ class CountryPrice_EcommerceCountry extends DataExtension
 
             //set to cache ...
             self::$_get_real_country_cache[$cacheKey] = $country;
-
         }
 
         return self::$_get_real_country_cache[$cacheKey];
-
     }
 
     /**

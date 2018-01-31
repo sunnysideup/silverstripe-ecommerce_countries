@@ -50,7 +50,7 @@ class CountryPrice_OrderDOD extends DataExtension
      */
     public static function localise_order($countryCode = null, $force = false, $runAgain = false)
     {
-        if($runAgain) {
+        if ($runAgain) {
             self::$_number_of_times_we_have_run_localise_order = 0;
         }
         if (self::$_number_of_times_we_have_run_localise_order > 2) {
@@ -101,7 +101,7 @@ class CountryPrice_OrderDOD extends DataExtension
             $order = Order::get()->byID($order->ID);
             $orderHasBeenChanged = false;
 
-             //check currency ...
+            //check currency ...
             if ($order->CurrencyUsedID != $currencyObject->ID) {
                 $order->SetCurrency($currencyObject);
                 $orderHasBeenChanged = true;
@@ -125,7 +125,6 @@ class CountryPrice_OrderDOD extends DataExtension
         } else {
             Session::set('temporary_country_order_store', $countryCode);
         }
-
     }
 
 
@@ -161,10 +160,10 @@ class CountryPrice_OrderDOD extends DataExtension
      */
     public function onAfterWrite()
     {
-        if(! $this->owner->DistributorID) {
-            if($defaultDistributor = Distributor::get_default_distributor()) {
-                if($defaultDistributor->exists()) {
-                    if($defaultDistributor->ID) {
+        if (! $this->owner->DistributorID) {
+            if ($defaultDistributor = Distributor::get_default_distributor()) {
+                if ($defaultDistributor->exists()) {
+                    if ($defaultDistributor->ID) {
                         $this->owner->DistributorID = $defaultDistributor->ID;
                         $this->owner->write();
                     }
@@ -291,7 +290,7 @@ class CountryPrice_OrderDOD extends DataExtension
                 $countryMessageObject->CountrySpecificEmailMessage
             );
         }
-        if($step->SendEmailToDistributor) {
+        if ($step->SendEmailToDistributor) {
             if ($distributor = $this->owner->Distributor()) {
                 $distributorEmail = $distributor->Email;
                 if ($distributorEmail) {

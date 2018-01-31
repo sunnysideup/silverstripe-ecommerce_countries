@@ -53,10 +53,12 @@ class EcommerceOrderStepCountryData extends DataObject
         $messageField = new HtmlEditorField('CountrySpecificEmailMessage', "Email Content");
         $messageField->setRows(7);
         $fields->addFieldsToTab(
-            'Root.Main', array(
+            'Root.Main',
+            array(
             new TextField('CountrySpecificEmailSubject', "Subject"),
             $messageField
-        ));
+        )
+        );
         $fields->addFieldToTab(
             "Root.Main",
             new DropdownField(

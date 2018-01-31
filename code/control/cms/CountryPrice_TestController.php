@@ -425,7 +425,8 @@ class CountryPrice_TestController extends ContentController
             $countryStockistPage = StockistCountryPage::get()->filter(array("Country" => $countryCode))->first();
             if (!$countryStockistPage) {
                 if ($countryObject = DataObject::get_one("EcommerceCountry", "Code = '$countryCode'")) {
-                    $rows = DB::query("
+                    $rows = DB::query(
+                        "
                         SELECT \"StockistCountryPageID\"
                         FROM \"StockistCountryPage_AdditionalCountries\"
                         WHERE \"EcommerceCountryID\" = ".$countryObject->ID

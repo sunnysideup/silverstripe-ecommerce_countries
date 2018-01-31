@@ -32,7 +32,8 @@ class CountryPrice_OrderStepDOD extends DataExtension
             '
                 E-mails during this step (if any) will be copied to distributor?
                 <br />These emails can be customised.
-        ');
+        '
+        );
         $gridField = $fields->dataFieldByName('EcommerceOrderStepCountryDatas');
         $fields->removeFieldFromTab(
             'Root.EcommerceOrderStepCountryDatas',
@@ -51,12 +52,12 @@ class CountryPrice_OrderStepDOD extends DataExtension
         );
         $customisation = _t(
             'CountryPrice_OrderStepDOD.CUSTOMISATION_PER_COUNTRY',
-            'Customisation per country');
+            'Customisation per country'
+        );
         $gridField->setTitle($customisation);
         $fields->addFieldsToTab(
             'Root.EcommerceOrderStepCountryDatas',
             $gridField
         );
     }
-
 }

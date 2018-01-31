@@ -28,7 +28,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
         //provided by stealth ...
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
 
-        if($countryObject) {
+        if ($countryObject) {
 
             //check if a redirect is required ...
             $this->checkForOffsiteRedirects($countryObject);
@@ -94,10 +94,9 @@ class CountryPrice_Page_Controller_Extension extends Extension
         $oldURL = $protocol.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 
         $hasCountrySegment = CountryPrice_Translation::get_country_url_provider()->hasCountrySegment($oldURL);
-        if($hasCountrySegment){
+        if ($hasCountrySegment) {
             $newURL = CountryPrice_Translation::get_country_url_provider()->replaceCountryCodeInUrl($countryCode, $oldURL);
-        }
-        else {
+        } else {
             $newURL = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($countryCode, $oldURL);
         }
         if ($oldURL !== $newURL && self::$_redirection_count < 3) {
@@ -149,7 +148,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
     public function AlternativeHrefLangLinksCachingKey()
     {
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
-        if($countryObject && $countryObject->Code) {
+        if ($countryObject && $countryObject->Code) {
             return 'AlternativeHrefLangLinksCachingKey-'.$countryObject->Code.'-'.$this->owner->dataRecord->ID.'-'.strtotime($this->owner->dataRecord->LastEdited);
         }
         return 'AlternativeHrefLangLinksCachingKey'.$this->owner->dataRecord->ID.'-'.$this->owner->dataRecord->ID.'-'.strtotime($this->owner->dataRecord->LastEdited);
@@ -162,7 +161,7 @@ class CountryPrice_Page_Controller_Extension extends Extension
     public function UpdateCanonicalLink(&$link)
     {
         $obj = $this->owner->dataRecord->CanonicalObject();
-        if($obj) {
+        if ($obj) {
             $link = $obj->Link();
         } else {
             $link = $this->owner->dataRecord->AbsoluteLink();
@@ -186,5 +185,4 @@ class CountryPrice_Page_Controller_Extension extends Extension
             return $this->redirect($redirectsArray[$myCountryCode]);
         }
     }
-
 }
