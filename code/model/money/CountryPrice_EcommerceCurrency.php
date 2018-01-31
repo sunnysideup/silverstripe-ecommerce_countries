@@ -109,7 +109,9 @@ class CountryPrice_EcommerceCurrency extends DataExtension
         return $resultArray;
     }
 
+
     private static $_money_object_currency = array();
+    
     /***
      *
      * updates the Currency Code in the get_money_object_from_order_currency function
@@ -129,7 +131,7 @@ class CountryPrice_EcommerceCurrency extends DataExtension
         }
         $key = $this->owner->ClassName.'____'.$countryCode;
         if (! isset(self::$_money_object_currency[$key])) {
-            if (is_null($currencyCode)) {
+            if(is_null($currencyCode)){
                 $currency = CountryPrice_EcommerceCurrency::get_currency_for_country($countryCode);
                 if ($currency) {
                     $currencyCode = strtoupper($currency->Code);
