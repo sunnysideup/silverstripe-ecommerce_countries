@@ -12,7 +12,6 @@
 
 class CountryPrices_ChangeCountryController extends ContentController
 {
-
     /**
      * @var string
      */
@@ -37,22 +36,6 @@ class CountryPrices_ChangeCountryController extends ContentController
         "confirmredirection" => true
     );
 
-    public static function check_for_locale_in_url()
-    {
-        $parts = parse_url($_SERVER['REQUEST_URI']);
-        if(isset($parts['path'])) {
-            $path = trim($parts['path'], '/');
-            $array = explode('/', $path)
-            $potentialCountry = isset($array[0]) ? $array[0] : '';
-            if(strlen($potentialCountry) == 2) {
-                $potentialCountry = strtoupper($potentialCountry);
-                $check = EcommerceCountry::get->filter(['Code' => $potentialCountry])->count();
-                if($check == 1) {
-                    return $potentialCountry;
-                }
-            }
-        }
-    }
     /**
      * only call this function if it is a NEW country we are dealing with!
      *
@@ -104,31 +87,39 @@ class CountryPrices_ChangeCountryController extends ContentController
         self::set_new_country($newCountryCode);
 
         //redirect now
-        $newCountryCode = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
         if (isset($_GET['force']) && $_GET['force']) {
-            return $this->redirect(self::$url_segment . '/changeto/' .$newCountryCode . '/'. '?force-back-home');
+            return $this->redirect($this->Link($newCountryCode) . '?force-back-home');
         }
-        if (isset($_GET['force-back-home']) || $_GET['force-back-home']) {
-            return $this->redirect('/');
+        if (isset($_GET['force-back-home']) && $_GET['force-back-home']) {
+            return $this->redirect(Director::baseURL('/'));
         }
 
-        return $this->redirect($this->findNewURL($param, $newCountryCode));
+        $newLink = $this->findNewURL($newCountryCode);
+        if ($newLink) {
+            return $this->redirect($newLink);
+        }
+
+        return [];
     }
 
     public function Link($action = null)
     {
-        return Controller::join_links(Config::inst()->get('CountryPrices_ChangeCountryController', 'url_segment'), $action);
+        $link = Controller::join_links(
+            Config::inst()->get('CountryPrices_ChangeCountryController', 'url_segment'),
+            $action
+        );
+
+        return $link . '/';
     }
 
     /**
      * Remove a query string parameter from an URL.
      *
-     * @param string $varname
      * @param string $newCountryCode
      *
      * @return string
      */
-    public function findNewURL($varname = 'ecomlocale', $newCountryCode)
+    public function findNewURL($newCountryCode)
     {
 
         //COPIED FROM DIRECTOR::redirectBack()
@@ -153,30 +144,44 @@ class CountryPrices_ChangeCountryController extends ContentController
         if (!$url) {
             $url = Director::baseURL();
         }
+
         // absolute redirection URLs not located on this site may cause phishing
         if (Director::is_site_url($url)) {
-            $url = Director::absoluteURL($url, true);
-            $parsedUrl = parse_url($url);
+            $oldURL = Director::absoluteURL($url, true);
+            $parsedUrl = parse_url($oldURL);
             $query = array();
 
             if (isset($parsedUrl['query'])) {
+                $varname = $this->Config()->get('locale_get_parameter');
                 parse_str($parsedUrl['query'], $query);
-                if ($query[$varname] !== $newCountryCode) {
-                    unset($query[$varname]);
+                if (isset($query[$varname])) {
+                    if ($query[$varname] !== $newCountryCode) {
+                        unset($query[$varname]);
+                    }
                 }
             }
 
             $path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
 
             $query = !empty($query) ? '?'. http_build_query($query) : '';
-
-            $hasCountrySegment = CountryPrice_Translation::get_country_url_provider()->hasCountrySegment($url);
-            if ($hasCountrySegment) {
-                $url = CountryPrice_Translation::get_country_url_provider()->replaceCountryCodeInUrl($newCountryCode, $url);
+            $newURL =
+                $parsedUrl['scheme'] .
+                '://' .
+                Controller::join_links(
+                    $parsedUrl['host'],
+                    $parsedUrl['path']
+                ).
+                $query;
+            $newURLwithNewCountryCode = CountryPrice_Translation::get_country_url_provider()
+                ->replaceCountryCodeInUrl(
+                    $newCountryCode,
+                    $newURL
+                );
+            if ($newURLwithNewCountryCode) {
+                return $newURLwithNewCountryCode;
             } else {
-                $url = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($newCountryCode, $url);
+                return $newURL;
             }
-            return $url.$query;
         }
         return '/';
     }

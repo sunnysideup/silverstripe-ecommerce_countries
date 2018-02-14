@@ -70,9 +70,15 @@ class CountryPrice_Translation extends DataObject
         return self::$plural_name;
     }
 
+    /**
+     * name of the object that provides the country URL
+     *
+     * @return string
+     */
     public static function get_country_url_provider()
     {
         $obj = Injector::inst()->get('CountryPrice_Translation');
+
         return $obj->CountryURLProvider;
     }
 
@@ -227,15 +233,21 @@ class CountryPrice_Translation extends DataObject
      */
     public function getLink()
     {
-        $link = $this->Parent()->Link();
+        $standardLink = $this->Parent()->Link();
+        $linkWithNewCountryCode = '';
         if ($this->EcommerceCountryID) {
-            $hasCountrySegment = CountryPrice_Translation::get_country_url_provider()->hasCountrySegment($link);
-            if ($hasCountrySegment) {
-                $link = CountryPrice_Translation::get_country_url_provider()->replaceCountryCodeInUrl($this->EcommerceCountry()->Code, $link);
-            } else {
-                $link = CountryPrice_Translation::get_country_url_provider()->addCountryCodeToUrl($this->EcommerceCountry()->Code, $link);
-            }
+            $linkWithNewCountryCode = CountryPrice_Translation::get_country_url_provider()
+                ->replaceCountryCodeInUrl(
+                    $this->EcommerceCountry()->Code,
+                    $standardLink
+                );
         }
+        if ($linkWithNewCountryCode) {
+            $link = $linkWithNewCountryCode;
+        } else {
+            $link = $standardLink;
+        }
+
         return Director::absoluteURL($link);
     }
 

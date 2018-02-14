@@ -4,70 +4,109 @@
  * Usage:
  *     $myAnswer =
  *         CountryPrice_Translation::get_country_url_provider()
- *             ->doSomething(....);
+ *             ->getSomething();
  *
  */
 
 class CountryURLProvider extends Object implements CountryURLProviderInterface
 {
-    private static $country_segments  = array('nz', 'au', 'gb', 'eu', 'jp', 'us', 'zz');
 
+
+    /**
+     * returns the selected country code if there is one ...
+     * as an uppercase code, e.g. NZ
+     * @param string|null $url
+     *
+     * @return bool
+     */
     public function hasCountrySegment($url = '')
     {
-        $url = $this->getDefaultURL($url);
-        $parsedUrl = parse_url($url);
-        $pathSegments = explode("/", $parsedUrl['path']);
-        $firstSegment = '';
-        $countries =  Config::inst()->get('CountryURLProvider', 'country_segments');
-        foreach ($pathSegments as $position => $segment) {
-            if ($segment) {
-                $firstSegment = $segment;
-                break;
+        return $this->CurrentCountrySegment($url) ? true : false;
+    }
+
+    /**
+     * returns the selected country code if there is one ...
+     * as an uppercase code, e.g. NZ
+     * @param string|null $url
+     *
+     * @return string|null
+     */
+    public function CurrentCountrySegment($url = '')
+    {
+        $url = $this->getCurrentURL($url);
+
+        $parts = parse_url($url);
+        if (isset($parts['path'])) {
+            $path = trim($parts['path'], '/');
+            $array = explode('/', $path);
+            $potentialCountry = isset($array[0]) ? trim($array[0]) : '';
+            if (strlen($potentialCountry) === 2) {
+                $potentialCountry = strtoupper($potentialCountry);
+                $check = EcommerceCountry::get()->filter(['Code' => $potentialCountry])->count();
+                if ($check == 1) {
+                    return $potentialCountry;
+                }
             }
         }
-        if (in_array($firstSegment, $countries)) {
-            return true;
-        }
-        return false;
     }
 
-    public function replaceCountryCodeInUrl($countryCode, $url = '')
+    /**
+     * replaces a country code in a URL with another one
+     *
+     * @param  string $newCountryCode e.g. NZ / nz
+     * @param  string $url
+     *
+     * @return string|null only returns a string if it is different from the original!
+     */
+    public function replaceCountryCodeInUrl($newCountryCode, $url = '')
     {
-        $url = $this->getDefaultURL($url);
+        $url = $this->getCurrentURL($url);
+
+        $newCountryCode = strtolower($newCountryCode);
+        $oldURL = $url;
         $parsedUrl = parse_url($url);
-        $pathParts = explode('/', $parsedUrl['path']);
-        $countries =  Config::inst()->get('CountryURLProvider', 'country_segments');
-        foreach ($pathParts as $pathPartsKey => $pathPart) {
-            //check for first match
-            if (in_array($pathPart, $countries)) {
-                $pathParts[$pathPartsKey] = strtolower($countryCode);
-                break;
+        if (isset($parsedUrl['path']) && isset($parsedUrl['host'])) {
+            $path = $parsedUrl['path'];
+            $path = trim($path, '/');
+            $pathParts = explode('/', $path);
+            $currentCountryCode = $this->CurrentCountrySegment($url);
+            if ($currentCountryCode) {
+                $pathParts[0] = $newCountryCode;
+            } else {
+                array_unshift($pathParts, $newCountryCode);
+            }
+            $parsedUrl['path'] = implode('/', $pathParts);
+            $newURL =
+                $parsedUrl['scheme'] .
+                '://' .
+                Controller::join_links(
+                    $parsedUrl['host'],
+                    $parsedUrl['path']
+                );
+            if (isset($parsedUrl['query'])) {
+                $newURL = $newURL . '?' . $parsedUrl['query'];
             }
         }
-        $parsedUrl['path'] = implode('/', $pathParts);
-        $url = $parsedUrl['scheme']. '://'. $parsedUrl['host']. $parsedUrl['path'];
-        if (isset($parsedUrl['query'])) {
-            $url = $url . $parsedUrl['query'];
+        if ($oldURL !== $newURL) {
+            return $newURL;
         }
-        return $url;
+
+        return '';
     }
 
-    public function addCountryCodeToUrl($countryCode, $url = '')
-    {
-        $url = $this->getDefaultURL($url);
-        $parsedUrl = parse_url($url);
-        $url = $parsedUrl['scheme']. '://'. $parsedUrl['host']. '/'. strtolower($countryCode) . $parsedUrl['path'];
-        if (isset($parsedUrl['query'])) {
-            $url = $url . $parsedUrl['query'];
-        }
-        return $url;
-    }
-
-    private function getDefaultURL($url = '')
+    /**
+     *
+     * @param  string|null $url can be a relative one or nothing at all ...
+     *
+     * @return string      full URL currently being called.
+     */
+    public function getCurrentURL($url = '')
     {
         if ($url) {
             return Director::absoluteURL($url);
         }
-        return (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $protocol = Director::is_https() ? 'https://' : 'http://';
+
+        return  $protocol.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
     }
 }

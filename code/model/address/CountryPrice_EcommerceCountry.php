@@ -211,8 +211,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
 
             //no country provided
             if (! $country) {
-
-                $urlCountryCode = CountryPrices_ChangeCountryController::check_for_locale_in_url();
+                $urlCountryCode = CountryPrice_Translation::get_country_url_provider()->CurrentCountrySegment();
 
                 // 2. CHECK WHAT THE SYSTEM THINKS THE COUNTRY CHOULD BE
 
@@ -253,7 +252,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
                             //change country Object
                             //reset everything ...
                             CountryPrices_ChangeCountryController::set_new_country($country);
-                            // return self::get_real_country($country);
+                        // return self::get_real_country($country);
                         } else {
                             return $this->redirect('404-country-not-found');
                         }
