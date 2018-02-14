@@ -47,10 +47,6 @@ class CountryPrice_Translation extends DataObject
         'Link' => 'Varchar'
     );
 
-    /**
-     * @var string
-     */
-    private static $locale_get_parameter = 'ecomlocale';
 
     /**
      * Standard SS variable.

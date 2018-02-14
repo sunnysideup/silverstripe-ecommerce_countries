@@ -14,6 +14,11 @@ class CountryPrices_ChangeCountryController extends ContentController
 {
 
     /**
+     * @var string
+     */
+    private static $locale_get_parameter = 'ecomlocale';
+
+    /**
      * make sure to match route...
      * @var string
      */
@@ -32,6 +37,22 @@ class CountryPrices_ChangeCountryController extends ContentController
         "confirmredirection" => true
     );
 
+    public static function check_for_locale_in_url()
+    {
+        $parts = parse_url($_SERVER['REQUEST_URI']);
+        if(isset($parts['path'])) {
+            $path = trim($parts['path'], '/');
+            $array = explode('/', $path)
+            $potentialCountry = isset($array[0]) ? $array[0] : '';
+            if(strlen($potentialCountry) == 2) {
+                $potentialCountry = strtoupper($potentialCountry);
+                $check = EcommerceCountry::get->filter(['Code' => $potentialCountry])->count();
+                if($check == 1) {
+                    return $potentialCountry;
+                }
+            }
+        }
+    }
     /**
      * only call this function if it is a NEW country we are dealing with!
      *
@@ -83,7 +104,7 @@ class CountryPrices_ChangeCountryController extends ContentController
         self::set_new_country($newCountryCode);
 
         //redirect now
-        $param = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
+        $newCountryCode = Config::inst()->get('CountryPrice_Translation', 'locale_get_parameter');
         if (isset($_GET['force']) && $_GET['force']) {
             return $this->redirect(self::$url_segment . '/changeto/' .$newCountryCode . '/'. '?force-back-home');
         }
