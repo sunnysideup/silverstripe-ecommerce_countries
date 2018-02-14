@@ -111,7 +111,7 @@ class CountryPrice_EcommerceCurrency extends DataExtension
 
 
     private static $_money_object_currency = array();
-    
+
     /***
      *
      * updates the Currency Code in the get_money_object_from_order_currency function
@@ -126,7 +126,7 @@ class CountryPrice_EcommerceCurrency extends DataExtension
         if ($countryObject) {
             $countryCode = $countryObject->Code;
         }
-        if ($countryCode === '' || $countryCode === EcommerceConfig::get('EcommerceCountry', 'default_country_code')) {
+        if ($countryCode === '') {
             return null;
         }
         $key = $this->owner->ClassName.'____'.$countryCode;

@@ -51,7 +51,7 @@ class CountryPrice_OrderDOD extends DataExtension
     public static function localise_order($countryCode = null, $force = false, $runAgain = false)
     {
         if(self::$_number_of_times_we_have_run_localise_order > 0) {
-            $runAgain = false;
+           $runAgain = false;
         }
         if ($runAgain) {
             self::$_number_of_times_we_have_run_localise_order = 0;
@@ -59,6 +59,7 @@ class CountryPrice_OrderDOD extends DataExtension
         if (self::$_number_of_times_we_have_run_localise_order > 2) {
             return;
         }
+
         self::$_number_of_times_we_have_run_localise_order++;
         $order = ShoppingCart::current_order();
         if ($order && $order->exists()) {
