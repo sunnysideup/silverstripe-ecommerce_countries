@@ -37,7 +37,7 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
     public function CurrentCountrySegment($url = '')
     {
         $param = Config::inst()->get('CountryURLProvider', 'locale_get_parameter');
-        if(isset($_GET[$param])) {
+        if (isset($_GET[$param])) {
             $potentialCountry = $_GET[$param];
         } else {
             $url = $this->getCurrentURL($url);
@@ -48,7 +48,7 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
                 $potentialCountry = isset($array[0]) ? trim($array[0]) : '';
             }
         }
-        if(strlen($potentialCountry) === 2) {
+        if (strlen($potentialCountry) === 2) {
             $potentialCountry = strtoupper($potentialCountry);
             $check = EcommerceCountry::get()->filter(['Code' => $potentialCountry])->count();
             if ($check) {
