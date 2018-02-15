@@ -10,7 +10,10 @@
 
 class CountryURLProvider extends Object implements CountryURLProviderInterface
 {
-
+    /**
+     * @var string
+     */
+    private static $locale_get_parameter = 'ecomlocale';
 
     /**
      * returns the selected country code if there is one ...
@@ -33,19 +36,23 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
      */
     public function CurrentCountrySegment($url = '')
     {
-        $url = $this->getCurrentURL($url);
-
-        $parts = parse_url($url);
-        if (isset($parts['path'])) {
-            $path = trim($parts['path'], '/');
-            $array = explode('/', $path);
-            $potentialCountry = isset($array[0]) ? trim($array[0]) : '';
-            if (strlen($potentialCountry) === 2) {
-                $potentialCountry = strtoupper($potentialCountry);
-                $check = EcommerceCountry::get()->filter(['Code' => $potentialCountry])->count();
-                if ($check == 1) {
-                    return $potentialCountry;
-                }
+        $param = Config::inst()->get('CountryURLProvider', 'locale_get_parameter');
+        if(isset($_GET[$param])) {
+            $potentialCountry = $_GET[$param];
+        } else {
+            $url = $this->getCurrentURL($url);
+            $parts = parse_url($url);
+            if (isset($parts['path'])) {
+                $path = trim($parts['path'], '/');
+                $array = explode('/', $path);
+                $potentialCountry = isset($array[0]) ? trim($array[0]) : '';
+            }
+        }
+        if(strlen($potentialCountry) === 2) {
+            $potentialCountry = strtoupper($potentialCountry);
+            $check = EcommerceCountry::get()->filter(['Code' => $potentialCountry])->count();
+            if ($check) {
+                return $potentialCountry;
             }
         }
     }

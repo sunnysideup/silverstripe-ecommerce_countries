@@ -12,10 +12,7 @@
 
 class CountryPrices_ChangeCountryController extends ContentController
 {
-    /**
-     * @var string
-     */
-    private static $locale_get_parameter = 'ecomlocale';
+
 
     /**
      * make sure to match route...
