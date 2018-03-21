@@ -245,7 +245,7 @@ class CountryPrice_BuyableExtension extends DataExtension
                 $order = ShoppingCart::current_order();
                 //if the order has never been localised, then we do this now!!!!
                 if (count(self::$_buyable_price) === 0) {
-                    CountryPrice_OrderDOD::localise_order($countryCode, $force = false, $runAgain = true);
+                    CountryPrice_OrderDOD::localise_order($countryCode, $force = true, $runAgain = true);
 
                     // CRUCIAL!!!!
                     // reload order with new values!
