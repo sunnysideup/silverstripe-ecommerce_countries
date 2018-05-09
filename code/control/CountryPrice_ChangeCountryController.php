@@ -160,7 +160,7 @@ class CountryPrices_ChangeCountryController extends ContentController
 
             $path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
 
-            $query = !empty($query) ? '?'. http_build_query($query) : '';
+            $query = empty($query) ? '' :  '?'. http_build_query($query);
             $newURL =
                 $parsedUrl['scheme'] .
                 '://' .
