@@ -110,10 +110,16 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
     public function getCurrentURL($url = '')
     {
         if ($url) {
-            return Director::absoluteURL($url);
-        }
-        $protocol = Director::is_https() ? 'https://' : 'http://';
+            $url = Director::absoluteURL($url);
+        } else {
+            $protocol = Director::is_https() ? 'https://' : 'http://';
 
-        return  $protocol.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+            $url = $protocol.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+        }
+        if (Director::is_site_url($url)) {
+            return $url;
+        } else {
+            return Director::absoluteURL('/');
+        }
     }
 }

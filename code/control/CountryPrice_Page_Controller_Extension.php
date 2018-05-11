@@ -27,7 +27,6 @@ class CountryPrice_Page_Controller_Extension extends Extension
         $countryID = 0;
         //provided by stealth ...
         $countryObject = CountryPrice_EcommerceCountry::get_real_country();
-
         if ($countryObject) {
 
             //check if a redirect is required ...
@@ -39,7 +38,14 @@ class CountryPrice_Page_Controller_Extension extends Extension
                 //if there is a translation but it is not showing in the URL then redirect
                 $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
                 if ($newURL) {
-                    $this->owner->redirect($newURL);
+                    if (Director::is_site_url($newURL)) {
+                        if ($this->owner->request->getVar('nothingislimitless')) {
+                            return;
+                        } else {
+                            $newURL .= '&nothingislimitless=true';
+                        }
+                        $this->owner->redirect($newURL);
+                    }
                 }
             }
         }
