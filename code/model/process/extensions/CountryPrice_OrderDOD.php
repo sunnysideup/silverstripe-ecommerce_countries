@@ -47,9 +47,15 @@ class CountryPrice_OrderDOD extends DataExtension
      * this method basically makes sure that the Order
      * has all the localised stuff attached to it, specifically
      * the right currency
+     *
+     * @param string|EcommerceCountry   $countryCode
+     * @param bool                      $force
+     * @param bool                      $runAgain
      */
     public static function localise_order($countryCode = null, $force = false, $runAgain = false)
     {
+        $countryCode = EcommerceCountry::get_country_from_mixed_var($countryCode, true);
+
         if (self::$_number_of_times_we_have_run_localise_order > 0) {
             $runAgain = false;
         }
