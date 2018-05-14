@@ -36,22 +36,27 @@ class CountryPrices_ChangeCountryController extends ContentController
     /**
      * only call this function if it is a NEW country we are dealing with!
      *
-     * @param string $newCountryCode
+     * without force it is a halfway house.
+     *
+     * @param string  $newCountryCode
+     * @param bool    $force
      *
      */
-    public static function set_new_country($newCountryCode)
+    public static function set_new_country($newCountryCode, $force = true)
     {
         $newCountryCode = strtoupper($newCountryCode);
-
-        Session::set('MyCloudFlareCountry', $newCountryCode);
         $o = Shoppingcart::current_order();
-        if ($o && $o->exists() && ($o->getCountry() == $newCountryCode)) {
-            //..
-        } else {
+        if($o && $o->exists()) {
+            $orderCountry = $o->getCountry();
+            if ($orderCountry === $newCountryCode || CountryPrice_EcommerceCountry::countries_belong_to_same_group($orderCountry, $newCountryCode)) {
+                //nothing to see here, please move on!
+                return;
+            }
             ShoppingCart::singleton()->clear();
         }
 
-        CountryPrice_OrderDOD::localise_order($newCountryCode, $force = true, $runAgain = true);
+        Session::set('MyCloudFlareCountry', $newCountryCode);
+        CountryPrice_OrderDOD::localise_order($newCountryCode, $force, $runAgain = true);
     }
 
     /**
@@ -80,7 +85,7 @@ class CountryPrices_ChangeCountryController extends ContentController
     public function changeto($request)
     {
         //check for offsite redirects???
-        $newCountryCode = strtoupper($request->param('ID'));
+        $newCountryCode = Convert::raw2sql(strtoupper($request->param('ID')));
         self::set_new_country($newCountryCode);
 
         //redirect now

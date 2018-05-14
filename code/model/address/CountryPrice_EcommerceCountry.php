@@ -151,7 +151,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
 
     /**
      * checks if the country has a distributor
-     * and returns it.  If not, returns the defaulf country.
+     * and returns it.  If not, returns the default country.
      *
      * @return EcommerceCountry
      *
@@ -170,7 +170,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
     /**
     * checks if the country has a distributor
     * and returns the primary country for the distributor.
-    * If not, returns the defaulf country.
+    * If not, returns the default country.
      *
      * @return EcommerceCountry
      *
@@ -197,7 +197,8 @@ class CountryPrice_EcommerceCountry extends DataExtension
      */
     public static function get_real_country($country = null)
     {
-        if ($country && $country instanceof EcommerceCountry) {
+        $country = EcommerceCountry::get_country_from_mixed_var($country);
+        if ($country) {
             $cacheKey = $country->Code;
         } elseif ($country) {
             $cacheKey = $country;
@@ -234,7 +235,8 @@ class CountryPrice_EcommerceCountry extends DataExtension
                     $country = DataObject::get_one('EcommerceCountry', ['Code' => $countryCode]);
                 }
 
-                if ($country && $country instanceof EcommerceCountry) {
+                $country = EcommerceCountry::get_country_from_mixed_var($country);
+                if ($country) {
                     //do nothing
                 } else {
                     $country = null;
@@ -251,8 +253,8 @@ class CountryPrice_EcommerceCountry extends DataExtension
                         if ($country) {
                             //change country Object
                             //reset everything ...
-                            CountryPrices_ChangeCountryController::set_new_country($country);
-                        // return self::get_real_country($country);
+                            CountryPrices_ChangeCountryController::set_new_country($country->Code);
+                            // return self::get_real_country($country);
                         } else {
                             return $this->redirect('404-country-not-found');
                         }
@@ -264,19 +266,12 @@ class CountryPrice_EcommerceCountry extends DataExtension
 
             //MAKE SURE WE HAVE AN OBJECT
             //get the Object
-            if ($country instanceof EcommerceCountry) {
-                //do nothing
-            } elseif (is_numeric($country) && intval($country) == $country) {
-                $country = EcommerceCountry::get()->byID($country);
-            } elseif (is_string($country)) {
-                $country = strtoupper($country);
-                $country = EcommerceCountry::get_country_object(false, $country);
-            }
+            $country = EcommerceCountry::get_country_from_mixed_var($country);
 
 
             //LOOK FOR REPLACEMENT COUNTRIES
             //substitute (always the same as) check ....
-            if ($country && $country instanceof EcommerceCountry) {
+            if ($country) {
                 if ($country->AlwaysTheSameAsID) {
                     $realCountry = $country->AlwaysTheSameAs();
                     if ($realCountry && $realCountry->exists()) {
@@ -293,7 +288,8 @@ class CountryPrice_EcommerceCountry extends DataExtension
 
             //FINAL BOARDING CALL!
             //surely we have one now???
-            if ($country && $country instanceof EcommerceCountry) {
+            $country = EcommerceCountry::get_country_from_mixed_var($country);
+            if ($country) {
                 //do nothing
             } else {
                 //final backup....
@@ -306,6 +302,29 @@ class CountryPrice_EcommerceCountry extends DataExtension
 
         return self::$_get_real_country_cache[$cacheKey];
     }
+
+    public static function countries_belong_to_same_group($countryOrCountryCodeA, $countryOrCountryCodeB)
+    {
+        $countryA = EcommerceCountry::get_country_from_mixed_var($countryOrCountryCodeA);
+        $countryB = EcommerceCountry::get_country_from_mixed_var($countryOrCountryCodeB);
+        if($countryA && $countryB) {
+            if($countryA->ID === $countryB->ID) {
+                return true;
+            }
+            if($countryA->AlwaysTheSameAsID === $countryB->ID) {
+                return true;
+            }
+            if($countryA->ID === $countryB->AlwaysTheSameAsID) {
+                return true;
+            }
+            if($countryA->AlwaysTheSameAsID && $countryA->AlwaysTheSameAsID === $countryB->AlwaysTheSameAsID) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      *
