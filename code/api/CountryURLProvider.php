@@ -28,18 +28,23 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
     }
 
     /**
-     * returns the selected country code if there is one ...
+     * returns the selected country code if there is onCurrentCountrySegmente ...
      * as an uppercase code, e.g. NZ
      * @param string|null $url
+     * @param bool $includeGetVariable
      *
      * @return string|null
      */
-    public function CurrentCountrySegment($url = '')
+    public function CurrentCountrySegment($url = '', $includeGetVariable = true)
     {
-        $param = Config::inst()->get('CountryURLProvider', 'locale_get_parameter');
-        if (isset($_GET[$param])) {
-            $potentialCountry = $_GET[$param];
-        } else {
+        $potentialCountry = '';
+        if ($includeGetVariable)
+            $getVar = Config::inst()->get('CountryURLProvider', 'locale_get_parameter');
+            if(isset($_GET[$getVar])) {
+                $potentialCountry = $_GET[$getVar];
+            }
+        }
+        if (strlen($potentialCountry) !== 2) {
             $url = $this->getCurrentURL($url);
             $parts = parse_url($url);
             if (isset($parts['path'])) {
@@ -57,6 +62,7 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
         }
     }
 
+
     /**
      * replaces a country code in a URL with another one
      *
@@ -68,15 +74,17 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
     public function replaceCountryCodeInUrl($newCountryCode, $url = '')
     {
         $url = $this->getCurrentURL($url);
+        $oldURL = $url;
+        debug::log($url);
 
         $newCountryCode = strtolower($newCountryCode);
-        $oldURL = $url;
         $parsedUrl = parse_url($url);
         if (isset($parsedUrl['path']) && isset($parsedUrl['host'])) {
             $path = $parsedUrl['path'];
             $path = trim($path, '/');
             $pathParts = explode('/', $path);
-            $currentCountryCode = $this->CurrentCountrySegment($url);
+
+            $currentCountryCode = $this->CurrentCountrySegment($url, false);
             if ($currentCountryCode) {
                 $pathParts[0] = $newCountryCode;
             } else {
@@ -94,7 +102,7 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
                 $newURL = $newURL . '?' . $parsedUrl['query'];
             }
         }
-        if ($oldURL !== $newURL) {
+        if (trim($oldURL, '/') !== trim($newURL, '/')) {
             return $newURL;
         }
 

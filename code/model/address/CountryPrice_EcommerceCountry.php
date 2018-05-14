@@ -254,7 +254,7 @@ class CountryPrice_EcommerceCountry extends DataExtension
                             //change country Object
                             //reset everything ...
                             CountryPrices_ChangeCountryController::set_new_country($country->Code);
-                            // return self::get_real_country($country);
+                        // return self::get_real_country($country);
                         } else {
                             return $this->redirect('404-country-not-found');
                         }
@@ -307,17 +307,17 @@ class CountryPrice_EcommerceCountry extends DataExtension
     {
         $countryA = EcommerceCountry::get_country_from_mixed_var($countryOrCountryCodeA);
         $countryB = EcommerceCountry::get_country_from_mixed_var($countryOrCountryCodeB);
-        if($countryA && $countryB) {
-            if($countryA->ID === $countryB->ID) {
+        if ($countryA && $countryB) {
+            if ($countryA->ID === $countryB->ID) {
                 return true;
             }
-            if($countryA->AlwaysTheSameAsID === $countryB->ID) {
+            if ($countryA->AlwaysTheSameAsID === $countryB->ID) {
                 return true;
             }
-            if($countryA->ID === $countryB->AlwaysTheSameAsID) {
+            if ($countryA->ID === $countryB->AlwaysTheSameAsID) {
                 return true;
             }
-            if($countryA->AlwaysTheSameAsID && $countryA->AlwaysTheSameAsID === $countryB->AlwaysTheSameAsID) {
+            if ($countryA->AlwaysTheSameAsID && $countryA->AlwaysTheSameAsID === $countryB->AlwaysTheSameAsID) {
                 return true;
             }
         }

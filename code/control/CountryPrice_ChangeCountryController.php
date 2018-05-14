@@ -46,7 +46,7 @@ class CountryPrices_ChangeCountryController extends ContentController
     {
         $newCountryCode = strtoupper($newCountryCode);
         $o = Shoppingcart::current_order();
-        if($o && $o->exists()) {
+        if ($o && $o->exists()) {
             $orderCountry = $o->getCountry();
             if ($orderCountry === $newCountryCode || CountryPrice_EcommerceCountry::countries_belong_to_same_group($orderCountry, $newCountryCode)) {
                 //nothing to see here, please move on!
