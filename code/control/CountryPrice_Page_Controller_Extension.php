@@ -39,10 +39,14 @@ class CountryPrice_Page_Controller_Extension extends Extension
                 $newURL = $this->addCountryCodeToUrlIfRequired($countryObject->Code);
                 if ($newURL) {
                     if (Director::is_site_url($newURL)) {
-                        if ($this->owner->request->getVar('nothingislimitless')) {
+                        if ($this->owner->request->getVar('nothing')) {
                             return;
                         } else {
-                            $newURL .= '&nothingislimitless=true';
+                            if(!strpos($newURL, '?')) {
+                                $newURL .= '?nothing=limitless';
+                            } else {
+                                $newURL .= '&nothing=limitless';
+                            }
                         }
                         $this->owner->redirect($newURL);
                     }
