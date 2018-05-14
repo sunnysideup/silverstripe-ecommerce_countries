@@ -40,7 +40,7 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
         $potentialCountry = '';
         if ($includeGetVariable) {
             $getVar = Config::inst()->get('CountryURLProvider', 'locale_get_parameter');
-            if(isset($_GET[$getVar])) {
+            if (isset($_GET[$getVar])) {
                 $potentialCountry = $_GET[$getVar];
             }
         }
