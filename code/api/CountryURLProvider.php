@@ -90,7 +90,7 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
             } else {
                 array_unshift($pathParts, $newCountryCode);
             }
-            $parsedUrl['path'] = implode('/', $pathParts).'/';
+            $parsedUrl['path'] = implode('/', $pathParts);
             $newURL =
                 $parsedUrl['scheme'] .
                 '://' .
