@@ -166,20 +166,29 @@ class CountryPrice_Translation extends DataObject
     {
         $validation = parent::validate();
         if ($validation->valid()) {
-            if ($this->exists()) {
-                $existing = CountryPrice_Translation::get()
-                    ->exclude(array("ID" => $this->ID))
-                    ->filter(
-                        array(
-                            "EcommerceCountryID" => $this->EcommerceCountryID,
-                            "ParentID" => $this->ParentID
-                        )
-                    );
-                if ($existing->count() > 0) {
-                    $validation->error(
-                        'There is already an entry for this page for this country.'
-                    );
-                }
+            if(! $this->EcommerceCountryID) {
+                $validation->error(
+                    'You can not create a translation without seleting a country.'
+                );
+            }
+            if(! $this->ParentID) {
+                $validation->error(
+                    'You can not create a translation without attaching it to a page.'
+                );
+            }
+
+            $existing = CountryPrice_Translation::get()
+                ->exclude(array("ID" => $this->ID))
+                ->filter(
+                    array(
+                        "EcommerceCountryID" => $this->EcommerceCountryID,
+                        "ParentID" => $this->ParentID
+                    )
+                );
+            if ($existing->count() > 0) {
+                $validation->error(
+                    'There is already an entry for this page for this country.'
+                );
             }
         }
         return $validation;
