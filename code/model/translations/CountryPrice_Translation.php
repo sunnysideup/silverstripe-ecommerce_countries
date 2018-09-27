@@ -166,12 +166,12 @@ class CountryPrice_Translation extends DataObject
     {
         $validation = parent::validate();
         if ($validation->valid()) {
-            if(! $this->EcommerceCountryID) {
+            if (! $this->EcommerceCountryID) {
                 $validation->error(
                     'You can not create a translation without seleting a country.'
                 );
             }
-            if(! $this->ParentID) {
+            if (! $this->ParentID) {
                 $validation->error(
                     'You can not create a translation without attaching it to a page.'
                 );
