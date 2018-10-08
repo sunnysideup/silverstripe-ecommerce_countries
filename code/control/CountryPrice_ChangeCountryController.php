@@ -73,7 +73,7 @@ class CountryPrices_ChangeCountryController extends ContentController
             return $redirectsArray[$newCountryCode];
         }
 
-        return Injector::inst()->get('CountryPrices_ChangeCountryController')->Link('changeto/'.strtolower($newCountryCode).'/');
+        return Injector::inst()->get('CountryPrices_ChangeCountryController')->Link('changeto/'.strtolower($newCountryCode));
     }
 
     /**
