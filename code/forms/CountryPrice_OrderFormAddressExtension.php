@@ -9,6 +9,7 @@ class CountryPrice_OrderFormAddressExtension extends Extension
         $originalSource = $shippingField->getSource();
         $newSource = $originalSource;
         $allowedCountries = CountryPrice_EcommerceCountry::get_sibling_countries();
+        $allowedCountries = $allowedCountries->exclude('OnlyShowChildrenInDropdowns', true);
         if ($allowedCountries->count()) {
             $allowedCountryCodes = $allowedCountries->column('Code');
             foreach ($newSource as $key => $value) {

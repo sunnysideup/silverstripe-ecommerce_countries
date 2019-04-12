@@ -8,6 +8,7 @@
 class CountryPrice_EcommerceCountry extends DataExtension
 {
     private static $db = array(
+        'OnlyShowChildrenInDropdowns' => 'Boolean',
         'IsBackupCountry' => 'Boolean',
         'FAQContent' => 'HTMLText',
         'TopBarMessage' => 'Varchar(255)',
