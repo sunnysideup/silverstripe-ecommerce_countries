@@ -75,7 +75,7 @@ class CountryURLProvider extends Object implements CountryURLProviderInterface
     {
         $url = $this->getCurrentURL($url);
         $oldURL = $url;
-        debug::log($url);
+        //debug::log($url);
 
         $newCountryCode = strtolower($newCountryCode);
         $parsedUrl = parse_url($url);
